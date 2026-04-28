@@ -1,0 +1,6 @@
+interface:
+  display_name: "Feature Planner v2 Codex"
+  short_description: "Plan, implement, test, review, and document features."
+  default_prompt: "Use $feature-planner-v2-codex to analyze this feature request, create a plan, implement it if requested, and verify the result."
+policy:
+  allow_implicit_invocation: true
