@@ -436,13 +436,18 @@ czy implementacja idzie w bieżącym katalogu, czy w izolowanym `git worktree`.
 | **M** | 💬 propose (default no) | Średnia zmiana — worktree opcjonalnie pomocny |
 | **L** | ✅ propose strongly (default yes) | Auth/DB/UI krytyczne — izolacja chroni `main` przed long-running zmianami |
 
-**Zawsze propose worktree** (override matrycy) gdy:
+**Override matrycy → propose worktree** (tylko **dla M+**, S zostaje S=skip nawet w tych
+przypadkach) gdy:
 
 - Plan dotyka **migracji DB schema** → DB w worktree można testcontainerem postawić niezależnie.
 - Plan ma `parallel-group: db-migrations` + ≥ 1 inną grupę → 6-Teams łatwiej koordynować
   ze stabilnym worktree leada.
 - Branch/main jest aktywnie deployowany (CI/CD na każdym pushu) → izolacja zmniejsza
   ryzyko przypadkowego deploy'u half-implemented featuru.
+
+> **Reguła twarda:** S = skip jest niezależne od override'ów. Mała surgical zmiana
+> (1 plik, < 50 linii) nie usprawiedliwia overhead worktree, nawet przy migracji indexu DB.
+> Override'y eskalują **M → propose strongly** lub **L → must use**, nigdy **S → propose**.
 
 ### 5.5.2 Worktree naming
 
@@ -514,13 +519,25 @@ git worktree add "$WORKTREE_PATH" -b "$WORKTREE_BRANCH"
 
 # Sanity
 git worktree list
-echo "✅ Worktree created — następne polecenia wykonuję w: $WORKTREE_PATH"
+
+# OBOWIĄZKOWE: przełącz cwd do worktree. Bash tool w Claude Code persystuje cwd między
+# wywołaniami, ale tylko jeśli explicit `cd` zostało wywołane. Bez tego Phase 6+ poleci
+# w starym repo i `git checkout -b plan/...` faila z "branch already exists" (bo Phase 5.5
+# już go utworzyła w worktree).
+cd "$WORKTREE_PATH" || { echo "ERROR: nie mogę cd do $WORKTREE_PATH"; exit 1; }
+pwd   # sanity — powinno wypisać $WORKTREE_PATH
+echo "✅ Worktree created + cwd switched: $WORKTREE_PATH"
 ```
 
-**Po utworzeniu — operuj w `$WORKTREE_PATH`** dla wszystkich Phase 6 / 7 / 8 / 9 commands.
+**Po utworzeniu — wszystkie Phase 6 / 7 / 8 / 9 commands wykonują się w `$WORKTREE_PATH`.**
 Plan file (`docs/plany/PLAN_NUM-${SLUG}.md`) jest dziedziczony z commit'u, z którego worktree
 powstał — wciąż go widzisz w worktree. ADR i CR artifacts zapiszesz w worktree, scommitujesz
 na `$WORKTREE_BRANCH`, push'niesz osobno.
+
+> **Reminder dla agenta:** na początku każdego bloku bash w Phase 6+, jeśli planujesz
+> commands operujące na repo (git, npm, file edits), zacznij od `pwd` — jeśli to nie
+> `$WORKTREE_PATH`, to znaczy że cwd zostało zresetowane (np. przez błąd shella) i
+> musisz `cd "$WORKTREE_PATH"` ponownie przed dalszymi operacjami.
 
 ### 5.5.5 Skip path (no worktree)
 
@@ -725,8 +742,35 @@ Modyfikacja pliku spoza „Relevant files" = bloker.
 
 ### 6T.0 Git environment check
 
-Identyczny jak `6.0` (sequential): repo OK, `user.email` set, brak uncommitted tracked changes,
-gałąź `plan/PLAN_NUM-${SLUG}` (jeśli na main/master/develop).
+Wykonaj **identyczne kontrole co Phase 6.0** (sequential), z tą samą logiką detekcji
+worktree:
+
+```bash
+git rev-parse --git-dir >/dev/null 2>&1 || { echo "ERROR: Not a git repo"; exit 1; }
+git config user.email >/dev/null 2>&1 || { echo "ERROR: user.email not set"; exit 1; }
+if git status --porcelain | grep -vq '^??'; then
+  echo "ERROR: Uncommitted tracked changes"; exit 1;
+fi
+
+CURRENT_BRANCH=$(git branch --show-current)
+EXPECTED_BRANCH="plan/${PLAN_NUM}-${SLUG}"
+
+# Trzy stany (jak w 6.0): worktree z Phase 5.5 / fresh main / inny.
+if [ "$CURRENT_BRANCH" = "$EXPECTED_BRANCH" ]; then
+  echo "✅ Już na $EXPECTED_BRANCH — kontynuuję (Teams w worktree z Phase 5.5 jest OK)"
+else
+  case "$CURRENT_BRANCH" in
+    main|master|develop) git checkout -b "$EXPECTED_BRANCH" ;;
+    *)
+      echo "⚠️  Aktualna gałąź: $CURRENT_BRANCH (nie main/expected) — kontynuuję, ale potwierdź"
+      ;;
+  esac
+fi
+
+# Reminder: jeśli Phase 5.5 utworzyła worktree, lead operuje w $WORKTREE_PATH.
+# Teammates spawnowani z lead session dziedziczą cwd lead'a, więc też pracują w worktree.
+pwd
+```
 
 ### 6T.1 Auto-sizing teamu
 
@@ -909,11 +953,22 @@ przez zielone testy automatyczne.
 # Node — package.json scripts.dev (Next.js, Vite, Remix, Astro, etc.)
 DEV_CMD=$(jq -r '.scripts.dev // .scripts.start // empty' package.json 2>/dev/null)
 
-# Python fallbacki
+# Python fallbacki — UWAGA: entry point bywa różny per projekt.
+# Komendy poniżej to HEURYSTYKI — sprawdź konwencje repo i nadpisz $DEV_CMD ręcznie jeśli różne.
 if [ -z "$DEV_CMD" ]; then
   if   [ -f "manage.py" ]; then DEV_CMD="python manage.py runserver"
   elif grep -q "fastapi\|uvicorn" pyproject.toml requirements.txt 2>/dev/null; then
-    DEV_CMD="uvicorn app.main:app --reload --port 8000"
+    # Probuj wykryć entry: szukaj `app = FastAPI(` w typowych lokalizacjach
+    FASTAPI_ENTRY=$(grep -lE 'app\s*=\s*FastAPI\(' \
+      app/main.py main.py src/main.py api/main.py 2>/dev/null | head -1)
+    case "$FASTAPI_ENTRY" in
+      app/main.py)  DEV_CMD="uvicorn app.main:app --reload --port 8000" ;;
+      main.py)      DEV_CMD="uvicorn main:app --reload --port 8000" ;;
+      src/main.py)  DEV_CMD="uvicorn src.main:app --reload --port 8000" ;;
+      api/main.py)  DEV_CMD="uvicorn api.main:app --reload --port 8000" ;;
+      *)            echo "⚠️  Wykryto FastAPI ale entry point niejasny — podaj DEV_CMD ręcznie"
+                    DEV_CMD="" ;;
+    esac
   elif grep -q "flask" pyproject.toml requirements.txt 2>/dev/null; then
     DEV_CMD="flask run --debug"
   fi
@@ -923,21 +978,36 @@ fi
 DEV_PORT=$(grep -E '^PORT=' .env .env.local 2>/dev/null | head -1 | cut -d= -f2)
 DEV_PORT="${DEV_PORT:-3000}"   # Next.js/Vite default
 
-[ -z "$DEV_CMD" ] && { echo "⚠️  Brak dev command — podaj jak uruchomić serwer"; exit 1; }
+[ -z "$DEV_CMD" ] && { echo "⚠️  Brak dev command — podaj jak uruchomić serwer (zapytaj user)"; exit 1; }
 echo "Dev cmd:  $DEV_CMD"
 echo "Dev port: $DEV_PORT"
 ```
 
+> **Uwaga o heurystykach:** dla nietypowych setupów (custom entry, monorepo, env-loader przez
+> `cross-env` / `dotenv-cli` / Next.js 15+ `--env-file`) najpierw spytaj usera o właściwy
+> `DEV_CMD` zamiast zgadywać.
+
 ### 7.8.3 Start dev server (background)
 
 ```bash
-# Log do pliku, kill safety
+# Log do pliku, kill safety. Używamy `setsid` aby utworzyć nową grupę procesów —
+# pozwoli to zabić cały drzewo (npm → next dev → turbopack workers) w 7.8.8.
 DEV_LOG="/tmp/dev-${PLAN_NUM}.log"
-nohup $DEV_CMD > "$DEV_LOG" 2>&1 &
+
+# `sh -c "$DEV_CMD"` — interpretuje $DEV_CMD jak shell (obsługuje quoting, env-loader,
+# wieloargumentowe komendy z package.json). NIE używać `nohup $DEV_CMD` bezpośrednio —
+# word-splitting niszczy wieloargumentowe komendy.
+if command -v setsid >/dev/null 2>&1; then
+  setsid sh -c "$DEV_CMD" > "$DEV_LOG" 2>&1 < /dev/null &
+else
+  # macOS bez setsid → fallback na nohup + sh -c
+  nohup sh -c "$DEV_CMD" > "$DEV_LOG" 2>&1 < /dev/null &
+fi
 DEV_PID=$!
-echo "Dev server PID: $DEV_PID, log: $DEV_LOG"
+echo "Dev server PID: $DEV_PID (port $DEV_PORT), log: $DEV_LOG"
 
 # Wait for ready (poll do 60s)
+READY=0
 for i in $(seq 1 30); do
   if curl -fsS "http://localhost:${DEV_PORT}" >/dev/null 2>&1 \
      || curl -fsS "http://localhost:${DEV_PORT}/api/health" >/dev/null 2>&1; then
@@ -948,27 +1018,48 @@ for i in $(seq 1 30); do
   sleep 2
 done
 
-[ "${READY:-0}" -eq 1 ] || {
+if [ "$READY" -ne 1 ]; then
   echo "❌ Dev server nie wystartował w 60s — sprawdź $DEV_LOG"
   tail -30 "$DEV_LOG"
-  kill $DEV_PID 2>/dev/null
+  # Pełny cleanup process tree (nie tylko parent)
+  [ -n "${DEV_PID:-}" ] && kill -TERM -"$DEV_PID" 2>/dev/null
+  command -v lsof >/dev/null && lsof -ti:"${DEV_PORT}" 2>/dev/null | xargs kill -9 2>/dev/null
   exit 1
-}
+fi
 ```
 
-### 7.8.4 Wyciągnij FEATURE_URL
+### 7.8.4 Wyciągnij FEATURE_URL — twardy gate
 
-Z planu (Definition of Done lub Relevant files) wywnioskuj URL feature:
-
-- **Konkretna ścieżka w DoD:** `/schrony/lista` → `FEATURE_URL=/schrony/lista`.
-- **Nowy panel:** szukaj nowych plików w `app/`, `pages/`, `routes/`:
-  ```bash
-  git diff --name-only "$FIRST_COMMIT^..HEAD" | grep -E '(app|pages|routes)/.*page\.(tsx|jsx|vue)$' | head -3
-  ```
-- **Brak konkretu:** default `/` i poproś usera o doprecyzowanie po preview.
+Z planu (Definition of Done lub Relevant files) wywnioskuj URL feature. **Bez konkretnego URL
+preview pokazuje przypadkowy ekran (np. login redirect z `/`) — to marnuje pełen cykl preview**
+(60s server start + browser launch + cleanup). Lepiej zapytać niż zgadnąć.
 
 ```bash
-FEATURE_PATH="${FEATURE_PATH:-/}"   # nadpisz jeśli wiesz
+# Probuj wykryć z diff'u (Phase 6 commits)
+FIRST_COMMIT=$(git log --grep="plan-${PLAN_NUM}" --format=%H --reverse | head -1)
+DETECTED_PATHS=""
+if [ -n "$FIRST_COMMIT" ]; then
+  DETECTED_PATHS=$(git diff --name-only "${FIRST_COMMIT}^..HEAD" \
+    | grep -E '(app|pages|routes)/.*(page|index)\.(tsx|jsx|vue|svelte)$' \
+    | head -3)
+fi
+
+if [ -z "$FEATURE_PATH" ] && [ -z "$DETECTED_PATHS" ]; then
+  # HARD STOP — nie defaultuj na "/", to produkuje useless preview
+  echo "⛔ Nie udało się wykryć FEATURE_URL z diff'u i nie podano FEATURE_PATH."
+  echo "   Zapytaj usera o konkretną ścieżkę (np. /schrony/lista) PRZED dalszym preview."
+  echo "   Powód: default '/' pokazuje homepage/login redirect — bezużyteczne dla M+ feature review."
+  exit 1
+fi
+
+# Jeśli jest detected ale brak explicit FEATURE_PATH → zapytaj user który URL z listy
+[ -z "$FEATURE_PATH" ] && {
+  echo "Wykryto kandydatów na FEATURE_PATH:"
+  echo "$DETECTED_PATHS"
+  echo "→ ustaw FEATURE_PATH przed dalszym preview (zapytaj user który ekran chce zobaczyć)"
+  exit 1
+}
+
 FEATURE_URL="http://localhost:${DEV_PORT}${FEATURE_PATH}"
 echo "Feature URL: $FEATURE_URL"
 ```
@@ -976,27 +1067,67 @@ echo "Feature URL: $FEATURE_URL"
 ### 7.8.5 Open in Playwright Chrome (preferowane)
 
 ```bash
-# Preferowane: Playwright headed Chromium z screenshot + browser zostaje otwarty
+# Preferowane: Playwright headed Chromium z screenshot + browser zostaje otwarty.
+# Heredoc 'EOF' (single-quoted) → shell NIE interpoluje, JS template-literals działają.
 cat > "/tmp/preview-${PLAN_NUM}.mjs" <<'EOF'
 import { chromium } from 'playwright';
+
 const url = process.env.FEATURE_URL;
 const out = process.env.SCREENSHOT_PATH;
+const ready = process.env.READY_MARKER;
+
 const browser = await chromium.launch({ headless: false });
+
+// SIGTERM/SIGINT handler — zapewnia że Chromium zostanie zamknięty po `kill $PW_PID`,
+// a nie osierocony jako zombie.
+const cleanup = async () => {
+  try { await browser.close(); } catch {}
+  process.exit(0);
+};
+process.on('SIGTERM', cleanup);
+process.on('SIGINT', cleanup);
+
 const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await ctx.newPage();
 await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
 await page.screenshot({ path: out, fullPage: true });
+
+// Marker file → shell może deterministycznie czekać aż screenshot jest na dysku
+// (zamiast `sleep 5` race condition).
+import { writeFileSync } from 'node:fs';
+writeFileSync(ready, 'ok');
+
 console.log(`Screenshot: ${out}`);
-console.log('Browser pozostaje otwarty — zamknij ręcznie po przeglądzie.');
-// Trzymaj browser przy życiu — exit dopiero po SIGINT
+console.log('Browser pozostaje otwarty — zamknij ręcznie lub kill PID po przeglądzie.');
+// Trzymaj browser przy życiu — exit przez SIGTERM/SIGINT z cleanup() powyżej.
 await new Promise(() => {});
 EOF
 
 SCREENSHOT_PATH="/tmp/preview-${PLAN_NUM}.png"
-FEATURE_URL="$FEATURE_URL" SCREENSHOT_PATH="$SCREENSHOT_PATH" \
+READY_MARKER="/tmp/preview-${PLAN_NUM}.ready"
+rm -f "$READY_MARKER"   # ensure clean slate
+
+FEATURE_URL="$FEATURE_URL" SCREENSHOT_PATH="$SCREENSHOT_PATH" READY_MARKER="$READY_MARKER" \
   node "/tmp/preview-${PLAN_NUM}.mjs" &
 PW_PID=$!
-sleep 5   # daj czas na render + screenshot
+
+# Czekaj aż screenshot zapisany (zamiast `sleep 5` race) — max 35s
+# (page.goto timeout = 30s, +5s na screenshot + write)
+for i in $(seq 1 35); do
+  [ -f "$READY_MARKER" ] && break
+  # Sprawdź czy node nie umarł
+  kill -0 "$PW_PID" 2>/dev/null || {
+    echo "❌ Playwright proces umarł — sprawdź czy $FEATURE_URL jest osiągalny"
+    break
+  }
+  sleep 1
+done
+
+if [ -f "$READY_MARKER" ]; then
+  echo "✅ Preview screenshot gotowy: $SCREENSHOT_PATH"
+else
+  echo "⚠️  Screenshot nie powstał w 35s — przejdź do fallback (7.8.6)"
+fi
 ```
 
 ### 7.8.6 Fallback: brak Chromium / brak Playwright
@@ -1043,21 +1174,47 @@ npx playwright screenshot --full-page \
 
 ### 7.8.8 Cleanup po preview
 
-Po decision z user:
+Po decision z user. **Trzy warstwy kill** — bo Next.js / Vite / uvicorn często spawn'ują
+proces tree (parent shell → node → turbopack workers / vite optimizer / uvicorn workers).
+Sam `kill $DEV_PID` zabija tylko parent → dzieci osierocone, port wciąż zajęty.
 
 ```bash
-# Zabij Playwright + dev server
-kill "$PW_PID" 2>/dev/null
-kill "$DEV_PID" 2>/dev/null
-# Force kill jeśli SIGTERM nie zadziałał
-sleep 2; kill -9 "$DEV_PID" 2>/dev/null
+# (1) Graceful — SIGTERM do Playwright (cleanup handler zamyka Chromium) i całej
+#     grupy procesów dev servera (negative PID = process group).
+[ -n "${PW_PID:-}" ] && kill -TERM "$PW_PID" 2>/dev/null
+[ -n "${DEV_PID:-}" ] && kill -TERM -"$DEV_PID" 2>/dev/null   # negative = grupa
+sleep 2
 
-# Zachowaj screenshot do PR review (commitów nie commit'uj)
-echo "📸 Screenshot zachowany: /tmp/preview-${PLAN_NUM}.png — załącz w PR opisie"
+# (2) Force — jeśli SIGTERM nie zadziałał na grupie
+[ -n "${PW_PID:-}" ] && kill -9 "$PW_PID" 2>/dev/null
+[ -n "${DEV_PID:-}" ] && kill -9 -"$DEV_PID" 2>/dev/null
+
+# (3) Port-level safety net — gwarantuje że port jest wolny dla następnej iteracji.
+#     Łapie sieroty których nie znaleźliśmy przez PID/grupę (np. gdy `setsid` nie był
+#     dostępny i parent się odlinkował).
+if command -v lsof >/dev/null 2>&1; then
+  lsof -ti:"${DEV_PORT}" 2>/dev/null | xargs -r kill -9 2>/dev/null
+elif command -v fuser >/dev/null 2>&1; then
+  fuser -k "${DEV_PORT}/tcp" 2>/dev/null
+fi
+
+# Verify port is free
+if curl -fsS "http://localhost:${DEV_PORT}" >/dev/null 2>&1; then
+  echo "⚠️  Port $DEV_PORT WCIĄŻ ZAJĘTY po cleanup — manual intervention needed"
+  command -v lsof >/dev/null && lsof -i:"${DEV_PORT}"
+else
+  echo "✅ Port $DEV_PORT zwolniony"
+fi
+
+# Zachowaj screenshot do PR review (nie commitujemy do repo — to /tmp artifact)
+[ -f "/tmp/preview-${PLAN_NUM}.png" ] && \
+  echo "📸 Screenshot: /tmp/preview-${PLAN_NUM}.png — załącz w PR opisie (Phase 8.4)"
+rm -f "/tmp/preview-${PLAN_NUM}.ready"   # marker, już niepotrzebny
 ```
 
 **Anti-pattern:** dev server zostawiony w tle po Phase 7.8. Każda iteracja zostawia
-proces na port'cie → następny `npm run dev` faila. Zawsze cleanup.
+proces na port'cie → następny `npm run dev` faila z `EADDRINUSE`. Zawsze cleanup,
+zawsze weryfikuj że port jest wolny.
 
 ---
 
@@ -1156,6 +1313,11 @@ Backend: `${CR_BACKEND}` | Commits: `${FIRST_COMMIT}..${LAST_COMMIT}` | Diff: ${
 - AC SHOULD spełnione: [X/Y]
 - Blokery merge: [lista 🔴]
 - Decyzja: PROCEED / FIX-FIRST / RESTART-PHASE-6
+
+## Live preview artifact (z Phase 7.8, jeśli był)
+- Screenshot: `/tmp/preview-PLAN_NUM.png` → załącz w opisie PR (drag-drop w GitHub UI)
+- Feature URL podczas review: `http://localhost:DEV_PORT/FEATURE_PATH`
+- Console errors: [none / lista — z list_console_messages]
 ```
 
 ### 8.5 Fix criticals
@@ -1214,6 +1376,24 @@ Po zapisaniu ADR oznacz finalne zadania w harness:
 - `TaskUpdate(taskId_review, status=completed)` (jeśli było)
 - `TaskUpdate(taskId_adr, status=completed)` (jeśli było)
 Lub po prostu sprzątnij listę: `TaskList → TaskUpdate completed` dla wszystkich pozostałych.
+
+### 9.6 Worktree cleanup reminder (jeśli Phase 5.5 utworzyła worktree)
+
+**Nie usuwaj worktree od razu po ADR.** Worktree zostaje **do czasu mergu PR** —
+post-merge fixy / hotpatchy łatwiej zrobić z istniejącego worktree niż go odtwarzać.
+
+Po mergu PR (lub gdy plan abandoned) pokaż userowi:
+
+```
+🧹 Worktree cleanup (po mergu PR):
+   git worktree remove "$WORKTREE_PATH"
+   git branch -d "$WORKTREE_BRANCH"   # --delete safe (sprawdza merge)
+
+   Jeśli zostawiasz worktree (np. dla follow-up planu) — pamiętaj że gałąź
+   $WORKTREE_BRANCH wciąż istnieje i `git worktree list` ją pokaże.
+```
+
+Pomiń tę sekcję jeśli Phase 5.5 nie utworzyła worktree (S-size lub user wybrał skip).
 
 ---
 
