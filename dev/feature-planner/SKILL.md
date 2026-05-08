@@ -958,17 +958,27 @@ DEV_CMD=$(jq -r '.scripts.dev // .scripts.start // empty' package.json 2>/dev/nu
 if [ -z "$DEV_CMD" ]; then
   if   [ -f "manage.py" ]; then DEV_CMD="python manage.py runserver"
   elif grep -q "fastapi\|uvicorn" pyproject.toml requirements.txt 2>/dev/null; then
-    # Probuj wykryć entry: szukaj `app = FastAPI(` w typowych lokalizacjach
-    FASTAPI_ENTRY=$(grep -lE 'app\s*=\s*FastAPI\(' \
-      app/main.py main.py src/main.py api/main.py 2>/dev/null | head -1)
-    case "$FASTAPI_ENTRY" in
-      app/main.py)  DEV_CMD="uvicorn app.main:app --reload --port 8000" ;;
-      main.py)      DEV_CMD="uvicorn main:app --reload --port 8000" ;;
-      src/main.py)  DEV_CMD="uvicorn src.main:app --reload --port 8000" ;;
-      api/main.py)  DEV_CMD="uvicorn api.main:app --reload --port 8000" ;;
-      *)            echo "⚠️  Wykryto FastAPI ale entry point niejasny — podaj DEV_CMD ręcznie"
-                    DEV_CMD="" ;;
-    esac
+    # Probuj wykryć entry: szukaj `<var> = FastAPI(` lub `<var>: FastAPI = FastAPI(`
+    # w typowych lokalizacjach. Łapie: app, application, api, server, etc.
+    FASTAPI_FILE=$(grep -lE '^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*([[:space:]]*:[[:space:]]*FastAPI)?[[:space:]]*=[[:space:]]*FastAPI\(' \
+      app/main.py main.py src/main.py api/main.py server/main.py 2>/dev/null | head -1)
+
+    # Wyciągnij nazwę zmiennej (app/application/api/...) z linii `<var> [: FastAPI] = FastAPI(`
+    if [ -n "$FASTAPI_FILE" ]; then
+      FASTAPI_VAR=$(grep -E '^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*([[:space:]]*:[[:space:]]*FastAPI)?[[:space:]]*=[[:space:]]*FastAPI\(' "$FASTAPI_FILE" \
+        | head -1 \
+        | sed -E 's/^[[:space:]]*([A-Za-z_][A-Za-z0-9_]*).*/\1/')
+      FASTAPI_VAR="${FASTAPI_VAR:-app}"   # bezpieczny default
+
+      # Mapuj path → moduł (kropki zamiast slashes, bez .py)
+      FASTAPI_MODULE="${FASTAPI_FILE%.py}"
+      FASTAPI_MODULE="${FASTAPI_MODULE//\//.}"
+      DEV_CMD="uvicorn ${FASTAPI_MODULE}:${FASTAPI_VAR} --reload --port 8000"
+    else
+      echo "⚠️  Wykryto FastAPI w deps, ale nie znaleziono entry pointu w typowych lokalizacjach."
+      echo "   Podaj DEV_CMD ręcznie (przykład: uvicorn myapp.main:app --reload --port 8000)"
+      DEV_CMD=""
+    fi
   elif grep -q "flask" pyproject.toml requirements.txt 2>/dev/null; then
     DEV_CMD="flask run --debug"
   fi
@@ -1021,9 +1031,15 @@ done
 if [ "$READY" -ne 1 ]; then
   echo "❌ Dev server nie wystartował w 60s — sprawdź $DEV_LOG"
   tail -30 "$DEV_LOG"
-  # Pełny cleanup process tree (nie tylko parent)
+  # Pełny cleanup process tree (nie tylko parent) — identyczny jak w 7.8.8.
   [ -n "${DEV_PID:-}" ] && kill -TERM -"$DEV_PID" 2>/dev/null
-  command -v lsof >/dev/null && lsof -ti:"${DEV_PORT}" 2>/dev/null | xargs kill -9 2>/dev/null
+  sleep 1
+  [ -n "${DEV_PID:-}" ] && kill -9 -"$DEV_PID" 2>/dev/null
+  if command -v lsof >/dev/null 2>&1; then
+    lsof -ti:"${DEV_PORT}" 2>/dev/null | xargs -r kill -9 2>/dev/null
+  elif command -v fuser >/dev/null 2>&1; then
+    fuser -k "${DEV_PORT}/tcp" 2>/dev/null
+  fi
   exit 1
 fi
 ```
@@ -1044,25 +1060,36 @@ if [ -n "$FIRST_COMMIT" ]; then
     | head -3)
 fi
 
-if [ -z "$FEATURE_PATH" ] && [ -z "$DETECTED_PATHS" ]; then
-  # HARD STOP — nie defaultuj na "/", to produkuje useless preview
-  echo "⛔ Nie udało się wykryć FEATURE_URL z diff'u i nie podano FEATURE_PATH."
-  echo "   Zapytaj usera o konkretną ścieżkę (np. /schrony/lista) PRZED dalszym preview."
-  echo "   Powód: default '/' pokazuje homepage/login redirect — bezużyteczne dla M+ feature review."
-  exit 1
-fi
-
-# Jeśli jest detected ale brak explicit FEATURE_PATH → zapytaj user który URL z listy
-[ -z "$FEATURE_PATH" ] && {
-  echo "Wykryto kandydatów na FEATURE_PATH:"
+# Trzy stany — każdy wymaga innej akcji od agenta po wyjściu z bash bloku.
+if [ -n "$FEATURE_PATH" ]; then
+  echo "FEATURE_URL_STATE=set"
+  FEATURE_URL="http://localhost:${DEV_PORT}${FEATURE_PATH}"
+  echo "Feature URL: $FEATURE_URL"
+elif [ -n "$DETECTED_PATHS" ]; then
+  echo "FEATURE_URL_STATE=needs-user-pick"
+  echo "Wykryto kandydatów na FEATURE_PATH (z diff'u Phase 6):"
   echo "$DETECTED_PATHS"
-  echo "→ ustaw FEATURE_PATH przed dalszym preview (zapytaj user który ekran chce zobaczyć)"
-  exit 1
-}
-
-FEATURE_URL="http://localhost:${DEV_PORT}${FEATURE_PATH}"
-echo "Feature URL: $FEATURE_URL"
+else
+  echo "FEATURE_URL_STATE=needs-user-input"
+  echo "Brak FEATURE_PATH i brak kandydatów w diff'ie."
+fi
 ```
+
+> **⛔ STOP-GATE dla agenta** (czytaj wynik bash bloku powyżej):
+>
+> - **`FEATURE_URL_STATE=set`** → kontynuuj do 7.8.5.
+> - **`FEATURE_URL_STATE=needs-user-pick`** → **NIE kontynuuj do 7.8.5**. Wypisz w chacie
+>   listę kandydatów i zapytaj usera który ekran chce zobaczyć. Po odpowiedzi zsetuj
+>   `FEATURE_PATH=<wybrana ścieżka>` i re-run blok 7.8.4.
+> - **`FEATURE_URL_STATE=needs-user-input`** → **NIE kontynuuj do 7.8.5**. Wypisz w chacie
+>   pytanie: „Pod jakim URL feature jest dostępny? (np. /schrony/lista)". Po odpowiedzi
+>   zsetuj `FEATURE_PATH` i re-run blok 7.8.4.
+>
+> **Powód twardego gate'u:** default na `/` produkuje preview homepage/login redirect —
+> bezużyteczny dla M+ feature review, a koszt jest pełen cykl (60s server start, browser
+> launch, screenshot, cleanup). Tańszy jest 1 chat-question niż 1 zmarnowany preview cycle.
+> Gate jest invariantem workflow — bypass mode go NIE omija (to nie permission prompt,
+> tylko logiczna decyzja agenta).
 
 ### 7.8.5 Open in Playwright Chrome (preferowane)
 
@@ -1071,6 +1098,7 @@ echo "Feature URL: $FEATURE_URL"
 # Heredoc 'EOF' (single-quoted) → shell NIE interpoluje, JS template-literals działają.
 cat > "/tmp/preview-${PLAN_NUM}.mjs" <<'EOF'
 import { chromium } from 'playwright';
+import { writeFileSync } from 'node:fs';
 
 const url = process.env.FEATURE_URL;
 const out = process.env.SCREENSHOT_PATH;
@@ -1080,6 +1108,9 @@ const browser = await chromium.launch({ headless: false });
 
 // SIGTERM/SIGINT handler — zapewnia że Chromium zostanie zamknięty po `kill $PW_PID`,
 // a nie osierocony jako zombie.
+// UWAGA: SIGKILL (`kill -9`) bypassuje ten handler — wtedy browser może zostać sierotą
+// i 7.8.8 polega na port-level kill (lsof/fuser) jako safety net dla node, ale dla
+// orphan Chromium na macOS może wymagać manual `pkill -f "Google Chrome for Testing"`.
 const cleanup = async () => {
   try { await browser.close(); } catch {}
   process.exit(0);
@@ -1093,8 +1124,8 @@ await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
 await page.screenshot({ path: out, fullPage: true });
 
 // Marker file → shell może deterministycznie czekać aż screenshot jest na dysku
-// (zamiast `sleep 5` race condition).
-import { writeFileSync } from 'node:fs';
+// (zamiast `sleep 5` race condition). writeFileSync z 2-byte payload jest atomowy
+// na ext4/tmpfs/APFS dla single-block writes.
 writeFileSync(ready, 'ok');
 
 console.log(`Screenshot: ${out}`);
@@ -1185,7 +1216,11 @@ Sam `kill $DEV_PID` zabija tylko parent → dzieci osierocone, port wciąż zaj�
 [ -n "${DEV_PID:-}" ] && kill -TERM -"$DEV_PID" 2>/dev/null   # negative = grupa
 sleep 2
 
-# (2) Force — jeśli SIGTERM nie zadziałał na grupie
+# (2) Force — jeśli SIGTERM nie zadziałał na grupie.
+# UWAGA: SIGKILL na Playwright bypassuje SIGTERM handler w ESM script — Chromium może
+# zostać orphan'em. Jeśli kolejne preview cykle zaczynają wolno startować lub widzisz
+# zombies w `ps aux | grep "Chrome for Testing"`, użyj manual: `pkill -f "Chrome for Testing"`
+# (macOS) lub `pkill -f chromium` (Linux).
 [ -n "${PW_PID:-}" ] && kill -9 "$PW_PID" 2>/dev/null
 [ -n "${DEV_PID:-}" ] && kill -9 -"$DEV_PID" 2>/dev/null
 
