@@ -231,7 +231,7 @@ fi
    na Firefox bo Chromium niedostępny, dodaj do raportu Phase 7 linijkę „⚠️ E2E na firefox
    (chromium niedostępny w środowisku) — Chromium-specific bugi nie zostaną złapane".
 
-#### 5.2.5 Tier 3: chrome-devtools-mcp (real Chrome przez MCP plugin)
+#### 5.3 Tier 3: chrome-devtools-mcp (real Chrome przez MCP plugin)
 
 Gdy brak `@playwright/test` w deps lub Tier 2 install zawodzi (np. korporacyjny proxy bez
 dostępu do `playwright.azureedge.net`), użyj pluginu `chrome-devtools-mcp` —
@@ -240,9 +240,18 @@ dostępu do `playwright.azureedge.net`), użyj pluginu `chrome-devtools-mcp` —
 **Preflight:**
 
 ```bash
-CDM_ENABLED=$(jq -r '.enabledPlugins["chrome-devtools-mcp@claude-plugins-official"] // false' \
-  ~/.claude/settings.json 2>/dev/null)
-[ "$CDM_ENABLED" = "true" ] || { echo "SKIP — plugin niedostępny, eskalacja do Tier 4"; }
+CDM_ENABLED="false"
+if [ -f ~/.claude/settings.json ]; then
+  CDM_ENABLED=$(jq -r '.enabledPlugins["chrome-devtools-mcp@claude-plugins-official"] // false' \
+    ~/.claude/settings.json 2>/dev/null || echo "false")
+fi
+if [ "$CDM_ENABLED" != "true" ]; then
+  echo "SKIP Tier 3 — plugin chrome-devtools-mcp niedostępny, eskalacja do Tier 4"
+  # NIE używamy `exit` w skillu (sekcja referencyjna, nie samodzielny skrypt).
+  # Agent powinien rozpoznać `SKIP Tier 3` i przejść do Tier 4 zamiast wykonywać
+  # bloki MCP poniżej. W praktyce: ten blok kończy testing-protocol.md zakres
+  # Tier 3 — kolejny blok kodu rozpoczyna Tier 4.
+fi
 ```
 
 **Realizacja AC-F z Tier 3 (per AC z DoD):**
@@ -278,7 +287,26 @@ mcp__plugin_chrome-devtools-mcp_chrome-devtools__take_snapshot         ← DOM s
 Tier 1 zawsze szybszy (parallel, fixtures, retry, sharding) — Tier 3 to lifeboat dla
 środowisk gdzie Playwright nie startuje, nie default.
 
-#### 5.3 Co MUSI pokrywać E2E
+#### 5.4 Tier 4: Playwright CLI z innym browser'em (firefox/webkit)
+
+Ostatnia ścieżka — gdy Tier 1-3 fail (brak Chromium binary, brak install permissions,
+brak `chrome-devtools-mcp` pluginu). Realizacja jest opisana w sekcji 5.2 (CLI fallback)
+— ten sam mechanizm `playwright install` + automatyczna detekcja dostępnego browser'a
+w cache i odpalenie testów na firefox/webkit.
+
+**Reguły Tier 4:**
+
+1. **Jawnie raportuj który browser** odpalił testy w Phase 7 i Phase 8 CR
+   (`E2E: 5 passed via firefox — chromium niedostępny`).
+2. **Trace + screenshot przy failure** (`--trace=retain-on-failure --screenshot=only-on-failure`)
+   — bez headed Chromium dowód jest jedynym śladem do triagu.
+3. **Dla L raportuj fallback explicit do usera** (jak w 5.2 reguła 5) — Chromium-specific
+   bugi nie zostaną złapane.
+
+> Tier 4 to ten sam runtime co Tier 1/2 (Playwright), różni się tylko `--project=firefox`
+> zamiast `chromium`. Spec'i z Tier 1 nie wymagają zmian — Playwright projects są multi-browser.
+
+#### 5.5 Co MUSI pokrywać E2E
 
 - **Golden path** — najważniejsza ścieżka happy z DoD.
 - **1 boundary** (M) lub **2–3 boundaries** (L) — pusta lista, max length, granice paginacji.

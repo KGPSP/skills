@@ -127,9 +127,12 @@ Phase 5.7 użyje wyniku do propozycji autonomicznego trybu (Phase 6-Ralph).
 RALPH_CACHED=0
 ls ~/.claude/plugins/cache/claude-plugins-official/ralph-loop/ >/dev/null 2>&1 && RALPH_CACHED=1
 
-# (2) Aktywny w settings.json (enabledPlugins)
-RALPH_ENABLED=$(jq -r '.enabledPlugins["ralph-loop@claude-plugins-official"] // false' \
-  ~/.claude/settings.json 2>/dev/null)
+# (2) Aktywny w settings.json (enabledPlugins) — guard gdy plik nie istnieje
+RALPH_ENABLED="false"
+if [ -f ~/.claude/settings.json ]; then
+  RALPH_ENABLED=$(jq -r '.enabledPlugins["ralph-loop@claude-plugins-official"] // false' \
+    ~/.claude/settings.json 2>/dev/null || echo "false")
+fi
 
 # (3) Setup script dostępny (executable test)
 RALPH_SCRIPT=$(find ~/.claude/plugins/cache/claude-plugins-official/ralph-loop \
@@ -157,8 +160,8 @@ Wypisz do użytkownika **tylko gdy `RALPH_AVAILABLE=1`** (cisza gdy 0 — by nie
 ### 0.6 Bypass mode hint (długie Phase 6)
 
 Dla planów rozmiaru **L** lub 6-Teams (≥ 3 teammates) Phase 6 będzie wywołać dziesiątki
-permission prompts (Bash dla ORM/git, Write dla każdego pliku, TaskCreate). Aby uniknąć
-wybijania flow, wypisz do użytkownika **miękką** sugestię:
+permission prompts (Bash dla ORM/git, Write dla każdego pliku, TodoWrite na każdą zmianę
+statusu). Aby uniknąć wybijania flow, wypisz do użytkownika **miękką** sugestię:
 
 ```
 🔓 Phase 6 dla planu rozmiaru L wykona ~30+ tool calls. Rozważ uruchomienie
@@ -670,10 +673,26 @@ Pomiń Phase 5.7 całkowicie (idź do Phase 6.−1) gdy:
 
 ### 5.7.4 Auto-compute max-iterations
 
+**Najpierw wyciągnij z planu zmienne** (używane w 5.7.4 + Phase 6R.2 prompt). Robisz to **raz**
+po Phase 5 approval — wszystkie kolejne fazy je dziedziczą:
+
 ```bash
-# Heurystyka: liczba zadań × 2 (każde może wymagać fix loop) + buffer per zakres testu
-TASK_COUNT=$(grep -cE '^[0-9]+\.' <<< "$(awk '/^## Zadania/,/^## /' "$PLAN_FILE")")
-TEST_SCOPES=$(case "$PLAN_SIZE" in S) echo 4;; M) echo 5;; L) echo 7;; esac)
+# PLAN_FILE — z Phase 5 (np. docs/plany/042-shelter-list.md)
+PLAN_SIZE=$(awk '/^## Rozmiar featuru/{getline; print; exit}' "$PLAN_FILE" | grep -oE '\b[SML]\b' | head -1)
+SLUG=$(basename "$PLAN_FILE" .md | sed -E 's/^[0-9]+-//')
+FEATURE_NAME=$(head -1 "$PLAN_FILE" | sed -E 's/^# *[0-9]+ *- *//')
+echo "PLAN_SIZE=$PLAN_SIZE  SLUG=$SLUG  FEATURE_NAME=$FEATURE_NAME"
+
+# Sanity — wszystkie trzy zmienne MUSZĄ być ustawione
+[ -z "$PLAN_SIZE" ] && { echo "⚠️  PLAN_SIZE niewykryty — uzupełnij w planie sekcję 'Rozmiar featuru'"; PLAN_SIZE="M"; }
+[ -z "$SLUG" ]      && { echo "❌ SLUG pusty — niemożliwy do wyciągnięcia z $PLAN_FILE"; exit 1; }
+[ -z "$FEATURE_NAME" ] && FEATURE_NAME="(unnamed)"
+
+# Heurystyka: liczba zadań × 2 (każde może wymagać fix loop) + buffer per zakres testu.
+# `awk` z exclusive boundaries (p flag) — drukuje TYLKO linie *między* "## Zadania" a kolejnym
+# "## ", bez nagłówków. Bez tego inclusive range łapał header'y i zawyżał TASK_COUNT.
+TASK_COUNT=$(awk '/^## Zadania/{p=1; next} /^## /{p=0} p' "$PLAN_FILE" | grep -cE '^[0-9]+\.')
+TEST_SCOPES=$(case "$PLAN_SIZE" in S) echo 4;; M) echo 5;; L) echo 7;; *) echo 5;; esac)
 RALPH_MAX_ITER=$(( TASK_COUNT * 2 + TEST_SCOPES * 3 ))
 # Twardy clamp [10, 60] — < 10 nie złapie iteracji, > 60 to pewnie zły plan
 [ "$RALPH_MAX_ITER" -lt 10 ] && RALPH_MAX_ITER=10
@@ -686,7 +705,16 @@ naturalnym językiem („zmień na 30").
 
 ### 5.7.5 Set state for Phase 6 routing
 
+**Najpierw zmapuj odpowiedź użytkownika z 5.7.3** na zmienną `RALPH_DECISION`:
+
 ```bash
+# Mapowanie odpowiedzi z propose (5.7.3) — agent musi to ustawić explicit:
+#   user kliknął "✅ Tak" / "Tak" / "yes" / "ok" / akceptacja            → RALPH_DECISION="yes"
+#   user kliknął "❌ Nie" / "Nie" / "no" / brak odpowiedzi w 60s         → RALPH_DECISION="no"
+# Bez explicit przypisania ten blok cicho ustawi RALPH_MODE=0 (default no).
+RALPH_DECISION="${RALPH_DECISION:-no}"   # safe default jeśli zmienna pusta
+echo "RALPH_DECISION=$RALPH_DECISION"
+
 if [ "$RALPH_DECISION" = "yes" ]; then
   RALPH_MODE=1
   echo "✅ 6-Ralph mode aktywne — Phase 6.0 routing pominie 6-Sequential / 6-Teams"
@@ -753,6 +781,33 @@ context7: tailwindcss@4 — @theme directive (zadanie 4)
 
 **Decyzja na wejściu (z Phase 0.4 + Phase 4 + Phase 5.7):**
 
+```bash
+# Hard assert — zmienne MUSZĄ być ustawione przed routingiem (defaulty defensywne).
+RALPH_MODE="${RALPH_MODE:-0}"
+TEAMS_ENABLED="${TEAMS_ENABLED:-0}"
+
+# Mutual exclusion — RALPH_MODE wygrywa z TEAMS_ENABLED (5.7.5 reguła twarda).
+# Jeśli oba ustawione na 1 (np. agent zapomniał wyzerować TEAMS po Phase 5.7), to bug
+# w workflow — wymuś ralph i zaloguj ostrzeżenie.
+if [ "$RALPH_MODE" = "1" ] && [ "$TEAMS_ENABLED" = "1" ]; then
+  echo "⚠️  RALPH_MODE=1 AND TEAMS_ENABLED=1 — egzekwuję mutual exclusion (ralph wygrywa)"
+  TEAMS_ENABLED=0
+fi
+
+# Sprawdź czy plan ma ≥ 2 parallel-groups (warunek Teams)
+PARALLEL_GROUPS_COUNT=$(awk '/^## Zadania/{p=1; next} /^## /{p=0} p' "$PLAN_FILE" \
+  | grep -oE 'parallel-group: [a-z-]+' | sort -u | wc -l)
+
+if [ "$RALPH_MODE" = "1" ]; then
+  ROUTE="6-Ralph"
+elif [ "$TEAMS_ENABLED" = "1" ] && [ "$PARALLEL_GROUPS_COUNT" -ge 2 ]; then
+  ROUTE="6-Teams"
+else
+  ROUTE="6-Sequential"
+fi
+echo "🛣️  Routing decision: $ROUTE  (RALPH_MODE=$RALPH_MODE, TEAMS_ENABLED=$TEAMS_ENABLED, parallel_groups=$PARALLEL_GROUPS_COUNT)"
+```
+
 Trzy ścieżki, w kolejności priorytetu:
 
 1. `RALPH_MODE=1` (Phase 5.7 user accepted) → **PHASE 6-Ralph** (autonomous loop)
@@ -761,6 +816,7 @@ Trzy ścieżki, w kolejności priorytetu:
 
 > **Mutual exclusion:** 6-Ralph wyklucza 6-Teams (Phase 5.7.5 reguła twarda). User wybiera
 > jedno z dwóch dla L-size: paralelizm leadem (Teams) **lub** autonomiczny loop (Ralph).
+> Hard assert powyżej egzekwuje to nawet gdy obie zmienne wpadną w stan `=1`.
 
 Wypisz do użytkownika która ścieżka:
 
@@ -806,14 +862,22 @@ fi
 ### 6.1 Task registration & Progress Board
 
 **① Zarejestruj zadania w harness task system** — przed pierwszą implementacją wywołaj
-**TaskCreate** raz per zadanie z planu (numeracja jak w Phase 4 „Zadania"):
+**TodoWrite** **raz** z całą listą zadań planu (numeracja jak w Phase 4 „Zadania"):
 
 ```
-TaskCreate per zadanie z planu:
-  - title: "[1] [Task Name]"          status: pending
-  - title: "[2] [Task Name]"          status: pending
-  ...
+TodoWrite({
+  todos: [
+    { content: "[1] <Task Name>", activeForm: "Wykonuję [1] <Task Name>", status: "pending" },
+    { content: "[2] <Task Name>", activeForm: "Wykonuję [2] <Task Name>", status: "pending" },
+    ...
+  ]
+})
 ```
+
+> **Architektura tooli:** harness Claude Code ma **jeden** tool — `TodoWrite` — który
+> nadpisuje całą listę todo. Nie ma `TaskCreate` per zadanie ani `TaskUpdate(taskId, ...)`.
+> Każda zmiana statusu = **kolejne wywołanie TodoWrite z całą listą**, w której zmieniony
+> jest status pojedynczego zadania. Trzymaj cache listy w pamięci między wywołaniami.
 
 To daje harness'owi widoczność progresu (UI checklisty + protection przed compaction
 długiej sesji). Inline chat-checkbox to **uzupełnienie**, nie zamiennik.
@@ -830,7 +894,9 @@ Gałąź: `plan/PLAN_NUM-[slug]`  |  CR backend: `${CR_BACKEND}`
 
 ### 6.2 Per-Task Loop
 
-**① Header + TaskUpdate(in_progress)** — `### ⏳ [n/total] [Task Name]` + `TaskUpdate(taskId_n, status=in_progress)`
+**① Header + TodoWrite(task n → in_progress)** — `### ⏳ [n/total] [Task Name]` + wywołanie
+`TodoWrite` z całą listą gdzie task `n` ma `status: "in_progress"`, reszta zachowuje swój
+poprzedni status (`pending` lub `completed`).
 
 **② Implement** — tylko pliki z „Relevant files". Mirror wzorców z Analysis Report. Zero TODO/stubów/debug logów.
 
@@ -871,7 +937,9 @@ git commit -m "[type](plan-PLAN_NUM): [imperative description]"
 
 Typy: `feat` (+ migracje) · `fix` · `refactor` · `build` · `chore` (tylko nieprodukcyjne).
 
-**⑥ Report + TaskUpdate(completed) + checklist update** — `TaskUpdate(taskId_n, status=completed)` po zielonym validate i commicie. Bez completed-update zadanie wisi `in_progress` w harness UI.
+**⑥ Report + TodoWrite(task n → completed) + checklist update** — wywołaj `TodoWrite`
+z całą listą gdzie task `n` ma `status: "completed"` (po zielonym validate i commicie).
+Bez completed-update zadanie wisi `in_progress` w harness UI.
 
 ### 6.3 Blocker Protocol
 
@@ -952,15 +1020,23 @@ pwd
 
 ### 6T.2 Spawn the team
 
-**Najpierw — TaskCreate per zadanie z planu** (lead rejestruje wszystkie, każdy taskId zostanie
-wpisany w spawn prompt teammate'a, który nim zarządza):
+**Najpierw — TodoWrite z całą listą zadań planu** (lead rejestruje wszystkie raz; teammate
+jest opisany w `content` jako tag `(assignee: <name>)`, bo TodoWrite nie ma pola assignee):
 
 ```
-TaskCreate per zadanie:
-  - "[1] [Task Name]"  status: pending  (assignee: backend-dev)
-  - "[2] [Task Name]"  status: pending  (assignee: frontend-dev)
-  ...
+TodoWrite({
+  todos: [
+    { content: "[1] <Task Name> (assignee: backend-dev)",  activeForm: "...", status: "pending" },
+    { content: "[2] <Task Name> (assignee: frontend-dev)", activeForm: "...", status: "pending" },
+    ...
+  ]
+})
 ```
+
+> **Uwaga lead:** TodoWrite jest globalny dla sesji lead'a. Teammates nie mają dostępu do
+> tej listy (są w osobnych kontekstach). Lead aktualizuje listę gdy teammate raportuje
+> commit — i robi to przez **kolejny TodoWrite z całą listą**, w której task `n` zmienia
+> status na `completed`.
 
 Następnie wywołaj **jedną wiadomością** spawn-prompt (lead = bieżąca sesja):
 
@@ -1003,9 +1079,9 @@ W trakcie pracy teammates lead (Ty) **MUSI**:
    to konsumował, lead decyduje i mówi obu.
 3. **Approve plan-mode entries** — jeśli teammate wchodzi w plan-mode (np. nietrywialna
    migracja), zrewiduj względem feature-planu, approve/reject explicitly.
-4. **Update progress board + TaskUpdate** w user-facing chat po każdym ukończonym tasku.
-   Lead wywołuje `TaskUpdate(taskId, status=completed)` gdy teammate zaraportuje commit
-   (teammate nie ma access do harness task system leada — to zadanie leada):
+4. **Update progress board + TodoWrite** w user-facing chat po każdym ukończonym tasku.
+   Lead wywołuje `TodoWrite` z całą listą (gdzie task `n` zmienia status na `completed`)
+   gdy teammate zaraportuje commit (teammate nie ma access do TodoWrite leada — to zadanie leada):
 
    ```
    ## 🚀 Implementacja — Plan #PLAN_NUM (Teams)
@@ -1088,7 +1164,13 @@ i powiedz userowi co naprawić.**
 
 ```bash
 # (1) Bypass mode aktywny (settings.json defaultMode lub --dangerously-skip-permissions)
-DEFAULT_MODE=$(jq -r '.permissions.defaultMode // "default"' ~/.claude/settings.json 2>/dev/null)
+# Guard: gdy ~/.claude/settings.json nie istnieje, jq zwróci "" zamiast "default" (// działa
+# tylko na null, nie na brak inputu). Domyślny tryb potraktuj jak "default" (= NIE bypass).
+DEFAULT_MODE="default"
+if [ -f ~/.claude/settings.json ]; then
+  DEFAULT_MODE=$(jq -r '.permissions.defaultMode // "default"' ~/.claude/settings.json 2>/dev/null || echo "default")
+  [ -z "$DEFAULT_MODE" ] && DEFAULT_MODE="default"
+fi
 if [ "$DEFAULT_MODE" != "bypassPermissions" ] && [ -z "${CLAUDE_DANGEROUSLY_SKIP_PERMISSIONS:-}" ]; then
   echo "❌ Ralph-loop wymaga bypass mode. Ustaw:"
   echo '   ~/.claude/settings.json: {"permissions": {"defaultMode": "bypassPermissions"}}'
@@ -1112,8 +1194,11 @@ if [ "$HAS_TESTS" = "0" ]; then
   exit 1
 fi
 
-# (5) TaskCreate registry (jak w 6.1) — Ralph aktualizuje progress per iteration
+# (5) TodoWrite registry (jak w 6.1) — przed launch'em loop'a wywołaj TodoWrite raz
+#     z całą listą zadań planu. Loop nie potrafi tego zrobić sam (brak chat memory między
+#     iteracjami) — lead operator musi to zrobić TUTAJ, przed `/ralph-loop`.
 echo "✅ Pre-flight invariants OK — ready dla /ralph-loop"
+echo "   → wywołaj teraz TodoWrite z listą zadań planu (jak w Phase 6.1 ①)"
 ```
 
 ### 6R.2 Build the ralph prompt
@@ -1123,14 +1208,23 @@ wszystko, co Claude potrzebuje, by kontynuować od stanu git/plików (bez chat m
 
 ```bash
 RALPH_PROMPT_FILE="/tmp/ralph-prompt-${PLAN_NUM}.txt"
+# Ścieżki absolutne — loop wywoływany z różnych cwd (worktree, /tmp). Bez absolute path
+# `references/testing-protocol.md` szukany byłby względem cwd loop'a, nie repo.
+REPO_ROOT=$(git rev-parse --show-toplevel)
+TESTING_PROTOCOL="${REPO_ROOT}/references/testing-protocol.md"
+# Fallback: skill może być w innym repo niż feature; szukamy testing-protocol.md w cache:
+[ -f "$TESTING_PROTOCOL" ] || TESTING_PROTOCOL=$(find ~/.claude/plugins -name testing-protocol.md -path "*feature-planner*" 2>/dev/null | head -1)
+[ -f "$TESTING_PROTOCOL" ] || TESTING_PROTOCOL="<podaj absolutną ścieżkę do testing-protocol.md>"
+
 cat > "$RALPH_PROMPT_FILE" <<EOF
 # Ralph-loop iteration — Plan #${PLAN_NUM}: ${FEATURE_NAME}
 
 ## State recovery (read FIRST every iteration)
-1. Read \`docs/plany/${PLAN_NUM}-${SLUG}.md\` — plan + DoD + Założenia + OOS + Tasks
-2. Read \`docs/code-reviews/AC-${PLAN_NUM}-${SLUG}.md\` if exists — AC priorytety
+1. Read \`${REPO_ROOT}/docs/plany/${PLAN_NUM}-${SLUG}.md\` — plan + DoD + Założenia + OOS + Tasks
+2. Read \`${REPO_ROOT}/docs/code-reviews/AC-${PLAN_NUM}-${SLUG}.md\` **if exists** — AC priorytety (powstaje w Phase 8.1, w Phase 6 zwykle brak — wtedy pomiń)
 3. Run \`git log --grep="plan-${PLAN_NUM}" --oneline\` — co już zaimplementowane
-4. Run \`TaskList\` (harness) — taski w in_progress/completed
+4. Wywołaj \`TodoWrite\` ze stanem listy z poprzedniej iteracji **tylko jeśli musisz coś zmienić**
+   (lista jest persystentna w harness UI między iteracjami; możesz ją zobaczyć w UI)
 5. Run \`git status\` + \`git diff\` — co w toku, co dirty
 
 ## Loop body (per iteration)
@@ -1155,27 +1249,35 @@ npm run typecheck && npm run lint   # albo: npx tsc --noEmit && npm run lint
 # Commit (NIGDY git add -A)
 git add <relevant-files-only>
 git commit -m "[type](plan-${PLAN_NUM}): <imperative description>"
-
-# TaskUpdate
-TaskUpdate(taskId, status=completed)
 \`\`\`
 
-Jeśli typecheck/lint fail → **NIE commituj**, fix w next iteration.
+Po commicie wywołaj **TodoWrite** z całą listą zadań — task aktualny zmień na
+\`status: "completed"\`, reszta zachowuje swój status. (Listę widziałeś w state recovery 4
+albo w pierwszej iteracji w Phase 6R.1 ⑤ pre-flight registry.)
+
+Jeśli typecheck/lint fail → **NIE commituj** i **NIE zmieniaj TodoWrite** (task zostaje
+\`in_progress\`), fix w next iteration.
 
 ### Step 4 — Test gate (gdy wszystkie zadania committed)
-Uruchom 7 zakresów wg matrycy S/M/L (\`references/testing-protocol.md\`):
+Uruchom 7 zakresów wg matrycy S/M/L (zob. \`${TESTING_PROTOCOL}\`):
 - unit + integration + acceptance + regression (zawsze)
-- system + E2E (M+) — E2E przez \`npx playwright test --project=chromium\`
+- system + E2E (M+) — E2E hierarchia Tier 1-4 (Playwright Chromium → install → chrome-devtools-mcp → CLI fallback)
 - perf + security (L zawsze, M jeśli AC-N)
 
 Jeśli któryś zakres czerwony → **NIE wystawiaj promise**, fix w next iteration.
 
 ### Step 5 — Promise
 Tylko gdy:
-✅ Wszystkie taski z planu completed (git log + TaskList)
+✅ Wszystkie taski z planu completed (git log + TodoWrite list status)
 ✅ typecheck + lint zielone
 ✅ Wszystkie wymagane zakresy testów zielone
-✅ Każdy AC MUST z \`AC-${PLAN_NUM}-${SLUG}.md\` ma PASS verdict (test::name istnieje)
+✅ Każdy DoD bullet z \`docs/plany/${PLAN_NUM}-${SLUG}.md\` (sekcja "Definition of Done") ma test/dowód
+   pokrywający go w git history (test::name w komicie testowym)
+
+> **Uwaga o AC:** plik \`docs/code-reviews/AC-${PLAN_NUM}-${SLUG}.md\` powstaje **w Phase 8.1**,
+> nie w Phase 6. W Phase 6-Ralph zwykle go nie ma — **pomijamy jego sprawdzenie** w Step 5
+> (zamiast tego polegamy na DoD z planu, który istnieje od Phase 4). Sprawdzaj AC tylko
+> jeśli plik faktycznie istnieje (rerun Phase 6 po Phase 8 fix loop).
 
 Wtedy wystaw EXACTLY:
 <promise>FEATURE_DONE</promise>
@@ -1246,8 +1348,16 @@ grep -E '^iteration:|^completed_at:' .claude/ralph-loop.local.md
 # Verify ostatni commit
 git log --oneline -5
 
-# Czy harness task list = wszystkie completed?
-# (TaskList tool — ręcznie sprawdź w UI lub wywołaj listę)
+# Sprawdź TodoWrite list w harness UI — wszystkie zadania powinny być completed.
+# (Lista jest persystentna w sesji; sprawdź wizualnie w checklist UI lub wywołaj
+#  TodoWrite z bieżącym stanem żeby zobaczyć jak wygląda zarejestrowana lista.)
+
+# State persistence — zapisz że Phase 6 było 6-Ralph (czytane przez Phase 7.6 skip rule)
+mkdir -p .claude
+RALPH_STATE_FILE=".claude/plan-${PLAN_NUM}.state"
+echo "RALPH_USED=1" > "$RALPH_STATE_FILE"
+echo "RALPH_COMPLETED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$RALPH_STATE_FILE"
+echo "✅ Zapisano $RALPH_STATE_FILE — Phase 7.6 skip rule będzie aktywna"
 ```
 
 Po completion idź do **Phase 7.8** (live preview, jeśli plan ma UI) → **Phase 8** (code review).
@@ -1323,15 +1433,22 @@ matryca S/M/L, kolejność wykonania, fallback Playwright CLI gdy brak Chromium.
 PW_INSTALLED=0
 [ -f package.json ] && jq -e '.devDependencies["@playwright/test"] // .dependencies["@playwright/test"]' package.json >/dev/null 2>&1 && PW_INSTALLED=1
 
-# Czy Chromium download dostępny? (cache lub freshly installable)
+# Czy Chromium binary jest w cache? Playwright cache'uje binaria w deterministycznych ścieżkach:
+#   - Linux:   ~/.cache/ms-playwright/chromium-*
+#   - macOS:   ~/Library/Caches/ms-playwright/chromium-*
+#   - override: $PLAYWRIGHT_BROWSERS_PATH (jeśli ustawione)
+# Sprawdzamy fizyczną obecność katalogu zamiast nieistniejącego `playwright install --dry-run`.
 PW_CHROMIUM_OK=0
-npx playwright --version >/dev/null 2>&1 && {
-  npx playwright install --dry-run chromium 2>/dev/null | grep -qi 'already installed' && PW_CHROMIUM_OK=1
-}
+PW_CACHE="${PLAYWRIGHT_BROWSERS_PATH:-$HOME/.cache/ms-playwright}"
+[ -d "$HOME/Library/Caches/ms-playwright" ] && PW_CACHE="$HOME/Library/Caches/ms-playwright"
+ls -d "$PW_CACHE"/chromium-* >/dev/null 2>&1 && PW_CHROMIUM_OK=1
 
-# Czy chrome-devtools-mcp plugin aktywny?
-CDM_ENABLED=$(jq -r '.enabledPlugins["chrome-devtools-mcp@claude-plugins-official"] // false' \
-  ~/.claude/settings.json 2>/dev/null)
+# Czy chrome-devtools-mcp plugin aktywny? (settings.json może nie istnieć — fallback "false")
+CDM_ENABLED="false"
+if [ -f ~/.claude/settings.json ]; then
+  CDM_ENABLED=$(jq -r '.enabledPlugins["chrome-devtools-mcp@claude-plugins-official"] // false' \
+    ~/.claude/settings.json 2>/dev/null || echo "false")
+fi
 
 echo "PW_INSTALLED=$PW_INSTALLED  PW_CHROMIUM_OK=$PW_CHROMIUM_OK  CDM_ENABLED=$CDM_ENABLED"
 ```
@@ -1367,6 +1484,22 @@ unit → typecheck/lint/build → integration → system → acceptance → E2E 
 `test::unit`, `test::e2e`, `test::security`, `manual::e2e`, `manual::`) teraz, wpisuj do
 trace matrix w Phase 8.
 
+**Loguj wyjścia testów do plików** — Phase 7.6 (opcjonalny ralph-loop test-fix) potrzebuje
+listy czerwonych testów **bez ponownego uruchomienia** (re-run kosztuje czas + ma efekty
+uboczne na DB/auth state). Standardowe ścieżki:
+
+```bash
+# Unit + integration (Vitest/Jest)
+npm test 2>&1 | tee /tmp/test-unit-${PLAN_NUM}.log
+# E2E (Playwright)
+npx playwright test --project=chromium --reporter=line 2>&1 | tee /tmp/test-e2e-${PLAN_NUM}.log
+# Pythonowy odpowiednik
+pytest 2>&1 | tee /tmp/test-pytest-${PLAN_NUM}.log
+```
+
+> **Reguła twarda:** logi `/tmp/test-*-${PLAN_NUM}.log` muszą istnieć przed wejściem w Phase 7.6.
+> Jeśli ich nie ma, Phase 7.6 nie ma czego parsować — wraca do manualnego fix loop'a.
+
 ---
 
 ## PHASE 7.6 — RALPH-LOOP TEST-FIX (opcjonalny)
@@ -1380,23 +1513,57 @@ Po Phase 7 test gate, **przed** Phase 7.8. Aktywuje się **tylko gdy oba spełni
 
 **Skip rules (cisza, idź do 7.8 lub fix-loop ręcznie):**
 
+```bash
+# Sprawdź state file z Phase 6R.5 — czy Phase 6 było 6-Ralph?
+RALPH_STATE_FILE=".claude/plan-${PLAN_NUM}.state"
+RALPH_USED_PHASE6=0
+[ -f "$RALPH_STATE_FILE" ] && grep -q "RALPH_USED=1" "$RALPH_STATE_FILE" && RALPH_USED_PHASE6=1
+
+# Skip Phase 7.6 jeśli któreś:
+[ "$RALPH_AVAILABLE" = "0" ]   && { echo "SKIP 7.6 — RALPH_AVAILABLE=0, manualny fix"; SKIP_76=1; }
+[ "$PLAN_SIZE" = "S" ]         && { echo "SKIP 7.6 — S-size, manualny fix prostszy"; SKIP_76=1; }
+[ "$RALPH_USED_PHASE6" = "1" ] && { echo "SKIP 7.6 — Phase 6 było 6-Ralph (loop już iterował na test gate); fix manualnie"; SKIP_76=1; }
+```
+
 - `RALPH_AVAILABLE=0` → klasyczny fix loop (manualnie ty / 6-Sequential).
 - Czerwone testy = **systemowy bug** (architektura, źle dobrana hipoteza) → ralph-loop nie
   uratuje, **wracaj do Phase 6** lub Phase 2 (re-hypothesize).
 - Plan rozmiar **S** → manualny fix prostszy.
-- Phase 6 było **6-Ralph** → Step 4 prompt'a już iterował na test gate; jeśli i tak czerwone
-  to znaczy że loop wystawił `<promise>FEATURE_DONE</promise>` przedwcześnie (bug w prompt'cie),
-  **NIE re-uruchamiaj loop'a na test-fix**, fix manualnie.
+- Phase 6 było **6-Ralph** (sprawdzane przez `.claude/plan-${PLAN_NUM}.state`) → Step 4
+  prompt'a już iterował na test gate; jeśli i tak czerwone, znaczy że loop wystawił
+  `<promise>FEATURE_DONE</promise>` przedwcześnie (bug w prompt'cie), **NIE re-uruchamiaj
+  loop'a na test-fix**, fix manualnie.
 
-**Build the test-fix prompt:**
+**Build the test-fix prompt** (gdy `SKIP_76` nie ustawione):
 
 ```bash
+[ "${SKIP_76:-0}" = "1" ] && { echo "Phase 7.6 pominięta — przejdź do 7.8 lub manualnie fix"; exit 0; }
+
 RALPH_TESTFIX_PROMPT="/tmp/ralph-testfix-${PLAN_NUM}.txt"
 
-# Zbierz nazwy czerwonych testów (Playwright + Vitest reporter outputs)
-FAILING_TESTS=$(npx playwright test --project=chromium --reporter=line 2>&1 | \
-  grep -E '✗|FAIL' | head -20)
-FAILING_UNIT=$(npm test 2>&1 | grep -E 'FAIL|✗' | head -10)
+# Czytaj logi testów z Phase 7 (NIE re-run — efekty uboczne na DB/auth/rate limiting).
+# Phase 7 obowiązkowo loguje wyniki do /tmp/test-*-${PLAN_NUM}.log.
+TEST_E2E_LOG="/tmp/test-e2e-${PLAN_NUM}.log"
+TEST_UNIT_LOG="/tmp/test-unit-${PLAN_NUM}.log"
+
+if [ ! -f "$TEST_E2E_LOG" ] && [ ! -f "$TEST_UNIT_LOG" ]; then
+  echo "❌ Brak logów Phase 7 — nie mogę zbudować promptu test-fix bez listy failures"
+  echo "   Wróć do Phase 7 i odpal testy z 'tee /tmp/test-*-${PLAN_NUM}.log'"
+  exit 1
+fi
+
+FAILING_TESTS=""
+[ -f "$TEST_E2E_LOG" ]  && FAILING_TESTS+=$(grep -E '✗|FAIL' "$TEST_E2E_LOG"  | head -20)
+FAILING_UNIT=""
+[ -f "$TEST_UNIT_LOG" ] && FAILING_UNIT+=$(grep -E 'FAIL|✗' "$TEST_UNIT_LOG" | head -10)
+
+# Sanity — jeśli logi istnieją ale puste, znaczy testy zielone — Phase 7.6 nie ma sensu
+if [ -z "$FAILING_TESTS$FAILING_UNIT" ]; then
+  echo "✅ Logi Phase 7 nie pokazują czerwonych — Phase 7.6 niepotrzebne, idź do 7.8"
+  exit 0
+fi
+
+REPO_ROOT=$(git rev-parse --show-toplevel)
 
 cat > "$RALPH_TESTFIX_PROMPT" <<EOF
 # Ralph-loop test-fix — Plan #${PLAN_NUM}
@@ -1404,12 +1571,12 @@ cat > "$RALPH_TESTFIX_PROMPT" <<EOF
 Feature jest zaimplementowany ale test gate ma czerwone zakresy. Iteruj fix → re-run aż green.
 
 ## State recovery (per iteration)
-1. \`docs/plany/${PLAN_NUM}-${SLUG}.md\` — plan + DoD
-2. \`docs/code-reviews/AC-${PLAN_NUM}-${SLUG}.md\` — AC priorytety (jeśli jest)
+1. \`${REPO_ROOT}/docs/plany/${PLAN_NUM}-${SLUG}.md\` — plan + DoD
+2. \`${REPO_ROOT}/docs/code-reviews/AC-${PLAN_NUM}-${SLUG}.md\` — AC priorytety (jeśli jest; powstaje w Phase 8.1)
 3. \`git log --grep="plan-${PLAN_NUM}" --oneline\` — co już commitowane
-4. Run \`npm test\` + \`npx playwright test --project=chromium\` — current red/green
+4. Run \`npm test\` + \`npx playwright test --project=chromium\` — current red/green (re-run dopiero po fix'ie, nie w state recovery)
 
-## Failing tests (snapshot at start)
+## Failing tests (snapshot at start — z logów Phase 7)
 \`\`\`
 $FAILING_TESTS
 $FAILING_UNIT
@@ -1956,12 +2123,14 @@ git add "$ADR_FILE"
 git commit -m "docs(plan-${PLAN_NUM}): ADR — [kebab-name decision]"
 ```
 
-### 9.5 Final TaskUpdate
+### 9.5 Final TodoWrite
 
-Po zapisaniu ADR oznacz finalne zadania w harness:
-- `TaskUpdate(taskId_review, status=completed)` (jeśli było)
-- `TaskUpdate(taskId_adr, status=completed)` (jeśli było)
-Lub po prostu sprzątnij listę: `TaskList → TaskUpdate completed` dla wszystkich pozostałych.
+Po zapisaniu ADR wywołaj **TodoWrite** raz z całą listą gdzie **wszystkie** zadania mają
+`status: "completed"` (włączając ewentualne dodatkowe entry "Code review" / "ADR" jeśli były
+dodawane do listy w Phase 8 / 9). To zamyka harness checklist UI dla planu.
+
+Jeśli z jakiegoś powodu lista jest nieaktualna (np. compaction), wywołaj TodoWrite z pustą
+listą `{ todos: [] }` — to czyści tracking dla bieżącej sesji.
 
 ### 9.6 Worktree cleanup reminder (jeśli Phase 5.5 utworzyła worktree)
 
@@ -2022,7 +2191,7 @@ Pomiń tę sekcję jeśli Phase 5.5 nie utworzyła worktree (S-size lub user wyb
 | **Deep research = stock CC + pluginy** | Phase 1.0 — context7 / Explore / defuddle / WebSearch / codex; ZERO Gemini i innych zewnętrznych LLM |
 | **Research lock: max 2 mechanizmy** | Phase 1.0 — research to paliwo, nie cel; loguj w „Research used" |
 | **context7 OBLIGATORYJNIE przed kodem** | Phase 6.−1 — dla każdej external library w planie wywołaj `resolve-library-id` + `query-docs` przed implementacją. Wyniki w chacie. „Pamiętam jak to działa" = czerwona flaga, nie znasz post-cutoff API |
-| **TaskCreate per zadanie** | Phase 6.1 — każde zadanie z planu rejestrowane w harness; TaskUpdate(in_progress) na ⏳, TaskUpdate(completed) po commicie |
+| **TodoWrite z całą listą** | Phase 6.1 — harness Claude Code ma **jeden** tool `TodoWrite` (nie ma TaskCreate/TaskUpdate per task). Każda zmiana statusu = kolejne wywołanie TodoWrite z całą listą; pojedynczy task `n` zmienia status, reszta zachowuje swój. Schema: `{ todos: [{ content, activeForm, status }] }` |
 | **ADR sanity check** | Phase 9.3 — `test -s "$ADR_FILE"` + `grep -c '^## '` ≥ 6 sekcji; brak ADR = brak zamknięcia planu |
 
 ---
@@ -2041,13 +2210,13 @@ Pomiń tę sekcję jeśli Phase 5.5 nie utworzyła worktree (S-size lub user wyb
        → if accepted: `git worktree add ../<repo>-plan-PLAN_NUM-<slug> -b plan/PLAN_NUM-<slug>` → operate w worktree
 [5.7] Ralph-loop decision: S=skip | M=skip | L+test-gate/backend/greenfield=propose (default no) | user explicit "ralph"=propose strongly (default yes)
        → RALPH_MODE=1 wyklucza TEAMS_ENABLED (sequential decision)
-[6]   Pre-flight: context7 docs probe (OBLIGATORYJNE dla każdej external lib) → TaskCreate per zadanie → Routing:
+[6]   Pre-flight: context7 docs probe (OBLIGATORYJNE dla każdej external lib) → TodoWrite z listą zadań → Routing (hard-assert mutual exclusion: RALPH_MODE wygrywa z TEAMS):
         ├─ RALPH_MODE=1                              → PHASE 6-Ralph (autonomous loop)
-        │     └─ 6R.0 git → 6R.1 invariants (bypass+plan+clean+tests) → 6R.2 build prompt → 6R.3 /ralph-loop → 6R.5 promise/cancel
+        │     └─ 6R.0 git → 6R.1 invariants (bypass+plan+clean+tests+TodoWrite) → 6R.2 build prompt (absolute paths) → 6R.3 /ralph-loop → 6R.4 operator role (monitor+blockers, NO impl) → 6R.5 promise/cancel + .claude/plan-N.state file → 6R.6 anti-patterns (no S-size, no mix with Teams, no manual commits during loop)
         ├─ TEAMS_ENABLED=1 + ≥2 parallel-groups → PHASE 6-Teams (auto-size 2–5)
-        │     └─ 6T.0 git → 6T.1 sizing → 6T.2 TaskCreate+spawn → 6T.3 lead TaskUpdate → 6T.5 cleanup
+        │     └─ 6T.0 git → 6T.1 sizing → 6T.2 TodoWrite+spawn → 6T.3 lead TodoWrite (per-task completed) → 6T.5 cleanup
         └─ inaczej                              → PHASE 6-Sequential
-              └─ gałąź plan/PLAN_NUM-slug → per-task: TaskUpdate(in_progress) → impl → ORM → validate → git add jawnie → commit → TaskUpdate(completed)
+              └─ gałąź plan/PLAN_NUM-slug → per-task: TodoWrite(task n→in_progress) → impl → ORM → validate → git add jawnie → commit → TodoWrite(task n→completed)
 [7]   7 zakresów testów: unit | integration | system | acceptance | E2E (Playwright Chromium → install → chrome-devtools-mcp → CLI fallback) | regression | perf+security
       → matryca S/M/L → kolejność wykonania → ⛔ GATE
 [7.6] Ralph-loop test-fix (opcjonalny): RALPH_AVAILABLE=1 + ≥1 czerwony zakres + fixable (nie systemowy bug)
@@ -2055,5 +2224,5 @@ Pomiń tę sekcję jeśli Phase 5.5 nie utworzyła worktree (S-size lub user wyb
 [7.8] Live preview (M+ z UI): detect dev cmd → background server → wait ready → Playwright headed Chromium na FEATURE_URL
        → screenshot + console messages → user wizualnie ✅/🔄 → cleanup (kill dev + browser) — skip dla S i backend-only
 [8]   AC (F/T/N, MUST/SHOULD/COULD, Given-When-Then) → FORK wg $CR_BACKEND → CR report z AC verdict → fix 🔴
-[9]   mkdir -p docs/adr → Write ADR (≥6 sekcji + Parallelization jeśli 6-Teams + Ralph-iterations jeśli 6-Ralph) → sanity check → commit → TaskUpdate(completed)
+[9]   mkdir -p docs/adr → Write ADR (≥6 sekcji + Parallelization jeśli 6-Teams + Ralph-iterations jeśli 6-Ralph) → sanity check → commit → finalne TodoWrite(wszystkie completed)
 ```
