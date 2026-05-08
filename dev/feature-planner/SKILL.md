@@ -1,6 +1,6 @@
 ---
 name: feature-planner-v2
-description: Structured feature implementation workflow (Replit Agent style) with auto Agent Teams routing, /effort max boost, and deep-research probe (context7, Explore, defuddle, WebSearch, codex; ZERO Gemini). Use when the user describes a feature, change, or task in natural language and Claude Code should plan and implement it end-to-end. Triggers: "dodaj feature v2", "zaimplementuj v2", "zrób żeby", "feature planner v2", "implement", "build feature", "add functionality" — or any request mixing planning + parallel/sequential implementation + testing + code review + ADR. Runs: detect env → analysis → hypotheses → plan (docs/plany/) → APPROVAL GATE → implement (sequential or 6-Teams auto-routing 2–5 teammates) → testing (4 layers) → code review → ADR (docs/adr/). Never skip approval gate or code review.
+description: Structured feature implementation workflow (Replit Agent style) with auto Agent Teams routing, /effort max boost, and deep-research probe (context7, Explore, defuddle, WebSearch, codex; ZERO Gemini). Use when the user describes a feature, change, or task in natural language and Claude Code should plan and implement it end-to-end. Triggers: "dodaj feature v2", "zaimplementuj v2", "zrób żeby", "feature planner v2", "implement", "build feature", "add functionality" — or any request mixing planning + parallel/sequential implementation + testing + code review + ADR. Runs: detect env → analysis → hypotheses → plan (docs/plany/) → APPROVAL GATE → implement (sequential or 6-Teams auto-routing 2–5 teammates) → testing (7 zakresów: unit/integration/system/acceptance/E2E-playwright-chrome/regression/perf+security per S/M/L) → code review → ADR (docs/adr/). Never skip approval gate or code review.
 ---
 
 # Feature Planner v2 — Replit Agent Style + Auto Agent Teams + Deep Research
@@ -720,19 +720,39 @@ Dalej → Phase 7 (testing). Testy lecą w sesji lead, nie w teammates — łatw
 
 ## PHASE 7 — TESTING
 
-**Przeczytaj teraz `references/testing-protocol.md`.**
+**Przeczytaj teraz `references/testing-protocol.md`** — pełna definicja 7 zakresów testów,
+matryca S/M/L, kolejność wykonania, fallback Playwright CLI gdy brak Chromium.
 
-| Rozmiar | Unit | Integration | E2E playwright | E2E chrome-devtools-mcp |
-|---------|------|-------------|----------------|--------------------------|
-| **S** | ✅ | ✅ | ⏭️ | ⏭️ |
-| **M** | ✅ | ✅ | ✅ | ⏭️ |
-| **L** | ✅ | ✅ | ✅ | ✅ |
+**7 zakresów testów (scope-driven):**
 
-Commit: `test(plan-PLAN_NUM): [layer] tests`.
+| # | Zakres | **S** | **M** | **L** |
+|---|--------|:---:|:---:|:---:|
+| 1 | Jednostkowe (czy działa kawałek kodu) | ✅ | ✅ | ✅ |
+| 2 | Integracyjne (czy elementy działają razem) | ✅ | ✅ | ✅ |
+| 3 | Systemowe (czy działa cały system) | ⏭️ | ✅ | ✅ |
+| 4 | Akceptacyjne (czy spełnia wymagania / DoD) | ✅¹ | ✅ | ✅ |
+| 5 | E2E Playwright Chrome (pełna ścieżka usera) | ⏭️ | ✅ | ✅ |
+| 6 | Regresyjne (czy nie zepsuło starego) | ✅ | ✅ | ✅ |
+| 7 | Wydajność + Bezpieczeństwo | ⏭️ | ✅² | ✅ |
 
-**Test gate** — wszystkie wymagane warstwy zielone przed Phase 8.
+¹ Dla **S** akceptacyjne mogą być manualne (procedura z checklistą + adnotacja `manual::` w trace matrix).
+² Dla **M** wymagane jeśli plan ma jakikolwiek AC-N.
 
-**Każdy test mapuje się na konkretny AC** — zbieraj `test::name` teraz, wpisuj do trace matrix w Phase 8.
+**E2E run-mode (zakres 5):**
+
+1. **Preferowane:** `npx playwright test --project=chromium` (real Chromium → łapie Chrome-specific bugi).
+2. **Fallback gdy brak Chromium:** najpierw `npx playwright install chromium --with-deps`,
+   gdy install zawodzi (brak praw / sandbox) → użyj Playwright CLI z dostępnym browserem
+   (firefox/webkit) i **explicit oznacz w raporcie**, jaki browser realnie odpalił.
+   Brak Chromium ≠ skip E2E. Lepiej zielony test na firefox niż pominięty.
+
+Commit: `test(plan-PLAN_NUM): [scope] tests` (np. `test(plan-042): unit + integration shelter validators`).
+
+**Test gate** — wszystkie wymagane zakresy zielone przed Phase 8. Kolejność wykonania:
+unit → typecheck/lint/build → integration → system → acceptance → E2E → regression → perf+security.
+
+**Każdy test mapuje się na konkretny AC** — zbieraj `test::name` (z prefiksem zakresu:
+`test::unit`, `test::e2e`, `test::security`, `manual::`) teraz, wpisuj do trace matrix w Phase 8.
 
 ---
 
@@ -911,7 +931,8 @@ Lub po prostu sprzątnij listę: `TaskList → TaskUpdate completed` dla wszystk
 | **AC SMART-owe** | Testable, Specific, Traceable, Independent |
 | **AC-F = Given-When-Then** | MUST/SHOULD/COULD |
 | **Trace matrix AC ↔ test** | Każdy MUST ma test lub procedurę manualną |
-| **Test gate przed review** | Wymagane warstwy zielone |
+| **Test gate przed review** | 7 zakresów per S/M/L matryca; unit+integration+acceptance+regression zawsze; system+E2E od M; perf+security dla L |
+| **E2E preferuje Chromium** | Phase 7 — `playwright --project=chromium`; fallback: `playwright install` → inny browser; brak Chromium ≠ skip E2E |
 | **Fix 🔴 + AC MUST przed ADR** | Phase 9 dopiero przy zero krytycznych i wszystkich MUST |
 | **PLAN_NUM wszędzie** | Spójny w plikach, commitach, review |
 | **`/effort max` request** | Phase 0.3 — miękka prośba o boost reasoningu, nie blokuje |
@@ -944,7 +965,8 @@ Lub po prostu sprzątnij listę: `TaskList → TaskUpdate completed` dla wszystk
         │     └─ 6T.0 git → 6T.1 sizing → 6T.2 TaskCreate+spawn → 6T.3 lead TaskUpdate → 6T.5 cleanup
         └─ inaczej                              → PHASE 6-Sequential
               └─ gałąź plan/PLAN_NUM-slug → per-task: TaskUpdate(in_progress) → impl → ORM → validate → git add jawnie → commit → TaskUpdate(completed)
-[7]  Test matrix S/M/L → ⛔ GATE
+[7]  7 zakresów testów: unit | integration | system | acceptance | E2E (playwright chrome / CLI fallback) | regression | perf+security
+     → matryca S/M/L → kolejność wykonania → ⛔ GATE
 [8]  AC (F/T/N, MUST/SHOULD/COULD, Given-When-Then) → FORK wg $CR_BACKEND → CR report z AC verdict → fix 🔴
 [9]  mkdir -p docs/adr → Write ADR (≥6 sekcji + Parallelization jeśli 6-Teams) → sanity check → commit → TaskUpdate(completed)
 ```
