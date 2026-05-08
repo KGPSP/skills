@@ -162,14 +162,23 @@ schronów po zalogowaniu")`, NIE `it("login works")`.
 user PSP. **Cel: realny Chromium, nie webkit/firefox**, bo prod userzy używają Chromium-based
 przeglądarek (Edge, Chrome).
 
-#### 5.1 Run-mode: Playwright Chromium (preferowane)
+**Hierarchia run-mode (z SKILL.md Phase 7):**
+
+| Tier | Mechanizm | Trigger eskalacji |
+|------|-----------|-------------------|
+| **1** | `playwright test --project=chromium` (test runner) | Domyślny dla M+ z UI |
+| **2** | `playwright install chromium --with-deps` + retry Tier 1 | Tier 1 fail z "Executable doesn't exist" |
+| **3** | `chrome-devtools-mcp` MCP plugin (real Chrome via DevTools Protocol) | Tier 1+2 fail / brak `@playwright/test` w deps |
+| **4** | `playwright test --project=firefox` (lub webkit) | Wszystkie wyższe tiery fail; jawnie raportuj który browser w Phase 7 / Phase 8 CR |
+
+#### 5.1 Tier 1: Playwright Chromium (preferowane)
 
 ```bash
 # Zakładamy że @playwright/test + chromium są zainstalowane
 npx playwright test --project=chromium tests/e2e/shelter-list.spec.ts
 ```
 
-#### 5.2 Run-mode: Playwright CLI fallback (gdy brak Chromium)
+#### 5.2 Tier 2: Playwright CLI fallback (gdy brak Chromium)
 
 Gdy `npx playwright test --project=chromium` zawodzi z `Executable doesn't exist`
 (częste w piaskownicach CI / kontenerach bez headful supportu), użyj fallbacku:
@@ -221,6 +230,53 @@ fi
 5. **Dla L (auth/DB/UI) raportuj fallback explicit do usera** — jeśli plan jest L i odpalasz
    na Firefox bo Chromium niedostępny, dodaj do raportu Phase 7 linijkę „⚠️ E2E na firefox
    (chromium niedostępny w środowisku) — Chromium-specific bugi nie zostaną złapane".
+
+#### 5.2.5 Tier 3: chrome-devtools-mcp (real Chrome przez MCP plugin)
+
+Gdy brak `@playwright/test` w deps lub Tier 2 install zawodzi (np. korporacyjny proxy bez
+dostępu do `playwright.azureedge.net`), użyj pluginu `chrome-devtools-mcp` —
+**real Chrome** sterowany przez Chrome DevTools Protocol z agenta.
+
+**Preflight:**
+
+```bash
+CDM_ENABLED=$(jq -r '.enabledPlugins["chrome-devtools-mcp@claude-plugins-official"] // false' \
+  ~/.claude/settings.json 2>/dev/null)
+[ "$CDM_ENABLED" = "true" ] || { echo "SKIP — plugin niedostępny, eskalacja do Tier 4"; }
+```
+
+**Realizacja AC-F z Tier 3 (per AC z DoD):**
+
+```
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__new_page(url)        ← otwiera Chrome page
+  ↓
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__navigate_page         ← navigate
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__fill_form / __click   ← interakcja
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__wait_for              ← poczekaj na element
+  ↓
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_console_messages ← console errors = fail
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_network_requests ← 4xx/5xx = fail
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__take_screenshot       ← evidence dla CR/AC
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__take_snapshot         ← DOM snapshot (a11y tree)
+```
+
+**Reguły Tier 3:**
+
+1. **Wynik = `manual::e2e` w trace matrix** — to nie automated regression suite, ale realne
+   browser flow z dowodem (screenshot + console + network).
+2. **Każdy AC-F z DoD = jeden flow + 1 screenshot** — bez screenshotu AC nie ma PASS verdict.
+3. **Console errors = fail** — `list_console_messages` musi być pusta lub zawierać tylko
+   znane warnings (zaloguj wyjątki w raporcie Phase 7).
+4. **Network 4xx/5xx = fail** — `list_network_requests` filtruj po `status >= 400`; każdy
+   nieoczekiwany blokuje gate (oczekiwane np. 401 dla testu błędnej auth = OK z notą).
+5. **Headless OK** — plugin używa real Chrome, ale możesz sterować bez UI (operator widzi
+   screenshoty zamiast headed window).
+6. **Brak kompatybilności z `@playwright/test` spec files** — jeśli masz istniejące spec'i,
+   Tier 3 ich NIE odpali; flowy musisz wywołać manualnie per AC.
+
+**Anti-pattern:** Tier 3 jako primary E2E gdy `@playwright/test` jest w deps i działa.
+Tier 1 zawsze szybszy (parallel, fixtures, retry, sharding) — Tier 3 to lifeboat dla
+środowisk gdzie Playwright nie startuje, nie default.
 
 #### 5.3 Co MUSI pokrywać E2E
 

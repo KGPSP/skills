@@ -1,16 +1,20 @@
 ---
 name: feature-planner-v2
-description: Structured feature implementation workflow (Replit Agent style) with auto Agent Teams routing, /effort max boost, and deep-research probe (context7, Explore, defuddle, WebSearch, codex; ZERO Gemini). Use when the user describes a feature, change, or task in natural language and Claude Code should plan and implement it end-to-end. Triggers: "dodaj feature v2", "zaimplementuj v2", "zrób żeby", "feature planner v2", "implement", "build feature", "add functionality" — or any request mixing planning + parallel/sequential implementation + testing + code review + ADR. Runs: detect env → analysis → hypotheses → plan (docs/plany/) → APPROVAL GATE → worktree decision (M+: propose, L: rekomendowane) → implement (sequential or 6-Teams auto-routing 2–5 teammates) → testing (7 zakresów: unit/integration/system/acceptance/E2E-playwright-chrome/regression/perf+security per S/M/L) → live preview (M+ z UI: dev server + Playwright headed) → code review → ADR (docs/adr/). Never skip approval gate or code review.
+description: Structured feature workflow (Replit Agent style) with Agent Teams auto-routing, ralph-loop autonomous mode, /effort max, deep research (context7/Explore/defuddle/WebSearch/codex; ZERO Gemini). Use when user describes a feature/change/task and Claude Code should plan + implement end-to-end. Triggers "dodaj feature v2", "zaimplementuj", "zrób żeby", "implement", "build feature", "ralph", "ralph-loop", "iteruj aż zielono". Runs detect env → analysis → hypotheses → plan → APPROVAL → worktree (M+) → ralph decision → implement (6-Sequential / 6-Teams 2–5 / 6-Ralph autonomous) → 7 test scopes (unit/integration/system/acceptance/E2E-playwright-chromium-tier1234/regression/perf+security per S/M/L; opt 7.6 ralph test-fix) → live preview (M+ UI) → code review → ADR. Never skip approval gate or code review.
 ---
 
-# Feature Planner v2 — Replit Agent Style + Auto Agent Teams + Deep Research
+# Feature Planner v2 — Replit Agent Style + Auto Agent Teams + Ralph Loop + Deep Research
 
 > **v2 deltas vs v1:**
 > - Phase 0.3 — `/effort max` request (boost reasoning przed analizą)
 > - Phase 0.4 — auto-detect `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` (env / settings.json)
+> - Phase 0.5 — auto-detect `ralph-loop` plugin (cache + plugins.json + enabledPlugins)
 > - Phase 1.0 — Deep research probe (stock CC + pluginy: context7, Explore, defuddle, WebSearch, codex; ZERO Gemini)
 > - Phase 4 — `parallel-group` hint per task
-> - Phase 6 — routing: 6-Sequential ↔ 6-Teams (auto, agent dobiera 2–5 teammates sam)
+> - Phase 5.7 — Ralph-loop decision (opt-in dla L-size lub backend-only z silnym test gate)
+> - Phase 6 — routing: 6-Sequential ↔ 6-Teams (auto 2–5 teammates) ↔ **6-Ralph (autonomous self-correcting loop)**
+> - Phase 7 — E2E zakres 5 wzmocniony: Playwright Chromium first → `chrome-devtools-mcp` fallback → CLI screenshot
+> - Phase 7.6 — opcjonalny ralph-loop test-fix dla E2E flakiness / czerwonych zakresów
 
 Full workflow: **analyze → hypothesize → plan → save → approve → implement+commit → test → review → ADR**
 
@@ -113,7 +117,44 @@ zacznie działać dopiero w **następnej** sesji Claude Code.
 > harness'a (Agent Teams, bypass mode, /effort, kompaktowanie) z aktualnymi wartościami
 > per-vault.
 
-### 0.5 Bypass mode hint (długie Phase 6)
+### 0.5 Ralph-loop plugin probe
+
+Wykryj czy plugin `ralph-loop@claude-plugins-official` jest zainstalowany i aktywny.
+Phase 5.7 użyje wyniku do propozycji autonomicznego trybu (Phase 6-Ralph).
+
+```bash
+# (1) Cache obecny — fizyczne pliki
+RALPH_CACHED=0
+ls ~/.claude/plugins/cache/claude-plugins-official/ralph-loop/ >/dev/null 2>&1 && RALPH_CACHED=1
+
+# (2) Aktywny w settings.json (enabledPlugins)
+RALPH_ENABLED=$(jq -r '.enabledPlugins["ralph-loop@claude-plugins-official"] // false' \
+  ~/.claude/settings.json 2>/dev/null)
+
+# (3) Setup script dostępny (executable test)
+RALPH_SCRIPT=$(find ~/.claude/plugins/cache/claude-plugins-official/ralph-loop \
+  -name "setup-ralph-loop.sh" -type f 2>/dev/null | head -1)
+
+if [ "$RALPH_CACHED" = "1" ] && [ "$RALPH_ENABLED" = "true" ] && [ -n "$RALPH_SCRIPT" ]; then
+  RALPH_AVAILABLE=1
+else
+  RALPH_AVAILABLE=0
+fi
+echo "RALPH_AVAILABLE=$RALPH_AVAILABLE  (cached=$RALPH_CACHED enabled=$RALPH_ENABLED)"
+```
+
+Wypisz do użytkownika **tylko gdy `RALPH_AVAILABLE=1`** (cisza gdy 0 — by nie zaśmiecać UX):
+
+```
+🔁 Ralph-loop: dostępny — Phase 5.7 zaproponuje autonomiczny tryb iteracyjny dla L-size
+```
+
+> **Co to daje:** Phase 6-Ralph (opt-in po approval) wpina implementację w pętlę
+> `while ! green: implement → typecheck → lint → test → fix → repeat`. Plugin używa
+> Stop-hooka, więc Claude Code **sam** podaje sobie ten sam prompt aż do `<promise>FEATURE_DONE</promise>`.
+> Przydatne dla L-size z silnym test gate (TDD-style), nieprzydatne dla S/M gdzie human-in-the-loop wystarczy.
+
+### 0.6 Bypass mode hint (długie Phase 6)
 
 Dla planów rozmiaru **L** lub 6-Teams (≥ 3 teammates) Phase 6 będzie wywołać dziesiątki
 permission prompts (Bash dla ORM/git, Write dla każdego pliku, TaskCreate). Aby uniknąć
@@ -563,6 +604,105 @@ Worktree pozostaje dostępny dla post-merge fixes / hotpatchy.
 
 ---
 
+## PHASE 5.7 — RALPH-LOOP DECISION (opt-in, po worktree)
+
+Po Phase 5.5 (worktree), **przed** Phase 6.−1 (pre-flight) i Phase 6.0 (routing).
+Decyduje czy Phase 6 idzie w trybie **autonomicznym** (6-Ralph: Stop-hook pętla
+self-correcting) czy **interaktywnym** (6-Sequential / 6-Teams jak dotąd).
+
+### 5.7.1 Skip rules (cisza, idziemy dalej)
+
+Pomiń Phase 5.7 całkowicie (idź do Phase 6.−1) gdy:
+
+- `RALPH_AVAILABLE=0` (Phase 0.5) — plugin niezainstalowany / wyłączony.
+- Plan **rozmiar S** — pętla self-correct dla 1 surgical zmiany = overhead > zysk.
+- Plan ma **`Open questions`** w Analysis Report (Phase 1.8) — autonomiczny loop nie
+  potrafi pytać usera, zablokuje się.
+- Plan dotyka **migracji DB schema** + **brak rollback skryptu** — autonomiczny commit
+  złych migracji jest trudny do cofnięcia.
+
+### 5.7.2 Decision matrix (gdy RALPH_AVAILABLE=1)
+
+| Sygnał | Default | Powód |
+|--------|---------|-------|
+| **L-size + silny test gate** (≥ 5 zakresów testów wg matrycy 7) | 💬 propose (default no) | Loop self-correct na zielony test gate — TDD-friendly |
+| **Backend-only L-size** (no UI, server logic) | 💬 propose (default no) | Bez UI = brak Phase 7.8 preview gate, łatwiej autonomicznie |
+| **Greenfield feature** (zero analoga w 1.3, czysty zielony kod) | 💬 propose (default no) | Iteracja = paliwo, brak legacy do regresji |
+| **M-size standard** | ⏭️ skip | Sequential / Teams szybsze niż loop |
+| **L-size z UI + auth + DB** | ⏭️ skip (preferuj 6-Teams) | Cross-cutting = lead-driven decyzje, loop traci kontekst |
+| **User explicit "ralph"/"loop" w request** | ✅ propose strongly (default yes) | User wie czego chce — respect |
+
+### 5.7.3 Propose to user
+
+**Dla scenariusza propose (default no):**
+
+```
+🔁 Ralph-loop (autonomiczny, opcjonalny):
+   Plan #PLAN_NUM jest L-size z silnym test gate. Mogę uruchomić Phase 6 w trybie
+   autonomicznym — pętla `implement → typecheck → lint → test → fix` aż do
+   `<promise>FEATURE_DONE</promise>` lub --max-iterations.
+
+   Korzyści:
+     - self-correcting: gdy lint/test fail, agent sam wraca i poprawia
+     - persistence: nie pyta o pozwolenie na każdy fix (bypass mode safe)
+     - safety net: --max-iterations limit + całe state w git (rollback łatwy)
+   Ryzyka:
+     - autonomiczny = brak human-in-the-loop podczas loop (zatrzymasz przez /cancel-ralph)
+     - może iterować długo (drogi compute, ale tani vs human time)
+     - Phase 7.8 live preview wciąż wymaga interakcji — loop kończy się PRZED 7.8
+
+   ✅  Tak, uruchom 6-Ralph (max-iterations: <auto-policzone>)
+   ❌  Nie, idź klasycznie (default — 6-Sequential / 6-Teams wg routingu)
+```
+
+**Dla scenariusza propose strongly (user explicit):**
+
+```
+🔁 Ralph-loop (REKOMENDOWANY, user explicit):
+   User explicit poprosił o ralph/loop. Uruchamiam Phase 6-Ralph z:
+     - prompt:           wbudowany z plan + DoD + AC
+     - completion-promise: "FEATURE_DONE"
+     - max-iterations:    <auto-policzone wg rozmiaru>
+
+   ✅  Tak, start (default)
+   ❌  Nie, klasyczny routing
+```
+
+### 5.7.4 Auto-compute max-iterations
+
+```bash
+# Heurystyka: liczba zadań × 2 (każde może wymagać fix loop) + buffer per zakres testu
+TASK_COUNT=$(grep -cE '^[0-9]+\.' <<< "$(awk '/^## Zadania/,/^## /' "$PLAN_FILE")")
+TEST_SCOPES=$(case "$PLAN_SIZE" in S) echo 4;; M) echo 5;; L) echo 7;; esac)
+RALPH_MAX_ITER=$(( TASK_COUNT * 2 + TEST_SCOPES * 3 ))
+# Twardy clamp [10, 60] — < 10 nie złapie iteracji, > 60 to pewnie zły plan
+[ "$RALPH_MAX_ITER" -lt 10 ] && RALPH_MAX_ITER=10
+[ "$RALPH_MAX_ITER" -gt 60 ] && RALPH_MAX_ITER=60
+echo "RALPH_MAX_ITER=$RALPH_MAX_ITER (tasks=$TASK_COUNT, scopes=$TEST_SCOPES)"
+```
+
+Pokaż użytkownikowi w propose (5.7.3) jako konkretną liczbę. User może override
+naturalnym językiem („zmień na 30").
+
+### 5.7.5 Set state for Phase 6 routing
+
+```bash
+if [ "$RALPH_DECISION" = "yes" ]; then
+  RALPH_MODE=1
+  echo "✅ 6-Ralph mode aktywne — Phase 6.0 routing pominie 6-Sequential / 6-Teams"
+else
+  RALPH_MODE=0
+  echo "📁 6-Ralph mode wyłączone — klasyczny routing 6-Sequential / 6-Teams"
+fi
+```
+
+> **Reguła twarda:** RALPH_MODE=1 nadpisuje TEAMS_ENABLED. Nie ma sensu spawn'ować
+> teammates w autonomicznym loopie — to lead-driven coordination, ralph-loop = solo agent
+> z self-feedback. Jeśli user chce paralelizmu, niech wybierze 6-Teams (sequential decision —
+> ralph LUB teams, nigdy oba).
+
+---
+
 ## PHASE 6 — IMPLEMENTATION (routing)
 
 ### 6.−1 Pre-flight: context7 docs probe (OBLIGATORYJNE)
@@ -611,18 +751,26 @@ context7: tailwindcss@4 — @theme directive (zadanie 4)
 
 ### 6.0 Routing decision
 
-**Decyzja na wejściu (z Phase 0.4 + Phase 4):**
+**Decyzja na wejściu (z Phase 0.4 + Phase 4 + Phase 5.7):**
 
-- `TEAMS_ENABLED=1` AND plan ma ≥ 2 zadania w ≥ 2 różnych `parallel-group` → **PHASE 6-Teams**
-- W każdym innym przypadku → **PHASE 6-Sequential**
+Trzy ścieżki, w kolejności priorytetu:
+
+1. `RALPH_MODE=1` (Phase 5.7 user accepted) → **PHASE 6-Ralph** (autonomous loop)
+2. `TEAMS_ENABLED=1` AND plan ma ≥ 2 zadania w ≥ 2 różnych `parallel-group` → **PHASE 6-Teams**
+3. W każdym innym przypadku → **PHASE 6-Sequential**
+
+> **Mutual exclusion:** 6-Ralph wyklucza 6-Teams (Phase 5.7.5 reguła twarda). User wybiera
+> jedno z dwóch dla L-size: paralelizm leadem (Teams) **lub** autonomiczny loop (Ralph).
 
 Wypisz do użytkownika która ścieżka:
 
 ```
-🛣️  Implementacja: <"6-Teams (równolegle, N teammates)" | "6-Sequential">
+🛣️  Implementacja: <"6-Ralph (autonomous loop, max N iter)" | "6-Teams (równolegle, N teammates)" | "6-Sequential">
 ```
 
-Jeżeli idziemy w **6-Teams** — przejdź od razu do sekcji `## PHASE 6-Teams` (poniżej 6-Sequential).
+- **6-Ralph** → przejdź do sekcji `## PHASE 6-Ralph` (po 6-Sequential i 6-Teams).
+- **6-Teams** → przejdź do sekcji `## PHASE 6-Teams`.
+- **6-Sequential** → kontynuuj poniżej (6.0 git env → 6.1 task registration → 6.2 per-task loop).
 
 ---
 
@@ -896,6 +1044,246 @@ Dalej → Phase 7 (testing). Testy lecą w sesji lead, nie w teammates — łatw
 
 ---
 
+## PHASE 6-Ralph — AUTONOMOUS SELF-CORRECTING LOOP
+
+Aktywne **tylko gdy `RALPH_MODE=1`** (decyzja z Phase 5.7). Wykonuje implementację planu
+w pętli `implement → typecheck → lint → test → fix` aż do `<promise>FEATURE_DONE</promise>`
+lub osiągnięcia `--max-iterations`.
+
+> **Why ralph-loop tutaj:** plugin `ralph-loop@claude-plugins-official` używa Stop-hooka,
+> który blokuje exit z sesji i podaje sobie ten sam prompt ponownie. To daje **persistent
+> iteration** bez zewnętrznego `while true` w bashu — Claude Code sam siebie loop'uje.
+> Zachowuje plan w plikach + git history → każda iteracja widzi co już zrobione i co jeszcze
+> wymaga fix.
+
+### 6R.0 Git environment check (identyczne z 6.0)
+
+```bash
+git rev-parse --git-dir >/dev/null 2>&1 || { echo "ERROR: Not a git repo"; exit 1; }
+git config user.email >/dev/null 2>&1 || { echo "ERROR: user.email not set"; exit 1; }
+if git status --porcelain | grep -vq '^??'; then
+  echo "ERROR: Uncommitted tracked changes"; exit 1;
+fi
+
+CURRENT_BRANCH=$(git branch --show-current)
+EXPECTED_BRANCH="plan/${PLAN_NUM}-${SLUG}"
+
+if [ "$CURRENT_BRANCH" = "$EXPECTED_BRANCH" ]; then
+  echo "✅ Już na $EXPECTED_BRANCH (worktree z Phase 5.5 lub poprzedni branch)"
+else
+  case "$CURRENT_BRANCH" in
+    main|master|develop) git checkout -b "$EXPECTED_BRANCH" ;;
+    *)
+      echo "⚠️  Aktualna gałąź: $CURRENT_BRANCH — kontynuuję, potwierdź czy OK"
+      ;;
+  esac
+fi
+pwd  # sanity (worktree-aware)
+```
+
+### 6R.1 Pre-flight invariants (TWARDE — bez tego loop kończy się źle)
+
+**Wszystkie poniższe MUSZĄ być spełnione przed `/ralph-loop`. Jeśli któryś fail → STOP
+i powiedz userowi co naprawić.**
+
+```bash
+# (1) Bypass mode aktywny (settings.json defaultMode lub --dangerously-skip-permissions)
+DEFAULT_MODE=$(jq -r '.permissions.defaultMode // "default"' ~/.claude/settings.json 2>/dev/null)
+if [ "$DEFAULT_MODE" != "bypassPermissions" ] && [ -z "${CLAUDE_DANGEROUSLY_SKIP_PERMISSIONS:-}" ]; then
+  echo "❌ Ralph-loop wymaga bypass mode. Ustaw:"
+  echo '   ~/.claude/settings.json: {"permissions": {"defaultMode": "bypassPermissions"}}'
+  echo "   lub uruchom Claude Code z --dangerously-skip-permissions"
+  exit 1
+fi
+
+# (2) Plan + AC dostępne (loop bez specyfikacji = chaos)
+[ -s "docs/plany/${PLAN_NUM}-${SLUG}.md" ] || { echo "❌ Brak planu"; exit 1; }
+
+# (3) Git clean (ralph commits w pętli — dirty state psuje attribution)
+git status --porcelain | grep -vq '^??' && { echo "❌ Uncommitted changes"; exit 1; }
+
+# (4) Test runner istnieje (loop NEEDS automated verification)
+HAS_TESTS=0
+[ -f package.json ] && jq -e '.scripts.test' package.json >/dev/null 2>&1 && HAS_TESTS=1
+[ -f pyproject.toml ] && grep -qE 'pytest|nose2|unittest' pyproject.toml && HAS_TESTS=1
+if [ "$HAS_TESTS" = "0" ]; then
+  echo "❌ Brak `npm test` / `pytest` — ralph-loop bez testów = nie wie kiedy stop"
+  echo "   Dodaj test runner do planu lub przełącz na 6-Sequential"
+  exit 1
+fi
+
+# (5) TaskCreate registry (jak w 6.1) — Ralph aktualizuje progress per iteration
+echo "✅ Pre-flight invariants OK — ready dla /ralph-loop"
+```
+
+### 6R.2 Build the ralph prompt
+
+Prompt jest **single-shot** — zostanie podany ponownie w każdej iteracji. MUSI zawierać
+wszystko, co Claude potrzebuje, by kontynuować od stanu git/plików (bez chat memory).
+
+```bash
+RALPH_PROMPT_FILE="/tmp/ralph-prompt-${PLAN_NUM}.txt"
+cat > "$RALPH_PROMPT_FILE" <<EOF
+# Ralph-loop iteration — Plan #${PLAN_NUM}: ${FEATURE_NAME}
+
+## State recovery (read FIRST every iteration)
+1. Read \`docs/plany/${PLAN_NUM}-${SLUG}.md\` — plan + DoD + Założenia + OOS + Tasks
+2. Read \`docs/code-reviews/AC-${PLAN_NUM}-${SLUG}.md\` if exists — AC priorytety
+3. Run \`git log --grep="plan-${PLAN_NUM}" --oneline\` — co już zaimplementowane
+4. Run \`TaskList\` (harness) — taski w in_progress/completed
+5. Run \`git status\` + \`git diff\` — co w toku, co dirty
+
+## Loop body (per iteration)
+
+### Step 1 — Pick next task
+Z planu sekcja "Zadania" + git history wyciągnij **pierwszy** task ze statusem != completed.
+Jeśli wszystkie completed → przejdź do Step 4 (test gate).
+
+### Step 2 — Implement
+- Tylko pliki z "Relevant files" planu
+- Mirror wzorców z Analysis Report (Patterns catalog 1.7)
+- Zero TODO/stubów/debug logów
+- Library API check: jeśli używasz external lib której nie ma w git history tej sesji →
+  wywołaj \`context7\` przed kodowaniem
+
+### Step 3 — Validate + commit
+\`\`\`bash
+# Validate
+npm run typecheck && npm run lint   # albo: npx tsc --noEmit && npm run lint
+# Python: ruff check . && mypy .
+
+# Commit (NIGDY git add -A)
+git add <relevant-files-only>
+git commit -m "[type](plan-${PLAN_NUM}): <imperative description>"
+
+# TaskUpdate
+TaskUpdate(taskId, status=completed)
+\`\`\`
+
+Jeśli typecheck/lint fail → **NIE commituj**, fix w next iteration.
+
+### Step 4 — Test gate (gdy wszystkie zadania committed)
+Uruchom 7 zakresów wg matrycy S/M/L (\`references/testing-protocol.md\`):
+- unit + integration + acceptance + regression (zawsze)
+- system + E2E (M+) — E2E przez \`npx playwright test --project=chromium\`
+- perf + security (L zawsze, M jeśli AC-N)
+
+Jeśli któryś zakres czerwony → **NIE wystawiaj promise**, fix w next iteration.
+
+### Step 5 — Promise
+Tylko gdy:
+✅ Wszystkie taski z planu completed (git log + TaskList)
+✅ typecheck + lint zielone
+✅ Wszystkie wymagane zakresy testów zielone
+✅ Każdy AC MUST z \`AC-${PLAN_NUM}-${SLUG}.md\` ma PASS verdict (test::name istnieje)
+
+Wtedy wystaw EXACTLY:
+<promise>FEATURE_DONE</promise>
+
+## Anti-patterns (loop-specific — DO NOT)
+
+- ❌ Wystaw promise wcześniej "bo i tak działa" — promise kłamie = sabotaż loop
+- ❌ Skip test bo "trywialnie wiadomo że pass" — loop ufa testom, nie tobie
+- ❌ \`git add -A\` — może wciągnąć /tmp artifacts ralph-loop'a
+- ❌ Modify pliki spoza "Relevant files" — to bloker, output bloker message i wystaw <promise>BLOCKED</promise> (ale wtedy nie zadziała completion-promise = loop poleci dalej; lepiej: zatrzymaj kodowanie, output blocker w chacie, czekaj na user via /cancel-ralph)
+- ❌ Phase 7.8 live preview — Phase 6-Ralph kończy się PRZED 7.8. Live preview = lead-driven, post-loop.
+
+## Plan reference (verbatim Co & Dlaczego)
+$(awk '/^## Co & Dlaczego/,/^## /' "docs/plany/${PLAN_NUM}-${SLUG}.md" | head -20)
+
+## Definition of Done (verbatim)
+$(awk '/^## Definition of Done/,/^## /' "docs/plany/${PLAN_NUM}-${SLUG}.md" | head -30)
+EOF
+
+wc -l "$RALPH_PROMPT_FILE"
+echo "Prompt: $RALPH_PROMPT_FILE"
+```
+
+### 6R.3 Launch /ralph-loop
+
+```bash
+# RALPH_MAX_ITER ustawione w Phase 5.7.4
+echo "🔁 Uruchamiam /ralph-loop dla Plan #${PLAN_NUM}"
+echo "   max-iterations:    $RALPH_MAX_ITER"
+echo "   completion-promise: FEATURE_DONE"
+echo "   prompt-file:       $RALPH_PROMPT_FILE"
+echo ""
+echo "   /cancel-ralph  → manualny stop (przerwie loop, ale nie cofnie commitów)"
+echo "   monitor:       head -10 .claude/ralph-loop.local.md"
+```
+
+Następnie **wywołaj slash command** `/ralph-loop` z prompt'em z pliku + flagami:
+
+```
+/ralph-loop "$(cat /tmp/ralph-prompt-PLAN_NUM.txt)" --max-iterations $RALPH_MAX_ITER --completion-promise "FEATURE_DONE"
+```
+
+> **Praktyka:** prompt jest długi (zwykle 100–200 linii) — Claude Code akceptuje to, ale
+> w UI widać tylko header. To OK — pełna treść jest w `.claude/ralph-loop.local.md`
+> (state file pluginu).
+
+### 6R.4 Lead's role during loop
+
+W Phase 6-Ralph **NIE MA** osobnego leada — Claude Code sam jest agentem loop'a. Twoje
+zadania jako "operator" loop'a to:
+
+1. **Monitor postępu** — co kilka iteracji `head -20 .claude/ralph-loop.local.md`,
+   aby widzieć current iteration i czy zbliża się do completion-promise.
+2. **Reagowanie na blockers** — jeśli loop iteruje > 5x na tym samym tasku bez progresu
+   (sprawdź `git log --grep "plan-PLAN_NUM" | wc -l`), to znak że loop się zaplótł.
+   Wykonaj `/cancel-ralph` i przejdź na 6-Sequential ręcznie.
+3. **Zero implementacji w trakcie** — nie modifikuj plików gdy loop pracuje, dirty state
+   wybije agentowi state recovery (Step 1 prompt).
+
+### 6R.5 Completion / cancellation
+
+**Completion (loop wystawił FEATURE_DONE):**
+
+```bash
+# State file pluginu zawiera "completed_at" i finalną iterację
+grep -E '^iteration:|^completed_at:' .claude/ralph-loop.local.md
+
+# Verify ostatni commit
+git log --oneline -5
+
+# Czy harness task list = wszystkie completed?
+# (TaskList tool — ręcznie sprawdź w UI lub wywołaj listę)
+```
+
+Po completion idź do **Phase 7.8** (live preview, jeśli plan ma UI) → **Phase 8** (code review).
+Phase 7 (testy) Ralph już przebiegł w Step 4 — ale **lead re-runuje test gate** w Phase 7
+żeby potwierdzić determinizm (czy testy są zielone w czystej sesji bez self-feedback).
+
+**Cancellation (user `/cancel-ralph` lub max-iterations hit):**
+
+```bash
+# /cancel-ralph już zadziałał (usunął state file) lub max iterations exhausted
+
+# Sprawdź ostatnią iteracji i co zostało zrobione
+git log --grep="plan-${PLAN_NUM}" --oneline | head
+
+# Decyzja:
+# (a) Loop dotarł blisko końca (> 80% tasków done) → przełącz na 6-Sequential
+#     i dokończ ręcznie ostatnie zadania
+# (b) Loop daleko od końca → rollback (git reset) + restart przez 6-Sequential lub
+#     6-Teams z innym planem
+```
+
+### 6R.6 Anti-patterns (operator-specific)
+
+- ❌ Uruchamianie 6-Ralph dla S-size — Phase 5.7.1 skip rule, ale jeśli ominięto:
+  overhead loop > zysk, jedna implementacja + manualne validate jest szybsza.
+- ❌ Mieszanie Phase 6-Ralph z Phase 6-Teams ("ralph spawn 3 teammates") — Phase 5.7.5
+  reguła twarda. Ralph = solo agent z self-feedback. Teams = lead-driven coordination.
+- ❌ Pomijanie pre-flight invariants 6R.1 — bez bypass mode loop wybije się przy każdym
+  permission prompt (Bash, Write); bez test runnera loop nie ma jak wystawić promise.
+- ❌ Manualne `git commit` w trakcie loop'a — agent w next iteration zobaczy dirty/extra
+  commity i będzie próbował je "poprawić" (git mess).
+- ❌ Liczenie że loop zrobi Phase 7.8 live preview — to interaktywna faza, loop kończy
+  się PRZED nią. Loop = code-only completion, preview = post-loop human gate.
+
+---
+
 ## PHASE 7 — TESTING
 
 **Przeczytaj teraz `references/testing-protocol.md`** — pełna definicja 7 zakresów testów,
@@ -916,13 +1304,59 @@ matryca S/M/L, kolejność wykonania, fallback Playwright CLI gdy brak Chromium.
 ¹ Dla **S** akceptacyjne mogą być manualne (procedura z checklistą + adnotacja `manual::` w trace matrix).
 ² Dla **M** wymagane jeśli plan ma jakikolwiek AC-N.
 
-**E2E run-mode (zakres 5):**
+**E2E run-mode (zakres 5) — Playwright Chrome hierarchia:**
 
-1. **Preferowane:** `npx playwright test --project=chromium` (real Chromium → łapie Chrome-specific bugi).
-2. **Fallback gdy brak Chromium:** najpierw `npx playwright install chromium --with-deps`,
-   gdy install zawodzi (brak praw / sandbox) → użyj Playwright CLI z dostępnym browserem
-   (firefox/webkit) i **explicit oznacz w raporcie**, jaki browser realnie odpalił.
-   Brak Chromium ≠ skip E2E. Lepiej zielony test na firefox niż pominięty.
+| Tier | Mechanizm | Kiedy użyć | Komenda / tool |
+|------|-----------|------------|----------------|
+| **1 — preferowane** | Playwright Chromium (test runner) | Domyślne dla M+ z UI; spec files w `tests/e2e/` lub `e2e/` | `npx playwright test --project=chromium` |
+| **2 — install fallback** | Playwright Chromium po install | Tier 1 fail z "browser not installed" | `npx playwright install chromium --with-deps && npx playwright test --project=chromium` |
+| **3 — chrome-devtools-mcp** | MCP plugin (real Chrome) | Brak Playwright deps / sandbox restriction; chcemy traffic + console + DOM inspect | `mcp__plugin_chrome-devtools-mcp_chrome-devtools__*` (new_page, navigate_page, take_screenshot, list_console_messages, list_network_requests) |
+| **4 — CLI fallback (inny browser)** | Playwright firefox/webkit | Tier 1–3 fail, Chromium niedostępne | `npx playwright test --project=firefox` (ZAWSZE oznacz w raporcie który browser realnie odpalił) |
+
+> **Reguła twarda:** brak Chromium **NIE oznacza** skip E2E. Eskalujemy w dół tabeli aż coś
+> zadziała. Lepiej zielony test na firefox + jawna nota w raporcie niż pominięta walidacja.
+
+**Plugin status check (preflight zakresu 5):**
+
+```bash
+# Czy Playwright zainstalowany w projekcie?
+PW_INSTALLED=0
+[ -f package.json ] && jq -e '.devDependencies["@playwright/test"] // .dependencies["@playwright/test"]' package.json >/dev/null 2>&1 && PW_INSTALLED=1
+
+# Czy Chromium download dostępny? (cache lub freshly installable)
+PW_CHROMIUM_OK=0
+npx playwright --version >/dev/null 2>&1 && {
+  npx playwright install --dry-run chromium 2>/dev/null | grep -qi 'already installed' && PW_CHROMIUM_OK=1
+}
+
+# Czy chrome-devtools-mcp plugin aktywny?
+CDM_ENABLED=$(jq -r '.enabledPlugins["chrome-devtools-mcp@claude-plugins-official"] // false' \
+  ~/.claude/settings.json 2>/dev/null)
+
+echo "PW_INSTALLED=$PW_INSTALLED  PW_CHROMIUM_OK=$PW_CHROMIUM_OK  CDM_ENABLED=$CDM_ENABLED"
+```
+
+**Decyzja na podstawie probe:**
+
+- `PW_INSTALLED=1` + `PW_CHROMIUM_OK=1` → **Tier 1** (najczęstszy path)
+- `PW_INSTALLED=1` + `PW_CHROMIUM_OK=0` → spróbuj **Tier 2** (`playwright install chromium`)
+- `PW_INSTALLED=0` + `CDM_ENABLED=true` → **Tier 3** (chrome-devtools-mcp; spec'i w spec files NIE działają, ale pełny browser-driven flow OK)
+- Cokolwiek innego → **Tier 4** (CLI z innym browser'em + jawny raport)
+
+**Tier 3 — chrome-devtools-mcp jako primary E2E (gdy brak Playwright):**
+
+```
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__new_page(url)
+  ↓
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__fill_form / __click / __navigate_page
+  ↓
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_console_messages   ← console errors = fail
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_network_requests   ← 4xx/5xx = fail
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__take_screenshot         ← evidence dla CR/AC
+```
+
+Wynik **wpisz jako manual::e2e** w trace matrix Phase 8 (nie automated test, ale realne
+browser flow). Każdy AC-F z DoD musi mieć **screenshot** dowodzący PASS.
 
 Commit: `test(plan-PLAN_NUM): [scope] tests` (np. `test(plan-042): unit + integration shelter validators`).
 
@@ -930,7 +1364,124 @@ Commit: `test(plan-PLAN_NUM): [scope] tests` (np. `test(plan-042): unit + integr
 unit → typecheck/lint/build → integration → system → acceptance → E2E → regression → perf+security.
 
 **Każdy test mapuje się na konkretny AC** — zbieraj `test::name` (z prefiksem zakresu:
-`test::unit`, `test::e2e`, `test::security`, `manual::`) teraz, wpisuj do trace matrix w Phase 8.
+`test::unit`, `test::e2e`, `test::security`, `manual::e2e`, `manual::`) teraz, wpisuj do
+trace matrix w Phase 8.
+
+---
+
+## PHASE 7.6 — RALPH-LOOP TEST-FIX (opcjonalny)
+
+Po Phase 7 test gate, **przed** Phase 7.8. Aktywuje się **tylko gdy oba spełnione:**
+
+1. `RALPH_AVAILABLE=1` (Phase 0.5 probe)
+2. Phase 7 zostawiło ≥ 1 czerwony zakres (typecheck/lint/unit/integration/system/acceptance/E2E/regression/perf+security)
+   ALE feature wygląda "blisko" — większość testów green, czerwone wyglądają na fixable
+   (typo, race condition, brakujący await, missing assertion).
+
+**Skip rules (cisza, idź do 7.8 lub fix-loop ręcznie):**
+
+- `RALPH_AVAILABLE=0` → klasyczny fix loop (manualnie ty / 6-Sequential).
+- Czerwone testy = **systemowy bug** (architektura, źle dobrana hipoteza) → ralph-loop nie
+  uratuje, **wracaj do Phase 6** lub Phase 2 (re-hypothesize).
+- Plan rozmiar **S** → manualny fix prostszy.
+- Phase 6 było **6-Ralph** → Step 4 prompt'a już iterował na test gate; jeśli i tak czerwone
+  to znaczy że loop wystawił `<promise>FEATURE_DONE</promise>` przedwcześnie (bug w prompt'cie),
+  **NIE re-uruchamiaj loop'a na test-fix**, fix manualnie.
+
+**Build the test-fix prompt:**
+
+```bash
+RALPH_TESTFIX_PROMPT="/tmp/ralph-testfix-${PLAN_NUM}.txt"
+
+# Zbierz nazwy czerwonych testów (Playwright + Vitest reporter outputs)
+FAILING_TESTS=$(npx playwright test --project=chromium --reporter=line 2>&1 | \
+  grep -E '✗|FAIL' | head -20)
+FAILING_UNIT=$(npm test 2>&1 | grep -E 'FAIL|✗' | head -10)
+
+cat > "$RALPH_TESTFIX_PROMPT" <<EOF
+# Ralph-loop test-fix — Plan #${PLAN_NUM}
+
+Feature jest zaimplementowany ale test gate ma czerwone zakresy. Iteruj fix → re-run aż green.
+
+## State recovery (per iteration)
+1. \`docs/plany/${PLAN_NUM}-${SLUG}.md\` — plan + DoD
+2. \`docs/code-reviews/AC-${PLAN_NUM}-${SLUG}.md\` — AC priorytety (jeśli jest)
+3. \`git log --grep="plan-${PLAN_NUM}" --oneline\` — co już commitowane
+4. Run \`npm test\` + \`npx playwright test --project=chromium\` — current red/green
+
+## Failing tests (snapshot at start)
+\`\`\`
+$FAILING_TESTS
+$FAILING_UNIT
+\`\`\`
+
+## Loop body
+
+### Step 1 — Pick first red test
+Wybierz **pierwszy** czerwony test (priorytet: unit > integration > E2E — bo unit szybciej iterują).
+
+### Step 2 — Diagnose
+- Read test file (assertion + setup)
+- Read SUT (system under test) — kod który test sprawdza
+- Run **tylko ten jeden test** w izolacji: \`npm test -- <test-name>\` lub
+  \`npx playwright test -g "<test-title>"\`
+
+### Step 3 — Fix (kod produkcyjny lub test)
+**Reguła:** fix testu OK gdy assertion był wadliwy (literówka w expected value, race condition w setup).
+Fix kodu produkcyjnego gdy SUT robi nie to co plan/DoD wymaga.
+
+NIGDY nie fix przez:
+- ❌ \`test.skip\` / \`xit\` / \`@pytest.mark.skip\` (= ukrycie problemu)
+- ❌ Modifikacja DoD/AC żeby pasowały do bugu (= sabotaż gate'u)
+- ❌ Rozluźnienie assertion (\`toBe\` → \`toBeDefined\`) bez uzasadnienia
+
+### Step 4 — Validate
+\`\`\`bash
+# Re-run zakres który był czerwony
+npm test                                       # unit + integration
+npx playwright test --project=chromium         # E2E
+\`\`\`
+
+Jeśli ten sam test wciąż czerwony po 3 iteracjach na nim → **bloker**, output blocker w chacie
+(loop wystawi \`<promise>BLOCKED</promise>\` ale to nie jest completion-promise → loop poleci dalej; lepiej:
+zatrzymaj iterowanie tego testu, przejdź do następnego).
+
+### Step 5 — Commit
+\`\`\`bash
+git add <fixed-files>
+git commit -m "fix(plan-${PLAN_NUM}): <test-name or red-zone> — <why>"
+\`\`\`
+
+### Step 6 — Promise
+Tylko gdy:
+✅ \`npm test\` zielone
+✅ \`npx playwright test --project=chromium\` zielone (lub fallback tier zielone, jawnie oznaczone)
+✅ Wszystkie zakresy z matrycy 7 wymagane dla rozmiaru green
+
+Wystaw EXACTLY:
+<promise>TESTS_GREEN</promise>
+EOF
+
+# Max iterations: zwykle dużo mniej niż implementation loop
+RALPH_TESTFIX_MAX=$(( $(echo "$FAILING_TESTS$FAILING_UNIT" | wc -l) * 3 + 10 ))
+[ "$RALPH_TESTFIX_MAX" -gt 30 ] && RALPH_TESTFIX_MAX=30
+echo "RALPH_TESTFIX_MAX=$RALPH_TESTFIX_MAX"
+```
+
+**Launch:**
+
+```
+/ralph-loop "$(cat /tmp/ralph-testfix-PLAN_NUM.txt)" --max-iterations $RALPH_TESTFIX_MAX --completion-promise "TESTS_GREEN"
+```
+
+**Po completion / cancellation:**
+
+- `<promise>TESTS_GREEN</promise>` → idź do Phase 7.8 (live preview).
+- `--max-iterations` exhausted → wracaj do Phase 6 (jeśli systemowy bug) lub fix manualnie ostatnie czerwone.
+
+> **Anti-pattern:** uruchamianie 7.6 dla tej samej grupy testów więcej niż raz. Jeśli pierwszy
+> 7.6 zostawił czerwone, drugi nic nie naprawi (te same prompt + state). Wskaźnik systemowego problemu —
+> wracaj do Phase 6 lub Phase 2.
 
 ---
 
@@ -1452,9 +2003,13 @@ Pomiń tę sekcję jeśli Phase 5.5 nie utworzyła worktree (S-size lub user wyb
 | **AC-F = Given-When-Then** | MUST/SHOULD/COULD |
 | **Trace matrix AC ↔ test** | Każdy MUST ma test lub procedurę manualną |
 | **Test gate przed review** | 7 zakresów per S/M/L matryca; unit+integration+acceptance+regression zawsze; system+E2E od M; perf+security: L zawsze, M jeśli AC-N istnieje |
-| **E2E preferuje Chromium** | Phase 7 — `playwright --project=chromium`; fallback: `playwright install` → inny browser; brak Chromium ≠ skip E2E |
+| **E2E hierarchia Chromium** | Phase 7 — Tier 1: `playwright test --project=chromium` → Tier 2: `playwright install chromium` → Tier 3: `chrome-devtools-mcp` (real Chrome przez MCP) → Tier 4: CLI z innym browser'em (jawny raport). Brak Chromium ≠ skip E2E |
 | **Worktree dla L, propose dla M** | Phase 5.5 — auth/DB/UI w izolowanym `git worktree add ../<repo>-plan-PLAN_NUM-<slug>` na `plan/PLAN_NUM-<slug>`; S = skip; cleanup po mergu PR, nie wcześniej |
+| **Ralph-loop jako opt-in** | Phase 5.7 — propose dla L-size z silnym test gate / backend-only / greenfield / user explicit. RALPH_MODE=1 wyklucza TEAMS_ENABLED (mutual exclusion). S = skip zawsze |
+| **Ralph pre-flight invariants** | Phase 6R.1 — bypass mode + plan + clean git + test runner. Bez tego loop wybije się na permission prompts lub nie wie kiedy stop |
+| **Ralph kończy PRZED 7.8** | Phase 6-Ralph = code-only completion. Live preview = post-loop human gate (interaktywna, loop nie potrafi) |
 | **Live preview przed code review** | Phase 7.8 — M+ z UI: start dev server (background) → Playwright headed Chromium na FEATURE_URL → screenshot + console check → user wizualnie zatwierdza → cleanup (zabij dev server + browser) |
+| **Test-fix loop opcjonalny** | Phase 7.6 — gdy `RALPH_AVAILABLE=1` + większość testów green + czerwone wyglądają na fixable; SKIP gdy systemowy bug (wracaj do Phase 6/2) lub Phase 6 było 6-Ralph (loop już iterował na test gate) |
 | **Fix 🔴 + AC MUST przed ADR** | Phase 9 dopiero przy zero krytycznych i wszystkich MUST |
 | **PLAN_NUM wszędzie** | Spójny w plikach, commitach, review |
 | **`/effort max` request** | Phase 0.3 — miękka prośba o boost reasoningu, nie blokuje |
@@ -1475,24 +2030,30 @@ Pomiń tę sekcję jeśli Phase 5.5 nie utworzyła worktree (S-size lub user wyb
 ## Quick Reference Flow
 
 ```
-[0]  PLAN_NUM (zero-pad) + CR_BACKEND + /effort max prośba + TEAMS_ENABLED probe + bypass-mode hint (jeśli L/6-Teams)
-[1]  Analysis: stack → architektura → analog END-TO-END → data model → impact radius → tests → patterns
-     → Analysis Report → open questions? → STOP lub OK
-[2]  H1/H2/H3 hipotezy (każda z referencją do Analysis Report)
-[3]  Rekomendacja Hx
-[4]  Plan: Co&Dlaczego | Rozmiar S/M/L | DoD | Założenia | OOS | Rollback | Tasks (+parallel-group) | Files
-[5]  test -s $PLAN_FILE → ⛔ HARD STOP (approval)
+[0]   PLAN_NUM (zero-pad) + CR_BACKEND + /effort max prośba + TEAMS_ENABLED probe + RALPH_AVAILABLE probe + bypass-mode hint (jeśli L/6-Teams/6-Ralph)
+[1]   Analysis: stack → architektura → analog END-TO-END → data model → impact radius → tests → patterns
+      → Analysis Report → open questions? → STOP lub OK
+[2]   H1/H2/H3 hipotezy (każda z referencją do Analysis Report)
+[3]   Rekomendacja Hx
+[4]   Plan: Co&Dlaczego | Rozmiar S/M/L | DoD | Założenia | OOS | Rollback | Tasks (+parallel-group) | Files
+[5]   test -s $PLAN_FILE → ⛔ HARD STOP (approval)
 [5.5] Worktree decision: S=skip | M=propose (default no) | L=propose strongly (default yes)
        → if accepted: `git worktree add ../<repo>-plan-PLAN_NUM-<slug> -b plan/PLAN_NUM-<slug>` → operate w worktree
-[6]  Pre-flight: context7 docs probe (OBLIGATORYJNE dla każdej external lib) → TaskCreate per zadanie → Routing:
+[5.7] Ralph-loop decision: S=skip | M=skip | L+test-gate/backend/greenfield=propose (default no) | user explicit "ralph"=propose strongly (default yes)
+       → RALPH_MODE=1 wyklucza TEAMS_ENABLED (sequential decision)
+[6]   Pre-flight: context7 docs probe (OBLIGATORYJNE dla każdej external lib) → TaskCreate per zadanie → Routing:
+        ├─ RALPH_MODE=1                              → PHASE 6-Ralph (autonomous loop)
+        │     └─ 6R.0 git → 6R.1 invariants (bypass+plan+clean+tests) → 6R.2 build prompt → 6R.3 /ralph-loop → 6R.5 promise/cancel
         ├─ TEAMS_ENABLED=1 + ≥2 parallel-groups → PHASE 6-Teams (auto-size 2–5)
         │     └─ 6T.0 git → 6T.1 sizing → 6T.2 TaskCreate+spawn → 6T.3 lead TaskUpdate → 6T.5 cleanup
         └─ inaczej                              → PHASE 6-Sequential
               └─ gałąź plan/PLAN_NUM-slug → per-task: TaskUpdate(in_progress) → impl → ORM → validate → git add jawnie → commit → TaskUpdate(completed)
-[7]  7 zakresów testów: unit | integration | system | acceptance | E2E (playwright chrome / CLI fallback) | regression | perf+security
-     → matryca S/M/L → kolejność wykonania → ⛔ GATE
+[7]   7 zakresów testów: unit | integration | system | acceptance | E2E (Playwright Chromium → install → chrome-devtools-mcp → CLI fallback) | regression | perf+security
+      → matryca S/M/L → kolejność wykonania → ⛔ GATE
+[7.6] Ralph-loop test-fix (opcjonalny): RALPH_AVAILABLE=1 + ≥1 czerwony zakres + fixable (nie systemowy bug)
+       → /ralph-loop "fix → re-run → green" --completion-promise "TESTS_GREEN" — skip gdy Phase 6 było 6-Ralph
 [7.8] Live preview (M+ z UI): detect dev cmd → background server → wait ready → Playwright headed Chromium na FEATURE_URL
        → screenshot + console messages → user wizualnie ✅/🔄 → cleanup (kill dev + browser) — skip dla S i backend-only
-[8]  AC (F/T/N, MUST/SHOULD/COULD, Given-When-Then) → FORK wg $CR_BACKEND → CR report z AC verdict → fix 🔴
-[9]  mkdir -p docs/adr → Write ADR (≥6 sekcji + Parallelization jeśli 6-Teams) → sanity check → commit → TaskUpdate(completed)
+[8]   AC (F/T/N, MUST/SHOULD/COULD, Given-When-Then) → FORK wg $CR_BACKEND → CR report z AC verdict → fix 🔴
+[9]   mkdir -p docs/adr → Write ADR (≥6 sekcji + Parallelization jeśli 6-Teams + Ralph-iterations jeśli 6-Ralph) → sanity check → commit → TaskUpdate(completed)
 ```
