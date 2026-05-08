@@ -2,7 +2,7 @@
 
 Protokół dla Phase 7 — **Testing**. Cel: udowodnić, że implementacja spełnia *Definition of Done*
 z planu, **zanim** wejdziemy w Phase 8 (Code Review). Test gate to twardy checkpoint:
-nie idziemy w review z czerwonymi testami warstwy wymaganej dla danego rozmiaru featuru.
+nie idziemy w review z czerwonymi testami zakresu wymaganego dla danego rozmiaru featuru.
 
 > **Zasada nadrzędna:** każdy test mapuje się na konkretny AC z Phase 8.1. Jeśli piszesz test,
 > który nie mapuje się na żaden AC — masz albo brakujący AC, albo niepotrzebny test. Decyduj.
@@ -145,6 +145,12 @@ cat docs/code-reviews/manual-procedures-PLAN_NUM.md
 **Wskaźnik dobrej jakości:** nazwa testu = subject AC-F. `it("AC-F-1: kierownik widzi listę
 schronów po zalogowaniu")`, NIE `it("login works")`.
 
+> **Akceptacyjne to *etykieta zakresu*, nie osobny suite.** Ten sam plik testowy może wystąpić
+> w trace matrix dwa razy — raz pod `test::acceptance` (gdy waliduje konkretny AC-F), raz pod
+> `test::e2e` (gdy testuje boundary/failure niepowiązany 1:1 z żadnym AC-F). Przykład: jeden
+> `shelter-list.spec.ts` zawiera 4 testy `@acceptance` (AC-F-1..4) i 2 testy edge case'ów
+> bez tagu — w raporcie liczone osobno, w trace matrix mapowane różnymi prefiksami.
+
 ---
 
 ### 5. E2E (Playwright Chrome)
@@ -170,19 +176,38 @@ Gdy `npx playwright test --project=chromium` zawodzi z `Executable doesn't exist
 
 ```bash
 # Krok 1: spróbuj zainstalować chromium przez Playwright CLI
-npx playwright install chromium --with-deps 2>&1 | tee /tmp/pw-install.log
+#   UWAGA: nie pipuj przez `tee` jeśli chcesz odczytać exit code — pipe maskuje $?.
+#   Albo użyj `${PIPESTATUS[0]}`, albo zapisz log bez pipe (jak niżej).
+npx playwright install chromium --with-deps > /tmp/pw-install.log 2>&1
+PW_INSTALL_STATUS=$?
 
 # Krok 2a: jeśli install OK → re-run normalnie
-if [ $? -eq 0 ]; then
+if [ "$PW_INSTALL_STATUS" -eq 0 ]; then
   npx playwright test --project=chromium
 else
-  # Krok 2b: brak praw / brak APT → użyj playwright CLI w trybie codegen/headless
-  # z dowolnym dostępnym browserem (firefox / webkit zwykle dostępne w obrazach Playwright)
-  AVAILABLE_BROWSER=$(npx playwright install --dry-run 2>&1 | grep -oE 'chromium|firefox|webkit' | head -1)
+  # Krok 2b: brak praw / brak APT → fallback na browser który JUŻ jest w cache.
+  #   Playwright cache'uje binaria w ~/.cache/ms-playwright (Linux) lub
+  #   ~/Library/Caches/ms-playwright (macOS). Sprawdzamy co realnie jest dostępne;
+  #   firefox/webkit są zwykle preinstallowane w oficjalnych obrazach Playwright.
+  PW_CACHE="${PLAYWRIGHT_BROWSERS_PATH:-$HOME/.cache/ms-playwright}"
+  [ -d "$HOME/Library/Caches/ms-playwright" ] && PW_CACHE="$HOME/Library/Caches/ms-playwright"
+
+  AVAILABLE_BROWSER=""
+  for b in firefox webkit chromium; do
+    if ls -d "$PW_CACHE"/${b}-* >/dev/null 2>&1; then
+      AVAILABLE_BROWSER="$b"; break
+    fi
+  done
+
   echo "FALLBACK: brak Chromium, używam ${AVAILABLE_BROWSER:-firefox}"
-  npx playwright test --project="${AVAILABLE_BROWSER:-firefox}"
+  npx playwright test --project="${AVAILABLE_BROWSER:-firefox}" \
+    --trace=retain-on-failure --screenshot=only-on-failure
 fi
 ```
+
+> **Uwaga o `$?` po pipe** — w domyślnym bashu (bez `set -o pipefail`) `$?` zwraca exit code
+> *ostatniego* polecenia w pipe (zwykle `tee`), nie pierwszego. Dlatego powyżej zapisujemy
+> log przez redirect `> file 2>&1` zamiast `| tee`. Alternatywa: `${PIPESTATUS[0]}`.
 
 **Reguły fallbacku:**
 

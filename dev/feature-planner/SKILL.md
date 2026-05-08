@@ -1,6 +1,6 @@
 ---
 name: feature-planner-v2
-description: Structured feature implementation workflow (Replit Agent style) with auto Agent Teams routing, /effort max boost, and deep-research probe (context7, Explore, defuddle, WebSearch, codex; ZERO Gemini). Use when the user describes a feature, change, or task in natural language and Claude Code should plan and implement it end-to-end. Triggers: "dodaj feature v2", "zaimplementuj v2", "zrób żeby", "feature planner v2", "implement", "build feature", "add functionality" — or any request mixing planning + parallel/sequential implementation + testing + code review + ADR. Runs: detect env → analysis → hypotheses → plan (docs/plany/) → APPROVAL GATE → implement (sequential or 6-Teams auto-routing 2–5 teammates) → testing (7 zakresów: unit/integration/system/acceptance/E2E-playwright-chrome/regression/perf+security per S/M/L) → code review → ADR (docs/adr/). Never skip approval gate or code review.
+description: Structured feature implementation workflow (Replit Agent style) with auto Agent Teams routing, /effort max boost, and deep-research probe (context7, Explore, defuddle, WebSearch, codex; ZERO Gemini). Use when the user describes a feature, change, or task in natural language and Claude Code should plan and implement it end-to-end. Triggers: "dodaj feature v2", "zaimplementuj v2", "zrób żeby", "feature planner v2", "implement", "build feature", "add functionality" — or any request mixing planning + parallel/sequential implementation + testing + code review + ADR. Runs: detect env → analysis → hypotheses → plan (docs/plany/) → APPROVAL GATE → worktree decision (M+: propose, L: rekomendowane) → implement (sequential or 6-Teams auto-routing 2–5 teammates) → testing (7 zakresów: unit/integration/system/acceptance/E2E-playwright-chrome/regression/perf+security per S/M/L) → live preview (M+ z UI: dev server + Playwright headed) → code review → ADR (docs/adr/). Never skip approval gate or code review.
 ---
 
 # Feature Planner v2 — Replit Agent Style + Auto Agent Teams + Deep Research
@@ -423,6 +423,129 @@ grep -c '^## ' "$PLAN_FILE"     # ≥ 8 sekcji
 
 ---
 
+## PHASE 5.5 — WORKTREE DECISION (M+)
+
+Po approval z Phase 5, **przed** Phase 6.−1 (pre-flight) i Phase 6.0 (routing). Decyduje
+czy implementacja idzie w bieżącym katalogu, czy w izolowanym `git worktree`.
+
+### 5.5.1 Decision matrix
+
+| Rozmiar | Worktree | Reason |
+|---------|----------|--------|
+| **S** | ❌ skip (default) | Mała surgical zmiana — overhead worktree > benefit |
+| **M** | 💬 propose (default no) | Średnia zmiana — worktree opcjonalnie pomocny |
+| **L** | ✅ propose strongly (default yes) | Auth/DB/UI krytyczne — izolacja chroni `main` przed long-running zmianami |
+
+**Zawsze propose worktree** (override matrycy) gdy:
+
+- Plan dotyka **migracji DB schema** → DB w worktree można testcontainerem postawić niezależnie.
+- Plan ma `parallel-group: db-migrations` + ≥ 1 inną grupę → 6-Teams łatwiej koordynować
+  ze stabilnym worktree leada.
+- Branch/main jest aktywnie deployowany (CI/CD na każdym pushu) → izolacja zmniejsza
+  ryzyko przypadkowego deploy'u half-implemented featuru.
+
+### 5.5.2 Worktree naming
+
+```bash
+REPO_ROOT=$(git rev-parse --show-toplevel)
+REPO_NAME=$(basename "$REPO_ROOT")
+WORKTREE_PATH="${REPO_ROOT}/../${REPO_NAME}-plan-${PLAN_NUM}-${SLUG}"
+WORKTREE_BRANCH="plan/${PLAN_NUM}-${SLUG}"
+echo "Worktree path:   $WORKTREE_PATH"
+echo "Worktree branch: $WORKTREE_BRANCH"
+```
+
+Konwencja:
+- **Path:** sibling katalogu repo, sufiks `-plan-${PLAN_NUM}-${SLUG}` → łatwo znaleźć i posprzątać.
+- **Branch:** `plan/${PLAN_NUM}-${SLUG}` (ten sam co w Phase 6.0 sequential checkout).
+- **Slug:** kebab-case, krótki (≤ 30 znaków). Wyciągnięty z planu (Phase 4 nazwa featuru).
+
+### 5.5.3 Propose to user
+
+**Dla rozmiaru M:**
+
+```
+🌳 Worktree (opcjonalny, rozmiar M):
+   Mogę wykonać implementację w izolowanym worktree:
+     📁 path:   ../<repo-name>-plan-PLAN_NUM-<slug>/
+     🌿 branch: plan/PLAN_NUM-<slug>
+   Wtedy `main` zostaje czysty — dobry wybór gdy CI deployuje na każdym pushu
+   lub gdy chcesz mieć paralelnie dostępną wersję pre-zmiana.
+
+   ✅  Tak, zrób worktree
+   ❌  Nie, zostań w bieżącym katalogu (default — szybciej, mniej kontekstu)
+```
+
+**Dla rozmiaru L:**
+
+```
+🌳 Worktree (REKOMENDOWANY, rozmiar L):
+   Plan dotyka auth/DB/UI — silnie zalecam pracę w izolowanym worktree:
+     📁 path:   ../<repo-name>-plan-PLAN_NUM-<slug>/
+     🌿 branch: plan/PLAN_NUM-<slug>
+   Korzyści:
+     - main pozostaje stabilny i deployowalny przez całą implementację
+     - możesz porównać side-by-side stan przed/po (preview obu URLi)
+     - rollback to po prostu `git worktree remove` — bez `git reset`
+
+   ✅  Tak, zrób worktree (default)
+   ❌  Nie, zostań w bieżącym katalogu (świadomy wybór)
+```
+
+### 5.5.4 Create worktree
+
+Jeśli accepted:
+
+```bash
+# Pre-flight: walidacja
+git rev-parse --git-dir >/dev/null 2>&1 || { echo "ERROR: not a git repo"; exit 1; }
+git fetch origin >/dev/null 2>&1 || true   # best-effort (offline OK)
+
+# Branch nie może już istnieć (worktree -b tworzy nowy)
+if git show-ref --verify --quiet "refs/heads/$WORKTREE_BRANCH"; then
+  echo "ERROR: branch $WORKTREE_BRANCH already exists"; exit 1
+fi
+
+# Path nie może już istnieć
+[ -e "$WORKTREE_PATH" ] && { echo "ERROR: path $WORKTREE_PATH exists"; exit 1; }
+
+# Create
+git worktree add "$WORKTREE_PATH" -b "$WORKTREE_BRANCH"
+
+# Sanity
+git worktree list
+echo "✅ Worktree created — następne polecenia wykonuję w: $WORKTREE_PATH"
+```
+
+**Po utworzeniu — operuj w `$WORKTREE_PATH`** dla wszystkich Phase 6 / 7 / 8 / 9 commands.
+Plan file (`docs/plany/PLAN_NUM-${SLUG}.md`) jest dziedziczony z commit'u, z którego worktree
+powstał — wciąż go widzisz w worktree. ADR i CR artifacts zapiszesz w worktree, scommitujesz
+na `$WORKTREE_BRANCH`, push'niesz osobno.
+
+### 5.5.5 Skip path (no worktree)
+
+Jeśli user wybrał "zostań w bieżącym katalogu":
+
+```
+📁 Pracuję w bieżącym katalogu. Phase 6 utworzy gałąź plan/PLAN_NUM-<slug>
+   z `git checkout -b` (jak w 6.0 sequential).
+```
+
+Pomiń resztę Phase 5.5 — idź do Phase 6.−1.
+
+### 5.5.6 Worktree cleanup (po Phase 9 / merge)
+
+```bash
+# Po mergu PR (lub gdy plan jest porzucony)
+git worktree remove "$WORKTREE_PATH"
+git branch -d "$WORKTREE_BRANCH"   # jeśli zmergowane (--delete safe)
+```
+
+**Nie usuwaj worktree przed mergem** — chyba że user explicit prosi (plan abandoned).
+Worktree pozostaje dostępny dla post-merge fixes / hotpatchy.
+
+---
+
 ## PHASE 6 — IMPLEMENTATION (routing)
 
 ### 6.−1 Pre-flight: context7 docs probe (OBLIGATORYJNE)
@@ -498,10 +621,21 @@ if git status --porcelain | grep -vq '^??'; then
 fi
 
 CURRENT_BRANCH=$(git branch --show-current)
-case "$CURRENT_BRANCH" in
-  main|master|develop)
-    git checkout -b "plan/${PLAN_NUM}-${SLUG}" ;;
-esac
+EXPECTED_BRANCH="plan/${PLAN_NUM}-${SLUG}"
+
+# Phase 5.5 mogła już utworzyć worktree na expected branch.
+# Trzy stany: (a) jesteśmy w worktree na expected, (b) jesteśmy na main, (c) coś innego.
+if [ "$CURRENT_BRANCH" = "$EXPECTED_BRANCH" ]; then
+  echo "✅ Już na $EXPECTED_BRANCH (prawdopodobnie z worktree Phase 5.5)"
+else
+  case "$CURRENT_BRANCH" in
+    main|master|develop)
+      git checkout -b "$EXPECTED_BRANCH" ;;
+    *)
+      echo "⚠️  Aktualna gałąź: $CURRENT_BRANCH (nie main/expected) — kontynuuję na niej, ale potwierdź"
+      ;;
+  esac
+fi
 ```
 
 ### 6.1 Task registration & Progress Board
@@ -714,7 +848,7 @@ Clean up the team.
 ```
 
 Dalej → Phase 7 (testing). Testy lecą w sesji lead, nie w teammates — łatwiej skoordynować
-4 warstwy i test-gate.
+7 zakresów i test-gate.
 
 ---
 
@@ -753,6 +887,177 @@ unit → typecheck/lint/build → integration → system → acceptance → E2E 
 
 **Każdy test mapuje się na konkretny AC** — zbieraj `test::name` (z prefiksem zakresu:
 `test::unit`, `test::e2e`, `test::security`, `manual::`) teraz, wpisuj do trace matrix w Phase 8.
+
+---
+
+## PHASE 7.8 — LIVE PREVIEW (M+, gdy feature ma UI)
+
+Po test gate green (Phase 7), **przed** Phase 8 code review. Cel: user widzi feature na żywo
+w przeglądarce, zanim zatwierdzi merge. Preview = wizualna acceptance, niezastępowalna
+przez zielone testy automatyczne.
+
+### 7.8.1 Skip rules
+
+- **S** → skip (mała surgical zmiana, review bazuje na diff'ie).
+- **Backend-only** (no UI) → skip — oznacz w raporcie `7.8: n/a — backend-only`.
+- **Pure refactor** (zero zmiany behavior) → skip — preview nic nie pokaże.
+- **M/L z UI** → wymagane.
+
+### 7.8.2 Detect dev server command + port
+
+```bash
+# Node — package.json scripts.dev (Next.js, Vite, Remix, Astro, etc.)
+DEV_CMD=$(jq -r '.scripts.dev // .scripts.start // empty' package.json 2>/dev/null)
+
+# Python fallbacki
+if [ -z "$DEV_CMD" ]; then
+  if   [ -f "manage.py" ]; then DEV_CMD="python manage.py runserver"
+  elif grep -q "fastapi\|uvicorn" pyproject.toml requirements.txt 2>/dev/null; then
+    DEV_CMD="uvicorn app.main:app --reload --port 8000"
+  elif grep -q "flask" pyproject.toml requirements.txt 2>/dev/null; then
+    DEV_CMD="flask run --debug"
+  fi
+fi
+
+# Port detection — z .env, package.json, lub framework default
+DEV_PORT=$(grep -E '^PORT=' .env .env.local 2>/dev/null | head -1 | cut -d= -f2)
+DEV_PORT="${DEV_PORT:-3000}"   # Next.js/Vite default
+
+[ -z "$DEV_CMD" ] && { echo "⚠️  Brak dev command — podaj jak uruchomić serwer"; exit 1; }
+echo "Dev cmd:  $DEV_CMD"
+echo "Dev port: $DEV_PORT"
+```
+
+### 7.8.3 Start dev server (background)
+
+```bash
+# Log do pliku, kill safety
+DEV_LOG="/tmp/dev-${PLAN_NUM}.log"
+nohup $DEV_CMD > "$DEV_LOG" 2>&1 &
+DEV_PID=$!
+echo "Dev server PID: $DEV_PID, log: $DEV_LOG"
+
+# Wait for ready (poll do 60s)
+for i in $(seq 1 30); do
+  if curl -fsS "http://localhost:${DEV_PORT}" >/dev/null 2>&1 \
+     || curl -fsS "http://localhost:${DEV_PORT}/api/health" >/dev/null 2>&1; then
+    echo "✅ Dev server ready na :${DEV_PORT}"
+    READY=1
+    break
+  fi
+  sleep 2
+done
+
+[ "${READY:-0}" -eq 1 ] || {
+  echo "❌ Dev server nie wystartował w 60s — sprawdź $DEV_LOG"
+  tail -30 "$DEV_LOG"
+  kill $DEV_PID 2>/dev/null
+  exit 1
+}
+```
+
+### 7.8.4 Wyciągnij FEATURE_URL
+
+Z planu (Definition of Done lub Relevant files) wywnioskuj URL feature:
+
+- **Konkretna ścieżka w DoD:** `/schrony/lista` → `FEATURE_URL=/schrony/lista`.
+- **Nowy panel:** szukaj nowych plików w `app/`, `pages/`, `routes/`:
+  ```bash
+  git diff --name-only "$FIRST_COMMIT^..HEAD" | grep -E '(app|pages|routes)/.*page\.(tsx|jsx|vue)$' | head -3
+  ```
+- **Brak konkretu:** default `/` i poproś usera o doprecyzowanie po preview.
+
+```bash
+FEATURE_PATH="${FEATURE_PATH:-/}"   # nadpisz jeśli wiesz
+FEATURE_URL="http://localhost:${DEV_PORT}${FEATURE_PATH}"
+echo "Feature URL: $FEATURE_URL"
+```
+
+### 7.8.5 Open in Playwright Chrome (preferowane)
+
+```bash
+# Preferowane: Playwright headed Chromium z screenshot + browser zostaje otwarty
+cat > "/tmp/preview-${PLAN_NUM}.mjs" <<'EOF'
+import { chromium } from 'playwright';
+const url = process.env.FEATURE_URL;
+const out = process.env.SCREENSHOT_PATH;
+const browser = await chromium.launch({ headless: false });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+const page = await ctx.newPage();
+await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+await page.screenshot({ path: out, fullPage: true });
+console.log(`Screenshot: ${out}`);
+console.log('Browser pozostaje otwarty — zamknij ręcznie po przeglądzie.');
+// Trzymaj browser przy życiu — exit dopiero po SIGINT
+await new Promise(() => {});
+EOF
+
+SCREENSHOT_PATH="/tmp/preview-${PLAN_NUM}.png"
+FEATURE_URL="$FEATURE_URL" SCREENSHOT_PATH="$SCREENSHOT_PATH" \
+  node "/tmp/preview-${PLAN_NUM}.mjs" &
+PW_PID=$!
+sleep 5   # daj czas na render + screenshot
+```
+
+### 7.8.6 Fallback: brak Chromium / brak Playwright
+
+Jeśli `chromium.launch()` zawodzi (sandbox / brak deps), wykorzystaj `chrome-devtools-mcp`:
+
+```
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__new_page  → URL = $FEATURE_URL
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__take_screenshot
+mcp__plugin_chrome-devtools-mcp_chrome-devtools__list_console_messages
+```
+
+Screenshot wpisz w raport, console messages zwracaj user'owi (errors w konsoli = blocker preview).
+
+**Fallback-fallback** (cowork bez display, headless): screenshot przez Playwright headless +
+Lighthouse audit:
+
+```bash
+npx playwright screenshot --full-page \
+  --browser=chromium --device='Desktop Chrome' \
+  "$FEATURE_URL" "/tmp/preview-${PLAN_NUM}.png" \
+  || npx playwright screenshot --browser=firefox "$FEATURE_URL" "/tmp/preview-${PLAN_NUM}.png"
+```
+
+### 7.8.7 Show user the preview
+
+```
+🎬 Live preview — Plan #PLAN_NUM
+   Feature URL:  http://localhost:${DEV_PORT}${FEATURE_PATH}
+   Screenshot:   /tmp/preview-${PLAN_NUM}.png
+   Dev server:   PID ${DEV_PID} (log: /tmp/dev-${PLAN_NUM}.log)
+   Browser:      Playwright headed Chromium (lub fallback — patrz raport)
+
+   Sprawdź feature wizualnie. Sprawdź:
+     □ Layout zgodny z mockup'em / DoD
+     □ Brak console errors (F12)
+     □ Mobile viewport OK (resize do 375px)
+     □ Dark mode (jeśli plan dotyka theme)
+     □ Real data, nie placeholdery
+
+   ✅  Wygląda dobrze → Phase 8 code review
+   🔄  Coś nie tak → opisz problem, wracamy do Phase 6 (fix loop)
+```
+
+### 7.8.8 Cleanup po preview
+
+Po decision z user:
+
+```bash
+# Zabij Playwright + dev server
+kill "$PW_PID" 2>/dev/null
+kill "$DEV_PID" 2>/dev/null
+# Force kill jeśli SIGTERM nie zadziałał
+sleep 2; kill -9 "$DEV_PID" 2>/dev/null
+
+# Zachowaj screenshot do PR review (commitów nie commit'uj)
+echo "📸 Screenshot zachowany: /tmp/preview-${PLAN_NUM}.png — załącz w PR opisie"
+```
+
+**Anti-pattern:** dev server zostawiony w tle po Phase 7.8. Każda iteracja zostawia
+proces na port'cie → następny `npm run dev` faila. Zawsze cleanup.
 
 ---
 
@@ -931,8 +1236,10 @@ Lub po prostu sprzątnij listę: `TaskList → TaskUpdate completed` dla wszystk
 | **AC SMART-owe** | Testable, Specific, Traceable, Independent |
 | **AC-F = Given-When-Then** | MUST/SHOULD/COULD |
 | **Trace matrix AC ↔ test** | Każdy MUST ma test lub procedurę manualną |
-| **Test gate przed review** | 7 zakresów per S/M/L matryca; unit+integration+acceptance+regression zawsze; system+E2E od M; perf+security dla L |
+| **Test gate przed review** | 7 zakresów per S/M/L matryca; unit+integration+acceptance+regression zawsze; system+E2E od M; perf+security: L zawsze, M jeśli AC-N istnieje |
 | **E2E preferuje Chromium** | Phase 7 — `playwright --project=chromium`; fallback: `playwright install` → inny browser; brak Chromium ≠ skip E2E |
+| **Worktree dla L, propose dla M** | Phase 5.5 — auth/DB/UI w izolowanym `git worktree add ../<repo>-plan-PLAN_NUM-<slug>` na `plan/PLAN_NUM-<slug>`; S = skip; cleanup po mergu PR, nie wcześniej |
+| **Live preview przed code review** | Phase 7.8 — M+ z UI: start dev server (background) → Playwright headed Chromium na FEATURE_URL → screenshot + console check → user wizualnie zatwierdza → cleanup (zabij dev server + browser) |
 | **Fix 🔴 + AC MUST przed ADR** | Phase 9 dopiero przy zero krytycznych i wszystkich MUST |
 | **PLAN_NUM wszędzie** | Spójny w plikach, commitach, review |
 | **`/effort max` request** | Phase 0.3 — miękka prośba o boost reasoningu, nie blokuje |
@@ -960,6 +1267,8 @@ Lub po prostu sprzątnij listę: `TaskList → TaskUpdate completed` dla wszystk
 [3]  Rekomendacja Hx
 [4]  Plan: Co&Dlaczego | Rozmiar S/M/L | DoD | Założenia | OOS | Rollback | Tasks (+parallel-group) | Files
 [5]  test -s $PLAN_FILE → ⛔ HARD STOP (approval)
+[5.5] Worktree decision: S=skip | M=propose (default no) | L=propose strongly (default yes)
+       → if accepted: `git worktree add ../<repo>-plan-PLAN_NUM-<slug> -b plan/PLAN_NUM-<slug>` → operate w worktree
 [6]  Pre-flight: context7 docs probe (OBLIGATORYJNE dla każdej external lib) → TaskCreate per zadanie → Routing:
         ├─ TEAMS_ENABLED=1 + ≥2 parallel-groups → PHASE 6-Teams (auto-size 2–5)
         │     └─ 6T.0 git → 6T.1 sizing → 6T.2 TaskCreate+spawn → 6T.3 lead TaskUpdate → 6T.5 cleanup
@@ -967,6 +1276,8 @@ Lub po prostu sprzątnij listę: `TaskList → TaskUpdate completed` dla wszystk
               └─ gałąź plan/PLAN_NUM-slug → per-task: TaskUpdate(in_progress) → impl → ORM → validate → git add jawnie → commit → TaskUpdate(completed)
 [7]  7 zakresów testów: unit | integration | system | acceptance | E2E (playwright chrome / CLI fallback) | regression | perf+security
      → matryca S/M/L → kolejność wykonania → ⛔ GATE
+[7.8] Live preview (M+ z UI): detect dev cmd → background server → wait ready → Playwright headed Chromium na FEATURE_URL
+       → screenshot + console messages → user wizualnie ✅/🔄 → cleanup (kill dev + browser) — skip dla S i backend-only
 [8]  AC (F/T/N, MUST/SHOULD/COULD, Given-When-Then) → FORK wg $CR_BACKEND → CR report z AC verdict → fix 🔴
 [9]  mkdir -p docs/adr → Write ADR (≥6 sekcji + Parallelization jeśli 6-Teams) → sanity check → commit → TaskUpdate(completed)
 ```
