@@ -30,10 +30,13 @@ skills/
 
 ### `dev/` — Narzędzia developerskie
 
-| Skill | Zastosowanie |
-|-------|--------------|
-| [`feature-planner`](dev/feature-planner/) | Strukturalny workflow implementacji feature'a (Replit Agent style) z auto Agent Teams routing, `/effort max`, deep-research probe. Pełen cykl: analyze → hypothesize → plan → approval gate → implement → test → review → ADR. |
-| [`feature-planner-codex`](dev/feature-planner-codex/) | Wariant Codex-native (bez Claude-Code-specific koncepcji typu Agent Teams, slash commands). Przeznaczony do pracy w Codex CLI. |
+Trzy warianty workflow planowania feature'a — wybór zależy od środowiska i wymaganego rygoru. Pełne porównanie i decyzja "który użyć kiedy" → [`dev/README.md`](dev/README.md).
+
+| Skill | Wariant | Zastosowanie |
+|-------|---------|--------------|
+| [`feature-planner`](dev/feature-planner/) | **v2** (Claude Code) | Replit Agent style z auto Agent Teams routing, ralph-loop autonomous, `/effort max`, 7 test scopes (unit/integration/system/acceptance/E2E/regression/perf+sec), worktree decision matrix. Domyślny wybór dla **typowych** zadań feature'owych. |
+| [`feature-planner-v3`](dev/feature-planner-v3/) | **v3** (senior-grade) | v2 + deterministyczna uprząż inżynieryjna: 15-wpisowa Anti-Rationalization Table, twardy DoD z surowymi artefaktami, PR Sizing 100/300/1000, Hyrum's Law, Chesterton's Fence, Beyoncé Rule 1:1 AC↔Test, DAMP over DRY, Five-Axis Review, Plan-Validate-Execute, Thin Vertical Slices, Prove-It Pattern. Dla zadań **wysokiego rygoru** — fragile ops, audytowalna delegacja, compliance. |
+| [`feature-planner-codex`](dev/feature-planner-codex/) | **codex-native** | Wariant bez Claude-Code-specific koncepcji (Agent Teams, slash commands). Do pracy w **OpenAI Codex CLI**. |
 
 ## Użycie
 
@@ -47,11 +50,36 @@ Trigger skilla z poziomu czatu:
 
 lub naturalnym językiem zgodnym z `description` w SKILL.md.
 
+### Wybór dev/feature-planner (skrót)
+
+- **„Dodaj endpoint", „zrób X", „zaimplementuj Y"** → `feature-planner` (v2).
+- **„senior-grade feature", „audytowalnie", „fragile op", „migration DB", „auth refactor"** → `feature-planner-v3`.
+- **Praca w Codex CLI** (nie Claude Code) → `feature-planner-codex`.
+
+Pełna decyzja w [`dev/README.md`](dev/README.md).
+
 ## Konwencje
 
 - Każdy skill jest **samodzielny** — wszystkie wymagane templates/references/scripts znajdują się w jego folderze.
-- Skille operacyjne (PZP, legal) generują artefakty w **Obsidian Flavored Markdown** z frontmatterem YAML, gotowe do zapisu w vaulcie KG PSP.
+- Skille operacyjne (`pzp/`, `legal/`) generują artefakty w **Obsidian Flavored Markdown** z frontmatterem YAML, gotowe do zapisu w vaulcie KG PSP.
 - Skille developerskie (`dev/`) zakładają pracę w repozytorium git z konwencjami `docs/plany/`, `docs/adr/`.
+- Pliki referencyjne (`references/X.md`) mają frontmatter z polami `name`, `type: reference`, `parent`, `sources`, `description`.
+- Skrypty (`scripts/X.sh`) — **POSIX shell** (`#!/bin/sh`), `set -eu`, bez bash-isms, exec bit zapisany w git.
+
+## Pryncypia projektowania skilli (od v3)
+
+Skille z najwyższym rygorem (`feature-planner-v3`) respektują pryncypia zaczerpnięte z [Addy Osmani — Agent Skills](https://addyosmani.com/blog/agent-skills/) i *Software Engineering at Google*:
+
+- **Process over Prose** — workflow z punktami kontrolnymi, nie esej o jakości.
+- **Anti-Rationalization Tables** — predefiniowane riposty na wymówki LLM.
+- **Verification with raw artifacts** — surowy log/screenshot/trace, nie parafraza.
+- **Scope Discipline** — *Touch only what you are asked to touch*.
+- **Progressive Disclosure** — meta-skill router, brak ładowania wszystkiego naraz.
+- **Hyrum's Law + Chesterton's Fence** — szanuj obserwowalne zachowania i historyczne decyzje.
+- **Beyoncé Rule** — *If you liked it, you should have put a test on it* (1:1 AC↔Test).
+- **DAMP over DRY w testach** — czytelność diagnostyki > unikanie powtórzeń.
+- **PR Sizing** — ~100 optymalne, >300 wymaga uzasadnienia, >1000 hard stop.
+- **5 Non-negotiables** — uwidaczniaj założenia, zatrzymuj się przy konflikcie, wybieraj nudne rozwiązania, dostarczaj dowód nie deklarację, dotykaj tylko zakresu.
 
 ## Licencja
 
