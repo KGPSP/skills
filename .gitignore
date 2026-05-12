@@ -1,0 +1,57 @@
+# Local-only documentation/scratchpad (nie commitujemy do publicznego repo skills)
+DOC/
+
+# macOS Finder/Spotlight artifacts
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# iCloud / Time Machine sync stubs
+.icloud
+.com.apple.timemachine.donotpresent
+
+# IDE / Editor scratch
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Node / npm (gdyby któryś skill miał demo aplikację)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Python (tooling skills moga miec venv)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Build / coverage artefakty
+dist/
+build/
+coverage/
+*.log
+
+# Tymczasowe artefakty feature-planner workflow
+/tmp/dev-*.log
+/tmp/preview-*.png
+/tmp/ralph-prompt-*.txt
+/tmp/ralph-testfix-*.txt
+/tmp/test-*.log
+.claude/ralph-loop.local.md
+.claude/plan-*.state
