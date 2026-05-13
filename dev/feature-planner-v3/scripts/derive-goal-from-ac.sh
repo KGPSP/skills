@@ -1,22 +1,19 @@
 #!/usr/bin/env bash
 # derive-goal-from-ac.sh — parser AC + generator goal-statement.md/goal-prompt.txt
 # Hard-stopuje na brakach (zgodne ze spec §5.1).
-# Usage: derive-goal-from-ac.sh --plan <path> [--out-dir <dir>] [--strict]
+# Usage: derive-goal-from-ac.sh --plan <path> [--out-dir <dir>]
 
 set -euo pipefail
 
 SCRIPT_VERSION="0.1.0"
 PLAN=""
 OUT_DIR=""
-STRICT=1
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --plan) PLAN="$2"; shift 2 ;;
     --out-dir) OUT_DIR="$2"; shift 2 ;;
-    --strict) STRICT=1; shift ;;
-    --no-strict) STRICT=0; shift ;;
-    -h|--help) echo "Usage: $0 --plan <path> [--out-dir <dir>] [--strict|--no-strict]"; exit 0 ;;
+    -h|--help) echo "Usage: $0 --plan <path> [--out-dir <dir>]"; exit 0 ;;
     *) echo "Unknown arg: $1" >&2; exit 2 ;;
   esac
 done
@@ -83,12 +80,12 @@ while IFS= read -r row; do
 
   if ! [[ "$AC_ID" =~ ^AC-[0-9]+$ ]]; then
     ERRORS+=("$AC_ID: niepoprawny format AC-ID (oczekiwane AC-<digits>)")
+  else
+    if [[ ",$SEEN_AC_IDS," == *",$AC_ID,"* ]]; then
+      ERRORS+=("$AC_ID: duplikat AC-ID")
+    fi
+    SEEN_AC_IDS="$SEEN_AC_IDS,$AC_ID"
   fi
-
-  if [[ ",$SEEN_AC_IDS," == *",$AC_ID,"* ]]; then
-    ERRORS+=("$AC_ID: duplikat AC-ID")
-  fi
-  SEEN_AC_IDS="$SEEN_AC_IDS,$AC_ID"
 
   case "$TYP" in
     F|N|C) ;;
@@ -171,7 +168,7 @@ NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
   echo "- **Próg**: exit 0, zero warnings."
   echo ""
   echo "### AC-COVERAGE — 1:1"
-  echo "- **Komenda**: \`sh dev/feature-planner-v3/scripts/check-ac-coverage.sh --plan ${PLAN}\`"
+  echo "- **Komenda**: \`sh dev/feature-planner-v3/scripts/check-ac-coverage.sh --plan \"${PLAN}\"\`"
   echo "- **Próg**: 100%."
   echo ""
   echo "## Ograniczenia"
