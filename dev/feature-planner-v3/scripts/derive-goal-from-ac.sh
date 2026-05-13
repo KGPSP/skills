@@ -97,6 +97,17 @@ while IFS= read -r row; do
     npm*|pnpm*|yarn*|pytest*|cargo*|go*|make*|sh*|bash*|node*) ;;
     *) ERRORS+=("$AC_ID: Komenda prefix nie jest dozwolony (oczekiwane: npm|pnpm|yarn|pytest|cargo|go|make|sh|bash|node), dostała: $KOMENDA") ;;
   esac
+
+  # Rule 7: Plik testu istnieje LUB ma sufiks .test/.spec (akceptujemy TDD RED).
+  TEST_FILE_TRIM="${TEST_FILE}"
+  if [[ -n "$TEST_FILE_TRIM" ]]; then
+    if [[ ! -f "$TEST_FILE_TRIM" ]]; then
+      case "$TEST_FILE_TRIM" in
+        *.test.*|*.spec.*|*_test.*|*_spec.*|*.test|*.spec) ;;  # OK, TDD RED expected
+        *) ERRORS+=("$AC_ID: Plik testu '$TEST_FILE_TRIM' nie istnieje i nie ma sufiksu .test/.spec (rule 7)") ;;
+      esac
+    fi
+  fi
 done <<<"$AC_TABLE"
 
 # --- Validate Out of scope ---
@@ -120,6 +131,10 @@ if [[ ${#ERRORS[@]} -gt 0 ]]; then
   exit 1
 fi
 
+# Pre-compute constraints count (OOS bullets + 6 hardcoded policy items: Scope, PR Sizing, Anti-Rat, Fragile, Iter cap, Time cap)
+OOS_BULLETS_COUNT=$(awk '/^## Out of scope/{flag=1; next} /^## /{flag=0} flag && /^- /' <<<"$PLAN_CONTENT" | wc -l | xargs)
+CONSTRAINTS_COUNT=$((OOS_BULLETS_COUNT + 6))
+
 # --- Generate goal-statement.md ---
 AC_COUNT=$(wc -l <<<"$AC_TABLE" | xargs)
 NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -132,6 +147,7 @@ NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
   echo "generated-by: scripts/derive-goal-from-ac.sh v${SCRIPT_VERSION}"
   echo "ac-count: ${AC_COUNT}"
   echo "verification-commands: $((AC_COUNT + 2))"
+  echo "constraints-count: ${CONSTRAINTS_COUNT}"
   echo "---"
   echo ""
   echo "# Goal Statement — ${BASENAME}"
@@ -211,8 +227,6 @@ NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
   done <<<"$AC_TABLE"
   printf "wszystkie exit 0. Ograniczenia: zgodne z Out of scope w %s, scope discipline, PR<=1000, brak Fragile zone, max 20 iter, max 480 min.\n" "$PLAN"
 } > "$GOAL_TXT"
-
-CONSTRAINTS_COUNT=$(awk '/^## Ograniczenia/{flag=1; next} /^## /{flag=0} flag && /^- /' "$GOAL_MD" | wc -l | xargs)
 
 echo "OK: AC=${AC_COUNT}, Verification=$((AC_COUNT + 2)), Constraints=${CONSTRAINTS_COUNT}"
 echo "Generated: ${GOAL_MD}"

@@ -97,14 +97,17 @@ loop:
 
 **Scenariusze stop:**
 
-| Status | Trigger | Działanie |
-|---|---|---|
-| `GREEN` | wszystkie cmd exit 0 | przejdź do Phase 6.5/7 |
-| `iter-cap-hit` | iter > max-iter | raport, brak Phase 7, decyzja user |
-| `time-cap-hit` | elapsed > max-time | raport, brak Phase 7, decyzja user |
-| `scope-violation` | plik poza files-touched LUB Fragile path | hard stop, eskalacja |
-| `no-progress` | 3 iter z tym samym error_hash | hard stop, raport |
-| `pr-too-big` | diff > 1000 linii | hard stop, split/justify |
+`run-goal-loop.sh` jest single-shot per invocation: emituje 2 statusy (`GREEN`, `NEEDS_AGENT_ITERATION`). Pozostałe statusy są caller-emitted przez calling Claude session, która agreguje stan między re-invocations.
+
+| Status | Emitent | Trigger | Działanie |
+|---|---|---|---|
+| `GREEN` | skrypt | wszystkie cmd exit 0 | przejdź do Phase 6.5/7 |
+| `NEEDS_AGENT_ITERATION` | skrypt | ≥1 cmd fail | hand-off do calling agent, re-invoke po commit |
+| `iter-cap-hit` | caller | iter > max-iter | raport, brak Phase 7, decyzja user |
+| `time-cap-hit` | caller | elapsed > max-time | raport, brak Phase 7, decyzja user |
+| `scope-violation` | caller | plik poza files-touched LUB Fragile path | hard stop, eskalacja |
+| `no-progress` | caller | 3 iter z tym samym error_hash | hard stop, raport |
+| `pr-too-big` | caller | diff > 1000 linii | hard stop, split/justify |
 
 ## 7. Anti-Rationalization variant dla goal-mode
 
@@ -123,8 +126,8 @@ Wiersz #11 z głównej tabeli + 3 dodatkowe specyficzne:
 - Header: timestamp start, basename goala.
 - Per cmd: header (### AC-X — T-Y), `Command:`, fenced raw output, `Exit code:`.
 
-**`goal-result.md`** (final summary):
-- `status`: GREEN | iter-cap-hit | time-cap-hit | scope-violation | no-progress | pr-too-big.
+**`goal-result.md`** (final summary, agregat caller + skrypt):
+- `status`: `GREEN` lub `NEEDS_AGENT_ITERATION` (emitted by skrypt) — calling session nadpisuje na `iter-cap-hit | time-cap-hit | scope-violation | no-progress | pr-too-big` w odpowiednich sytuacjach przed Phase 7.
 - `started`, `ended`.
 - `commands`: count.
 - `log`: ścieżka do run-log.
