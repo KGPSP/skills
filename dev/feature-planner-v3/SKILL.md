@@ -199,6 +199,40 @@ Reguła v3: każda iteracja ralph-loop **MUSI** przejść przez Anti-Rationaliza
 
 ---
 
+## Phase 5.8 — Goal Mode decision + auto-derive
+
+Aktywuje się **tylko** gdy prompt zawiera `/goal` lub `goal mode`.
+
+**Exclusivity:**
+- `/goal` + `/ralph` → hard stop. „Wybierz jedną strategię pętli."
+- `/goal` + `/teams` → hard stop. Konflikt modeli wykonawczych.
+- `/goal` + `--fragile` (z Phase 0) → hard stop. Fragile zone wymusza Plan-Validate-Execute; autonomia niedozwolona, eskalacja do operatora.
+
+**Goal derivation (deterministyczna):**
+
+1. `sh {baseDir}/dev/feature-planner-v3/scripts/derive-goal-from-ac.sh --plan "$PLAN_FILE"`.
+2. Skrypt waliduje 10 reguł (patrz [goal-mode-protocol.md](references/goal-mode-protocol.md) §3).
+3. Brak któregokolwiek pola → exit 1 + lista braków + lokalizacje. Faza zatrzymana.
+4. Generuje:
+   - `plans/<N>-<slug>-goal-statement.md` (markdown, strukturalny).
+   - `plans/<N>-<slug>-goal-prompt.txt` (plain text, single block).
+
+> [!warning] Output Phase 5.8
+> `goal-statement.md` + `goal-prompt.txt`. Komunikat: „Goal-statement wygenerowany. Czekam na APPROVAL #1.5."
+
+### Gate #1.5 — Goal Approval
+
+> [!important] Approval checklist
+> - [ ] `goal-statement.md` niepusty (`test -s`).
+> - [ ] Trzy sekcje: `## Stan końcowy`, `## Weryfikacja`, `## Ograniczenia`.
+> - [ ] Każde AC z planu → bullet w `## Stan końcowy` (1:1).
+> - [ ] Każda `Komenda` z AC → blok w `## Weryfikacja`.
+> - [ ] `## Out of scope` z planu obecne w `## Ograniczenia`.
+>
+> **STOP — czekaj na jawną zgodę użytkownika.** Bez „zatwierdzam goal" / „proceed goal" / ręcznej edycji + „ok" → brak startu 6-Goal.
+
+---
+
 ## Phase 6 — Implementation + APPROVAL GATE #2
 
 Routing implementacji:
