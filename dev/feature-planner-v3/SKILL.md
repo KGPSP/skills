@@ -1,6 +1,6 @@
 ---
 name: feature-planner-v3
-description: Senior-grade feature workflow z deterministyczną uprzężą inżynieryjną. Rozszerza v2 (Replit Agent style, Agent Teams, ralph-loop, worktree, 7 test scopes) o twarde bramki z material_skill.md + since_skill.md — Anti-Rationalization, Hyrum's Law, Chesterton's Fence, Beyoncé Rule, DAMP over DRY, PR Sizing, Five-Axis Review, Plan-Validate-Execute dla fragile ops, Thin Vertical Slices, Prove-It Pattern. Używaj gdy zadanie wymaga audytowalnej delegacji na agenta AI z mierzalnymi exit criteria w każdej fazie.
+description: Senior-grade feature workflow z deterministyczną uprzężą inżynieryjną. Rozszerza v2 (Replit Agent style, Agent Teams, ralph-loop, worktree, 7 test scopes) o twarde bramki z material_skill.md + since_skill.md — Anti-Rationalization, Hyrum's Law, Chesterton's Fence, Beyoncé Rule, DAMP over DRY, PR Sizing, Five-Axis Review, Plan-Validate-Execute dla fragile ops, Thin Vertical Slices, Prove-It Pattern. Używaj gdy zadanie wymaga audytowalnej delegacji na agenta AI z mierzalnymi exit criteria w każdej fazie. Plus /goal mode auto-derived z AC (Phase 5.8 + 6-Goal route).
 trigger:
   - "feature-planner v3"
   - "dodaj feature v3"
@@ -8,6 +8,8 @@ trigger:
   - "implement v3"
   - "zaimplementuj v3"
   - "ralph v3"
+  - "/goal"
+  - "goal mode"
 do-not-trigger-for:
   - "przeczytaj plik X"
   - "wytłumacz co robi ten kod"
@@ -20,6 +22,7 @@ allowed-tools: ['Bash', 'Read', 'Edit', 'Write', 'Grep', 'Glob', 'TodoWrite', 'A
 sources:
   - DOC/material_skill.md
   - DOC/since_skill.md
+  - DOC/goal_mode.md
 version: v3
 extends: feature-planner-v2
 size-limit: 500-lines-hard
@@ -55,10 +58,11 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 | 8 | „Usunąłem martwy kod" | Chesterton's Fence. Bez `why-this-existed:` — przywróć. |
 | 9 | „Test pokrywa happy path" | Beyoncé Rule. Każdy edge case z AC-N → osobny test. |
 | 10 | „DRY-uję testy w helper" | DAMP over DRY. Test czytelny jak spec, bez magicznych helperów. |
+| 11 | „Goal-statement deryw kompletny, można pominąć Gate #1.5" | Gate #1.5 jest nienegocjowalny w /goal. Bez jawnej zgody → brak startu pętli. |
 
 ---
 
-## Architektura: 14 faz + 5 bramek approval
+## Architektura: 15 faz + 6 bramek approval
 
 | Faza | Cel | Bramka |
 |---|---|---|
@@ -71,6 +75,7 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 | 5 | Save plan | **APPROVAL #1** |
 | 5.5 | Worktree decision (S/M/L) | — |
 | 5.7 | Ralph-loop decision (opt-in L) | — |
+| 5.8 | Goal Mode decision + auto-derive (tylko /goal) | **APPROVAL #1.5** |
 | 6 | Implementation (Sequential / Teams / Ralph) | **APPROVAL #2** |
 | 6.5 | Prove-It Pattern (bugfix only) | — |
 | 7 | Testing 7 scopes + raw logs + build clean | **APPROVAL #3** |
@@ -189,6 +194,43 @@ Aktywuj **tylko** gdy: (a) size L, (b) testy zielone w v2 dla podobnej fazy, (c)
 
 Reguła v3: każda iteracja ralph-loop **MUSI** przejść przez Anti-Rationalization quick-table. Brak skrótu na „już to widziałem w poprzedniej iteracji".
 
+> [!warning] Exclusivity z /goal
+> `/goal` jest exclusive z `/ralph` i `/teams`. Jeśli w prompcie pojawi się więcej niż jeden z trzech triggerów → Phase 5.8 hard-stopuje. Wybierz jedną strategię pętli.
+
+---
+
+## Phase 5.8 — Goal Mode decision + auto-derive
+
+Aktywuje się **tylko** gdy prompt zawiera `/goal` lub `goal mode`.
+
+**Exclusivity:**
+- `/goal` + `/ralph` → hard stop. „Wybierz jedną strategię pętli."
+- `/goal` + `/teams` → hard stop. Konflikt modeli wykonawczych.
+- `/goal` + `--fragile` (z Phase 0) → hard stop. Fragile zone wymusza Plan-Validate-Execute; autonomia niedozwolona, eskalacja do operatora.
+
+**Goal derivation (deterministyczna):**
+
+1. `sh {baseDir}/dev/feature-planner-v3/scripts/derive-goal-from-ac.sh --plan "$PLAN_FILE"`.
+2. Skrypt waliduje 10 reguł (patrz [goal-mode-protocol.md](references/goal-mode-protocol.md) §3).
+3. Brak któregokolwiek pola → exit 1 + lista braków + lokalizacje. Faza zatrzymana.
+4. Generuje:
+   - `plans/<N>-<slug>-goal-statement.md` (markdown, strukturalny).
+   - `plans/<N>-<slug>-goal-prompt.txt` (plain text, single block).
+
+> [!warning] Output Phase 5.8
+> `goal-statement.md` + `goal-prompt.txt`. Komunikat: „Goal-statement wygenerowany. Czekam na APPROVAL #1.5."
+
+### Gate #1.5 — Goal Approval
+
+> [!important] Approval checklist
+> - [ ] `goal-statement.md` niepusty (`test -s`).
+> - [ ] Trzy sekcje: `## Stan końcowy`, `## Weryfikacja`, `## Ograniczenia`.
+> - [ ] Każde AC z planu → bullet w `## Stan końcowy` (1:1).
+> - [ ] Każda `Komenda` z AC → blok w `## Weryfikacja`.
+> - [ ] `## Out of scope` z planu obecne w `## Ograniczenia`.
+>
+> **STOP — czekaj na jawną zgodę użytkownika.** Bez „zatwierdzam goal" / „proceed goal" / ręcznej edycji + „ok" → brak startu 6-Goal.
+
 ---
 
 ## Phase 6 — Implementation + APPROVAL GATE #2
@@ -197,6 +239,7 @@ Routing implementacji:
 - **6-Sequential** — domyślnie dla S/M.
 - **6-Teams** (2-5 agentów) — dla L gdy parallel safe.
 - **6-Ralph** — autonomous L z zielonym test gate.
+- **6-Goal** — autonomous goal-driven loop (tylko gdy `/goal`, exclusive z Ralph/Teams).
 
 Pre-flight: `git status` clean. Build baseline check.
 
@@ -214,6 +257,28 @@ Dla każdej slice (Thin Vertical Slices — [incremental-implementation.md](refe
 7. **Anti-rationalization quick-check** przed `git commit` (przejdź tabelę).
 8. **Safe Defaults** — niedokończone slices za feature flagą.
 9. Przejdź do następnej slice.
+
+### 6-Goal — autonomous goal-driven loop
+
+Pre-flight: APPROVAL #1.5 ✅, `git status` clean, build baseline.
+
+Driver: `sh {baseDir}/dev/feature-planner-v3/scripts/run-goal-loop.sh --goal "$GOAL_FILE" --plan "$PLAN_FILE" --max-iter 20 --max-time 480`.
+
+Per iteracja:
+
+1. Uruchom wszystkie `## Weryfikacja` cmd-y → raw log do `goal-run-log.md`.
+2. Wszystkie exit 0 → **GREEN**, exit pętli, Phase 6.5/7.
+3. Pierwsze fail (lex po AC-ID) → kontekst do next iter (hand-off do calling agenta).
+4. **Anti-Rationalization quick-check** (11 wierszy) przed każdym commitem.
+5. **PR Sizing + Fragile guard + Out-of-scope guard** → STOP przy violation.
+
+Stop warunki (poza GREEN):
+- `iter > max-iter` → status `iter-cap-hit`.
+- `elapsed > max-time` → status `time-cap-hit`.
+- Fragile/scope violation → status `scope-violation`.
+- 3 iter bez progresu (ten sam error_hash) → status `no-progress`.
+
+Każdy stop ≠ GREEN: raport do użytkownika, **brak Phase 7**, brak merge.
 
 > [!danger] Jeśli `--fragile`
 > Reżim **Plan-Validate-Execute** — patrz [fragile-operations-protocol.md](references/fragile-operations-protocol.md). Bez kreatywności. Dosłowne wykonanie zatwierdzonych komend.
@@ -318,6 +383,7 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 
 ### Protokoły projektowe (warstwa B — since_skill.md)
 
+- [goal-mode-protocol.md](references/goal-mode-protocol.md) — Phase 5.8 + 6-Goal + Gate #1.5 protokół.
 - [fragile-operations-protocol.md](references/fragile-operations-protocol.md) — Plan-Validate-Execute.
 - [incremental-implementation.md](references/incremental-implementation.md) — Thin Vertical Slices.
 - [five-axis-review.md](references/five-axis-review.md) — 5 osi + severity + Multi-Model.
@@ -330,6 +396,8 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - `scripts/check-ac-coverage.sh` — 1:1 AC ↔ test.
 - `scripts/extract-raw-log.sh` — DoD evidence helper.
 - `scripts/api-impact-scan.sh` — Hyrum risk scan.
+- `scripts/derive-goal-from-ac.sh` — AC → goal-statement.md generator.
+- `scripts/run-goal-loop.sh` — autonomous goal-driven loop driver.
 
 ### Szablon
 
@@ -342,3 +410,4 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - [DOC/material_skill.md](../../DOC/material_skill.md) — pryncypia procesowe (Process over Prose, Anti-rationalization, DoD, Scope Discipline, Hyrum, Chesterton, Beyoncé, DAMP, 5 Non-negotiables).
 - [DOC/since_skill.md](../../DOC/since_skill.md) — pryncypia projektowe skilla (token budget, kebab-case, imperatyw, scripts/, Negative Triggers, Anti-Laziness, Plan-Validate-Execute, Five-Axis Review, Thin Vertical Slices, Prove-It).
 - [dev/feature-planner/SKILL.md](../feature-planner/SKILL.md) — v2 baseline (Agent Teams, ralph-loop, worktree decision, 7 test scopes).
+- [DOC/goal_mode.md](../../DOC/goal_mode.md) — pattern „stan końcowy + weryfikacja + ograniczenia", przykłady, antywzorce.
