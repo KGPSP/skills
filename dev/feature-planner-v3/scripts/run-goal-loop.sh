@@ -40,23 +40,60 @@ done
 
 [[ -z "$GOAL" ]] && { echo "ERR: --goal required" >&2; exit 2; }
 [[ -z "$PLAN" ]] && { echo "ERR: --plan required" >&2; exit 2; }
+
+if [[ "$MAX_ITER" -lt 1 ]]; then
+  echo "ERR: --max-iter must be >= 1 (got: $MAX_ITER). Unlimited iter forbidden per protocol §10." >&2
+  exit 2
+fi
+if [[ "$MAX_TIME" -lt 1 ]]; then
+  echo "ERR: --max-time must be >= 1 minute (got: $MAX_TIME)." >&2
+  exit 2
+fi
+
 [[ ! -f "$GOAL" ]] && { echo "ERR: goal file not found: $GOAL" >&2; exit 1; }
 [[ ! -f "$PLAN" ]] && { echo "ERR: plan file not found: $PLAN" >&2; exit 1; }
 
+# Compute or verify goal-statement.md SHA256 (TOCTOU protection)
+GOAL_SHA_FILE="${GOAL}.sha256"
+GOAL_SHA_CURRENT=$(shasum -a 256 "$GOAL" 2>/dev/null | awk '{print $1}')
+if [[ -z "$GOAL_SHA_CURRENT" ]]; then
+  GOAL_SHA_CURRENT=$(sha256sum "$GOAL" 2>/dev/null | awk '{print $1}')
+fi
+
+if [[ -f "$GOAL_SHA_FILE" ]]; then
+  GOAL_SHA_EXPECTED=$(cat "$GOAL_SHA_FILE")
+  if [[ "$GOAL_SHA_CURRENT" != "$GOAL_SHA_EXPECTED" ]]; then
+    echo "ERR: goal-statement.md SHA256 mismatch — file modified after Gate #1.5 approval" >&2
+    echo "  expected: $GOAL_SHA_EXPECTED" >&2
+    echo "  current:  $GOAL_SHA_CURRENT" >&2
+    echo "  hint: re-run derive-goal-from-ac.sh + Gate #1.5 jeśli zmiana zamierzona" >&2
+    exit 2
+  fi
+else
+  echo "$GOAL_SHA_CURRENT" > "$GOAL_SHA_FILE"
+  echo "INFO: SHA256 baseline captured at $GOAL_SHA_FILE" >&2
+fi
+
 GOAL_CONTENT=$(tr -d '\r' < "$GOAL")
 
-# --- Parse verification commands ---
+# --- Parse verification commands (scoped to ## Weryfikacja section only) ---
 # Each "### AC-X — T-Y" block has a "Komenda" line.
 # Use bash 3.2-compatible array population (no mapfile).
-CMD_LINES=()
-while IFS= read -r line; do
-  CMD_LINES+=("$line")
-done < <(grep "^- \*\*Komenda\*\*:" <<<"$GOAL_CONTENT")
+WERYFIKACJA_SECTION=$(awk '/^## Weryfikacja/{flag=1; next} /^## /{flag=0} flag' <<<"$GOAL_CONTENT")
+if [[ -z "$WERYFIKACJA_SECTION" ]]; then
+  echo "ERR: missing '## Weryfikacja' section in $GOAL" >&2
+  exit 1
+fi
 
+CMD_LINES=()
 AC_HEADERS=()
 while IFS= read -r line; do
+  CMD_LINES+=("$line")
+done < <(grep "^- \*\*Komenda\*\*:" <<<"$WERYFIKACJA_SECTION")
+
+while IFS= read -r line; do
   AC_HEADERS+=("$line")
-done < <(grep "^### " <<<"$GOAL_CONTENT")
+done < <(grep "^### " <<<"$WERYFIKACJA_SECTION")
 
 if [[ ${#CMD_LINES[@]} -eq 0 ]]; then
   echo "ERR: no verification commands found in $GOAL" >&2
@@ -94,6 +131,9 @@ LOG_DIR=$(dirname "$GOAL")
 RUN_LOG="${LOG_DIR}/$(basename "$GOAL" -goal-statement.md)-goal-run-log.md"
 RESULT="${LOG_DIR}/$(basename "$GOAL" -goal-statement.md)-goal-result.md"
 
+# Capture baseline git commit for fragile-zone diff check at script start.
+BASELINE_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "")
+
 START_TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 echo "# Goal Run Log — $(basename "$GOAL")" > "$RUN_LOG"
 echo "" >> "$RUN_LOG"
@@ -108,12 +148,29 @@ FIRST_FAIL_OUT=""
 for i in "${!CMD_LINES[@]}"; do
   HEADER="${AC_HEADERS[$i]:-(no header)}"
   CMD=$(echo "${CMD_LINES[$i]}" | sed 's/^- \*\*Komenda\*\*: //' | sed 's/^`//; s/`$//')
+
+  # Hard-stop on Komenda chaining/expansion (Critical security fix)
+  if [[ "$CMD" =~ (\&\&|\|\||\;|\$\(|\`|\| ) ]]; then
+    echo "STATUS=scope-violation" >&2
+    echo "ERR: Komenda contains forbidden chaining/substitution: $CMD" >&2
+    echo "Allowed: single-command invocations only. No &&, ||, ;, |, \$(...), backticks." >&2
+    {
+      echo "# Goal Result"
+      echo ""
+      echo "- **status**: scope-violation"
+      echo "- **reason**: command chaining detected in Komenda"
+      echo "- **cmd**: $CMD"
+      echo "- **header**: $HEADER"
+    } > "$RESULT"
+    exit 2
+  fi
+
   echo "## ${HEADER}" >> "$RUN_LOG"
   echo "Command: \`${CMD}\`" >> "$RUN_LOG"
   echo "" >> "$RUN_LOG"
   echo '```' >> "$RUN_LOG"
-  OUT=$(bash -c "$CMD" 2>&1) || true
-  RC=$?
+  RC=0
+  OUT=$(bash -c "$CMD" 2>&1) || RC=$?
   echo "$OUT" >> "$RUN_LOG"
   echo '```' >> "$RUN_LOG"
   echo "Exit code: $RC" >> "$RUN_LOG"
@@ -128,6 +185,36 @@ for i in "${!CMD_LINES[@]}"; do
 done
 
 END_TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+# Fragile-zone enforcement: refuse to proceed if any fragile path was touched.
+if [[ -n "$BASELINE_COMMIT" ]] && command -v git >/dev/null 2>&1; then
+  CHANGED_FILES=$(git diff --name-only "$BASELINE_COMMIT" 2>/dev/null; git diff --name-only --cached 2>/dev/null; git ls-files --others --exclude-standard 2>/dev/null)
+  IFS=',' read -ra FRAGILE_ARR <<<"$FRAGILE_PATHS"
+  VIOLATIONS=()
+  for fragile in "${FRAGILE_ARR[@]}"; do
+    [[ -z "$fragile" ]] && continue
+    while IFS= read -r changed; do
+      [[ -z "$changed" ]] && continue
+      case "$changed" in
+        "$fragile"*) VIOLATIONS+=("$changed (matches $fragile)") ;;
+      esac
+    done <<<"$CHANGED_FILES"
+  done
+  if [[ ${#VIOLATIONS[@]} -gt 0 ]]; then
+    echo "STATUS=scope-violation" >&2
+    echo "ERR: fragile-zone files touched (autonomy forbidden):" >&2
+    for v in "${VIOLATIONS[@]}"; do echo "  - $v" >&2; done
+    {
+      echo "# Goal Result"
+      echo ""
+      echo "- **status**: scope-violation"
+      echo "- **reason**: fragile-zone files touched"
+      echo "- **violations**:"
+      for v in "${VIOLATIONS[@]}"; do echo "  - $v"; done
+    } > "$RESULT"
+    exit 2
+  fi
+fi
 
 if [[ $ALL_GREEN -eq 1 ]]; then
   STATUS="GREEN"

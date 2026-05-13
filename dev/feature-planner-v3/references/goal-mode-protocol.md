@@ -38,7 +38,7 @@
 4. Każdy wiersz ma wypełnione 6 kolumn (brak `-`, `TBD`, `TODO`, pusty).
 5. AC-ID unikalne, regex `^AC-\d+$`.
 6. Typ ∈ {F, N, C}.
-7. Plik testu istnieje LUB ma sufiks `.test`/`.spec` (akceptujemy TDD RED).
+7. Plik testu istnieje **LUB** plik z sufiksem `.test`/`.spec`/`_test`/`_spec` nie istnieje (akceptujemy TDD RED — test zostanie utworzony jako pierwszy krok w 6-Goal). Plik bez sufiksu testowego MUSI istnieć (no implicit creation).
 8. Komenda zaczyna się od `npm|pnpm|yarn|pytest|cargo|go|make|sh|bash|node`.
 9. Sekcja `## Out of scope` istnieje, ma ≥1 bullet.
 10. Sekcja `## Definition of Done` istnieje z formatem dowodu per AC.
@@ -72,7 +72,13 @@ Po wygenerowaniu `goal-statement.md` skrypt STOP-uje i czeka na jawną zgodę u�
 - "zatwierdzam goal" / "proceed goal" / "ok goal" / "approve".
 - Ręczna edycja `goal-statement.md` w edytorze + "ok".
 
-**Brak zgody → brak startu 6-Goal.** Eskalacja przy 3 odmowach.
+**Brak zgody → brak startu 6-Goal.**
+
+Procedura eskalacji (po 3 odmowach Gate #1.5):
+1. Cancel /goal mode dla tego planu.
+2. Wróć do Phase 4: zrewidować plan AC (najczęściej Komenda była nieodpowiednia, AC subiektywne, lub Out of scope niekompletne).
+3. Re-run Phase 5.8 z poprawionym planem.
+4. Jeśli 3 odmowy z rzędu po regeneracji — eskaluj do operatora ludzkiego (nie ma sensownego goal-statement, sygnał że /goal nie pasuje do tego use-case'a).
 
 ## 6. 6-Goal — kontrakt pętli
 
@@ -125,9 +131,10 @@ Wiersz #11 z głównej tabeli + 3 dodatkowe specyficzne:
 **`goal-run-log.md`** (append-only, raw):
 - Header: timestamp start, basename goala.
 - Per cmd: header (### AC-X — T-Y), `Command:`, fenced raw output, `Exit code:`.
+- **Append-only gwarancja**: log-writes są `>> "$RUN_LOG"`. Atomic mid-iter writes nie są gwarantowane; consumer powinien tolerować incomplete fenced blocks przy crash recovery.
 
 **`goal-result.md`** (final summary, agregat caller + skrypt):
-- `status`: `GREEN` lub `NEEDS_AGENT_ITERATION` (emitted by skrypt) — calling session nadpisuje na `iter-cap-hit | time-cap-hit | scope-violation | no-progress | pr-too-big` w odpowiednich sytuacjach przed Phase 7.
+- `status`: `GREEN` lub `NEEDS_AGENT_ITERATION` (emitted by skrypt). Calling session **rewrite-uje** cały plik (atomic mv) na `iter-cap-hit | time-cap-hit | scope-violation | no-progress | pr-too-big` przed Phase 7. Append-only NIE jest gwarantowane dla statusu (jeden status terminalny per run).
 - `started`, `ended`.
 - `commands`: count.
 - `log`: ścieżka do run-log.

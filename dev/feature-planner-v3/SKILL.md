@@ -1,6 +1,6 @@
 ---
 name: feature-planner-v3
-description: Senior-grade feature workflow z deterministyczną uprzężą inżynieryjną. Rozszerza v2 (Replit Agent style, Agent Teams, ralph-loop, worktree, 7 test scopes) o twarde bramki z material_skill.md + since_skill.md — Anti-Rationalization, Hyrum's Law, Chesterton's Fence, Beyoncé Rule, DAMP over DRY, PR Sizing, Five-Axis Review, Plan-Validate-Execute dla fragile ops, Thin Vertical Slices, Prove-It Pattern. Używaj gdy zadanie wymaga audytowalnej delegacji na agenta AI z mierzalnymi exit criteria w każdej fazie. Plus /goal mode auto-derived z AC (Phase 5.8 + 6-Goal route).
+description: Senior-grade feature workflow z deterministyczną uprzężą inżynieryjną. Rozszerza v2 (Replit Agent style, Agent Teams, ralph-loop, worktree, 7 test scopes) o twarde bramki z material_skill.md + since_skill.md — Anti-Rationalization, Hyrum's Law, Chesterton's Fence, Beyoncé Rule, DAMP over DRY, PR Sizing, Five-Axis Review, Plan-Validate-Execute dla fragile ops, Thin Vertical Slices, Prove-It Pattern. Używaj gdy zadanie wymaga audytowalnej delegacji na agenta AI z mierzalnymi exit criteria w każdej fazie. Plus /goal mode — autonomiczna pętla weryfikacji AC z mierzalnym stopem (Phase 5.8 + 6-Goal route).
 trigger:
   - "feature-planner v3"
   - "dodaj feature v3"
@@ -62,7 +62,7 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 
 ---
 
-## Architektura: 15 faz + 6 bramek approval
+## Architektura: 16 faz + 6 bramek approval
 
 | Faza | Cel | Bramka |
 |---|---|---|
@@ -76,7 +76,7 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 | 5.5 | Worktree decision (S/M/L) | — |
 | 5.7 | Ralph-loop decision (opt-in L) | — |
 | 5.8 | Goal Mode decision + auto-derive (tylko /goal) | **APPROVAL #1.5** |
-| 6 | Implementation (Sequential / Teams / Ralph) | **APPROVAL #2** |
+| 6 | Implementation (Sequential / Teams / Ralph / Goal) | **APPROVAL #2** |
 | 6.5 | Prove-It Pattern (bugfix only) | — |
 | 7 | Testing 7 scopes + raw logs + build clean | **APPROVAL #3** |
 | 7.8 | Live preview UI (M+) | **APPROVAL #4** |
@@ -280,6 +280,9 @@ Stop warunki (poza GREEN):
 
 Każdy stop ≠ GREEN: raport do użytkownika, **brak Phase 7**, brak merge.
 
+> [!note] Emitenci statusów
+> Skrypt `run-goal-loop.sh` emituje TYLKO `GREEN` lub `NEEDS_AGENT_ITERATION` (single-shot per invocation). Pozostałe statusy (`iter-cap-hit`, `time-cap-hit`, `no-progress`) są emitted by calling Claude session która agreguje stan między re-invocations. Patrz [goal-mode-protocol.md §8](references/goal-mode-protocol.md).
+
 > [!danger] Jeśli `--fragile`
 > Reżim **Plan-Validate-Execute** — patrz [fragile-operations-protocol.md](references/fragile-operations-protocol.md). Bez kreatywności. Dosłowne wykonanie zatwierdzonych komend.
 
@@ -410,4 +413,4 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - [DOC/material_skill.md](../../DOC/material_skill.md) — pryncypia procesowe (Process over Prose, Anti-rationalization, DoD, Scope Discipline, Hyrum, Chesterton, Beyoncé, DAMP, 5 Non-negotiables).
 - [DOC/since_skill.md](../../DOC/since_skill.md) — pryncypia projektowe skilla (token budget, kebab-case, imperatyw, scripts/, Negative Triggers, Anti-Laziness, Plan-Validate-Execute, Five-Axis Review, Thin Vertical Slices, Prove-It).
 - [dev/feature-planner/SKILL.md](../feature-planner/SKILL.md) — v2 baseline (Agent Teams, ralph-loop, worktree decision, 7 test scopes).
-- [DOC/goal_mode.md](../../DOC/goal_mode.md) — pattern „stan końcowy + weryfikacja + ograniczenia", przykłady, antywzorce.
+- [DOC/goal_mode.md](../../DOC/goal_mode.md) (local-only, gitignored) — pattern „stan końcowy + weryfikacja + ograniczenia", przykłady, antywzorce.
