@@ -301,9 +301,12 @@ Algorytm:
      d. Pierwsze fail (lex po AC-ID) → focus.
      e. No-progress check: error_hash(stdout+stderr) identyczny jak iter
         N-1 i N-2 → STOP no-progress.
-     f. Wywołaj agenta (sub-call) z kontekstem: goal-prompt + focus cmd
-        + raw output + diff od baseline.
-     g. Agent commituje atomic. Pre-commit walidacja:
+     f. **Hand-off do calling agenta** (Claude session): skrypt drukuje
+        do stdout ustrukturyzowany kontekst (goal-prompt + focus cmd + raw
+        output + diff od baseline) i czeka na agent commit. Skrypt sam
+        NIE woła LLM — jest walidatorem/driverem, nie orchestrator-em
+        modelu. Wzorzec: same jak Ralph-loop w v3.
+     g. Agent commituje atomic. Pre-commit walidacja (skrypt re-uruchamia):
         - anti-rationalization quick-check (11 wierszy).
         - `git diff --name-only HEAD^` → filter:
           - przecięcie z fragile-paths ≠ ∅ → STOP scope-violation.
@@ -378,6 +381,8 @@ Skrypt **nie commituje samodzielnie** — orkiestruje agenta, waliduje przed/po.
 | `dev/feature-planner-v3/references/goal-mode-protocol.md` | — | ~180 | +180 |
 | `dev/feature-planner-v3/scripts/derive-goal-from-ac.sh` | — | ~150 | +150 |
 | `dev/feature-planner-v3/scripts/run-goal-loop.sh` | — | ~250 | +250 |
+| `dev/feature-planner-v3/tests/fixtures/complete-plan.md` | — | ~80 | +80 |
+| `dev/feature-planner-v3/tests/fixtures/incomplete-plan.md` | — | ~70 | +70 |
 | `DOC/goal_mode.md` | 48 | 49 | +1 |
 
 Bufor w SKILL.md: 86 linii (zostaje na drobne korekty po self-review).
@@ -386,10 +391,12 @@ Bufor w SKILL.md: 86 linii (zostaje na drobne korekty po self-review).
 
 ## 10. Pliki — bilans końcowy
 
-**Nowe (3):**
+**Nowe (5):**
 1. `dev/feature-planner-v3/references/goal-mode-protocol.md`
 2. `dev/feature-planner-v3/scripts/derive-goal-from-ac.sh`
 3. `dev/feature-planner-v3/scripts/run-goal-loop.sh`
+4. `dev/feature-planner-v3/tests/fixtures/complete-plan.md` — fixture do AC-4/5 (kompletny plan Phase 4 z poprawną tabelą AC).
+5. `dev/feature-planner-v3/tests/fixtures/incomplete-plan.md` — fixture do AC-3 (plan z brakującym `Komenda` w wierszu AC).
 
 **Zmodyfikowane (2):**
 1. `dev/feature-planner-v3/SKILL.md` (patch ~69 linii, kontrakty z §3).
@@ -412,8 +419,8 @@ Bufor w SKILL.md: 86 linii (zostaje na drobne korekty po self-review).
 | AC-3 | F | `derive-goal-from-ac.sh` waliduje 10 reguł i exituje na braku | T-3 | scripts/tests | `bash scripts/derive-goal-from-ac.sh --plan tests/fixtures/incomplete-plan.md; [ $? -eq 1 ]` |
 | AC-4 | F | `derive-goal-from-ac.sh` generuje goal-statement.md zgodny z §4 | T-4 | scripts/tests | `bash scripts/derive-goal-from-ac.sh --plan tests/fixtures/complete-plan.md && test -s plans/*-goal-statement.md` |
 | AC-5 | F | `run-goal-loop.sh --dry-run` parsuje goal i wypisuje plan iteracji | T-5 | scripts/tests | `bash scripts/run-goal-loop.sh --goal tests/fixtures/goal.md --plan tests/fixtures/complete-plan.md --dry-run` |
-| AC-6 | C | `/goal` + `/ralph` daje hard stop | T-6 | manual review | runtime check w Phase 5.8 |
-| AC-7 | C | `/goal` + `--fragile` daje hard stop | T-7 | manual review | runtime check w Phase 5.8 |
+| AC-6 | C | `/goal` + `/ralph` daje hard stop (reguła w SKILL.md) | T-6 | manual review | `grep -qE "exclusive z /ralph i /teams\|/goal.*ralph.*hard stop" dev/feature-planner-v3/SKILL.md` |
+| AC-7 | C | `/goal` + `--fragile` daje hard stop (reguła w SKILL.md) | T-7 | manual review | `grep -qE "fragile.*hard stop\|--fragile.*niedozwolony" dev/feature-planner-v3/SKILL.md` |
 | AC-8 | N | `references/goal-mode-protocol.md` istnieje i ma 10 sekcji wg §6 | T-8 | manual review | `grep -c "^## " dev/feature-planner-v3/references/goal-mode-protocol.md` (≥10) |
 
 ## Out of scope
