@@ -5,6 +5,12 @@
 #                       [--max-iter N] [--max-time MIN]
 #                       [--worktree PATH] [--files-touched CSV]
 #                       [--fragile-paths CSV] [--dry-run]
+#
+# Note: --max-iter, --max-time, --worktree, --files-touched are accepted and
+# echoed in dry-run for caller visibility, but NOT enforced by this script.
+# The calling Claude session is responsible for counting iterations, timing
+# out, and verifying scope/worktree boundaries before re-invoking this script.
+# Each invocation runs verification commands once and exits.
 
 set -euo pipefail
 
@@ -64,13 +70,13 @@ fi
 # --- Dry-run: print plan and exit ---
 if [[ $DRY_RUN -eq 1 ]]; then
   echo "DRY-RUN: would execute goal loop with these parameters:"
-  echo "  goal:            $GOAL"
-  echo "  plan:            $PLAN"
+  echo "  goal:            \"$GOAL\""
+  echo "  plan:            \"$PLAN\""
   echo "  max-iter:        $MAX_ITER"
   echo "  max-time (min):  $MAX_TIME"
-  echo "  worktree:        ${WORKTREE:-<none>}"
-  echo "  files-touched:   ${FILES_TOUCHED:-<all>}"
-  echo "  fragile-paths:   $FRAGILE_PATHS"
+  echo "  worktree:        \"${WORKTREE:-<none>}\""
+  echo "  files-touched:   \"${FILES_TOUCHED:-<all>}\""
+  echo "  fragile-paths:   \"$FRAGILE_PATHS\""
   echo ""
   echo "Verification commands (${#CMD_LINES[@]}):"
   for i in "${!CMD_LINES[@]}"; do
@@ -155,7 +161,7 @@ echo "Focus AC: ${FIRST_FAIL_HEADER}"
 echo "Failed command: ${FIRST_FAIL_CMD}"
 echo ""
 echo "--- Raw output ---"
-echo "${FIRST_FAIL_OUT}"
+printf '%s\n' "$FIRST_FAIL_OUT"
 echo "--- End raw output ---"
 echo ""
 echo "Action required:"
@@ -164,5 +170,5 @@ echo "  2. Implement minimal change in code to fix it."
 echo "  3. Run Anti-Rationalization quick-check (11 wierszy) before commit."
 echo "  4. Verify no Fragile-path or out-of-scope file touched."
 echo "  5. git commit atomic."
-echo "  6. Re-invoke: bash $0 --goal $GOAL --plan $PLAN"
+echo "  6. Re-invoke: bash $0 --goal \"\$GOAL\" --plan \"\$PLAN\""
 exit 1
