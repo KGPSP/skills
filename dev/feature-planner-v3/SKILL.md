@@ -194,6 +194,9 @@ Aktywuj **tylko** gdy: (a) size L, (b) testy zielone w v2 dla podobnej fazy, (c)
 
 Reguła v3: każda iteracja ralph-loop **MUSI** przejść przez Anti-Rationalization quick-table. Brak skrótu na „już to widziałem w poprzedniej iteracji".
 
+> [!warning] Exclusivity z /goal
+> `/goal` jest exclusive z `/ralph` i `/teams`. Jeśli w prompcie pojawi się więcej niż jeden z trzech triggerów → Phase 5.8 hard-stopuje. Wybierz jedną strategię pętli.
+
 ---
 
 ## Phase 6 — Implementation + APPROVAL GATE #2
