@@ -383,6 +383,7 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 
 ### Protokoły projektowe (warstwa B — since_skill.md)
 
+- [goal-mode-protocol.md](references/goal-mode-protocol.md) — Phase 5.8 + 6-Goal + Gate #1.5 protokół.
 - [fragile-operations-protocol.md](references/fragile-operations-protocol.md) — Plan-Validate-Execute.
 - [incremental-implementation.md](references/incremental-implementation.md) — Thin Vertical Slices.
 - [five-axis-review.md](references/five-axis-review.md) — 5 osi + severity + Multi-Model.
@@ -395,6 +396,8 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - `scripts/check-ac-coverage.sh` — 1:1 AC ↔ test.
 - `scripts/extract-raw-log.sh` — DoD evidence helper.
 - `scripts/api-impact-scan.sh` — Hyrum risk scan.
+- `scripts/derive-goal-from-ac.sh` — AC → goal-statement.md generator.
+- `scripts/run-goal-loop.sh` — autonomous goal-driven loop driver.
 
 ### Szablon
 
@@ -407,3 +410,4 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - [DOC/material_skill.md](../../DOC/material_skill.md) — pryncypia procesowe (Process over Prose, Anti-rationalization, DoD, Scope Discipline, Hyrum, Chesterton, Beyoncé, DAMP, 5 Non-negotiables).
 - [DOC/since_skill.md](../../DOC/since_skill.md) — pryncypia projektowe skilla (token budget, kebab-case, imperatyw, scripts/, Negative Triggers, Anti-Laziness, Plan-Validate-Execute, Five-Axis Review, Thin Vertical Slices, Prove-It).
 - [dev/feature-planner/SKILL.md](../feature-planner/SKILL.md) — v2 baseline (Agent Teams, ralph-loop, worktree decision, 7 test scopes).
+- [DOC/goal_mode.md](../../DOC/goal_mode.md) — pattern „stan końcowy + weryfikacja + ograniczenia", przykłady, antywzorce.
