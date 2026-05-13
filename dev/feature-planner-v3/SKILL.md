@@ -1,6 +1,6 @@
 ---
 name: feature-planner-v3
-description: Senior-grade feature workflow z deterministyczną uprzężą inżynieryjną. Rozszerza v2 (Replit Agent style, Agent Teams, ralph-loop, worktree, 7 test scopes) o twarde bramki z material_skill.md + since_skill.md — Anti-Rationalization, Hyrum's Law, Chesterton's Fence, Beyoncé Rule, DAMP over DRY, PR Sizing, Five-Axis Review, Plan-Validate-Execute dla fragile ops, Thin Vertical Slices, Prove-It Pattern. Używaj gdy zadanie wymaga audytowalnej delegacji na agenta AI z mierzalnymi exit criteria w każdej fazie.
+description: Senior-grade feature workflow z deterministyczną uprzężą inżynieryjną. Rozszerza v2 (Replit Agent style, Agent Teams, ralph-loop, worktree, 7 test scopes) o twarde bramki z material_skill.md + since_skill.md — Anti-Rationalization, Hyrum's Law, Chesterton's Fence, Beyoncé Rule, DAMP over DRY, PR Sizing, Five-Axis Review, Plan-Validate-Execute dla fragile ops, Thin Vertical Slices, Prove-It Pattern. Używaj gdy zadanie wymaga audytowalnej delegacji na agenta AI z mierzalnymi exit criteria w każdej fazie. Plus /goal mode auto-derived z AC (Phase 5.8 + 6-Goal route).
 trigger:
   - "feature-planner v3"
   - "dodaj feature v3"
@@ -8,6 +8,8 @@ trigger:
   - "implement v3"
   - "zaimplementuj v3"
   - "ralph v3"
+  - "/goal"
+  - "goal mode"
 do-not-trigger-for:
   - "przeczytaj plik X"
   - "wytłumacz co robi ten kod"
@@ -20,6 +22,7 @@ allowed-tools: ['Bash', 'Read', 'Edit', 'Write', 'Grep', 'Glob', 'TodoWrite', 'A
 sources:
   - DOC/material_skill.md
   - DOC/since_skill.md
+  - DOC/goal_mode.md
 version: v3
 extends: feature-planner-v2
 size-limit: 500-lines-hard
