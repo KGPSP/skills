@@ -239,6 +239,7 @@ Routing implementacji:
 - **6-Sequential** — domyślnie dla S/M.
 - **6-Teams** (2-5 agentów) — dla L gdy parallel safe.
 - **6-Ralph** — autonomous L z zielonym test gate.
+- **6-Goal** — autonomous goal-driven loop (tylko gdy `/goal`, exclusive z Ralph/Teams).
 
 Pre-flight: `git status` clean. Build baseline check.
 
@@ -256,6 +257,28 @@ Dla każdej slice (Thin Vertical Slices — [incremental-implementation.md](refe
 7. **Anti-rationalization quick-check** przed `git commit` (przejdź tabelę).
 8. **Safe Defaults** — niedokończone slices za feature flagą.
 9. Przejdź do następnej slice.
+
+### 6-Goal — autonomous goal-driven loop
+
+Pre-flight: APPROVAL #1.5 ✅, `git status` clean, build baseline.
+
+Driver: `sh {baseDir}/dev/feature-planner-v3/scripts/run-goal-loop.sh --goal "$GOAL_FILE" --plan "$PLAN_FILE" --max-iter 20 --max-time 480`.
+
+Per iteracja:
+
+1. Uruchom wszystkie `## Weryfikacja` cmd-y → raw log do `goal-run-log.md`.
+2. Wszystkie exit 0 → **GREEN**, exit pętli, Phase 6.5/7.
+3. Pierwsze fail (lex po AC-ID) → kontekst do next iter (hand-off do calling agenta).
+4. **Anti-Rationalization quick-check** (11 wierszy) przed każdym commitem.
+5. **PR Sizing + Fragile guard + Out-of-scope guard** → STOP przy violation.
+
+Stop warunki (poza GREEN):
+- `iter > max-iter` → status `iter-cap-hit`.
+- `elapsed > max-time` → status `time-cap-hit`.
+- Fragile/scope violation → status `scope-violation`.
+- 3 iter bez progresu (ten sam error_hash) → status `no-progress`.
+
+Każdy stop ≠ GREEN: raport do użytkownika, **brak Phase 7**, brak merge.
 
 > [!danger] Jeśli `--fragile`
 > Reżim **Plan-Validate-Execute** — patrz [fragile-operations-protocol.md](references/fragile-operations-protocol.md). Bez kreatywności. Dosłowne wykonanie zatwierdzonych komend.
