@@ -25,12 +25,26 @@ done
 OUT_DIR="${OUT_DIR:-$(dirname "$PLAN")}"
 mkdir -p "$OUT_DIR"
 
+# Resolve OUT_DIR to canonical absolute path and verify it's under repo root (or /tmp for tests).
+OUT_DIR_ABS=$(cd "$OUT_DIR" && pwd -P)
+REPO_ROOT=$(git -C "$(dirname "$PLAN")" rev-parse --show-toplevel 2>/dev/null || echo "")
+case "${OUT_DIR_ABS}/" in
+  /tmp/*) ;;  # allowed for tests
+  /private/tmp/*) ;;  # macOS /tmp -> /private/tmp resolution
+  *)
+    if [[ -n "$REPO_ROOT" && "${OUT_DIR_ABS}/" != "${REPO_ROOT}/"* ]]; then
+      echo "ERR: --out-dir must be inside repo root or /tmp (got: $OUT_DIR_ABS, repo: $REPO_ROOT)" >&2
+      exit 2
+    fi
+    ;;
+esac
+
 BASENAME=$(basename "$PLAN" .md)
 GOAL_MD="$OUT_DIR/${BASENAME}-goal-statement.md"
 GOAL_TXT="$OUT_DIR/${BASENAME}-goal-prompt.txt"
 
 # Strip optional carriage returns for cross-platform input.
-PLAN_CONTENT=$(tr -d '\r' < "$PLAN")
+PLAN_CONTENT=$(awk 'NR==1{sub(/^\xef\xbb\xbf/, "")} 1' "$PLAN" | tr -d '\r')
 
 # --- Validation rule 2: ## Acceptance Criteria exists ---
 if ! grep -q "^## Acceptance Criteria" <<<"$PLAN_CONTENT"; then
@@ -59,8 +73,8 @@ while IFS= read -r row; do
   # Split by | (skip leading/trailing empty fields).
   IFS='|' read -ra CELLS <<<"$row"
   # CELLS[0] is empty (before first |), CELLS[1..6] are the 6 columns, CELLS[7] is empty.
-  if [[ ${#CELLS[@]} -lt 7 ]]; then
-    ERRORS+=("AC row $LINE_NUM: less than 6 columns")
+  if [[ ${#CELLS[@]} -ne 7 ]]; then
+    ERRORS+=("AC row $LINE_NUM: expected exactly 6 columns (markdown table format), got $((${#CELLS[@]} - 1))")
     continue
   fi
   AC_ID=$(echo "${CELLS[1]}" | xargs)
@@ -128,6 +142,15 @@ fi
 if [[ ${#ERRORS[@]} -gt 0 ]]; then
   echo "ERR: validation failed (${#ERRORS[@]} issues):" >&2
   for e in "${ERRORS[@]}"; do echo "  - $e" >&2; done
+  exit 1
+fi
+
+# Secret detection — refuse to write secrets into generated artifacts.
+SECRET_HITS=$(grep -iE '(password[:=]|token[:=]|secret[:=]|api[_-]?key[:=]|aws_access_key|sk-[a-zA-Z0-9]{10,}|ghp_[a-zA-Z0-9]{20,}|"key"[[:space:]]*[:=])' <<<"$PLAN_CONTENT" || true)
+if [[ -n "$SECRET_HITS" ]]; then
+  echo "ERR: plan appears to contain secrets/credentials. Sanitize before /goal." >&2
+  echo "Matched lines (max 3 shown):" >&2
+  echo "$SECRET_HITS" | head -3 | sed 's/^/  /' >&2
   exit 1
 fi
 
