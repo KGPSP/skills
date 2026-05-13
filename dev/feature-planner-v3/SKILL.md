@@ -58,10 +58,11 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 | 8 | „Usunąłem martwy kod" | Chesterton's Fence. Bez `why-this-existed:` — przywróć. |
 | 9 | „Test pokrywa happy path" | Beyoncé Rule. Każdy edge case z AC-N → osobny test. |
 | 10 | „DRY-uję testy w helper" | DAMP over DRY. Test czytelny jak spec, bez magicznych helperów. |
+| 11 | „Goal-statement deryw kompletny, można pominąć Gate #1.5" | Gate #1.5 jest nienegocjowalny w /goal. Bez jawnej zgody → brak startu pętli. |
 
 ---
 
-## Architektura: 14 faz + 5 bramek approval
+## Architektura: 15 faz + 6 bramek approval
 
 | Faza | Cel | Bramka |
 |---|---|---|
@@ -74,6 +75,7 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 | 5 | Save plan | **APPROVAL #1** |
 | 5.5 | Worktree decision (S/M/L) | — |
 | 5.7 | Ralph-loop decision (opt-in L) | — |
+| 5.8 | Goal Mode decision + auto-derive (tylko /goal) | **APPROVAL #1.5** |
 | 6 | Implementation (Sequential / Teams / Ralph) | **APPROVAL #2** |
 | 6.5 | Prove-It Pattern (bugfix only) | — |
 | 7 | Testing 7 scopes + raw logs + build clean | **APPROVAL #3** |
