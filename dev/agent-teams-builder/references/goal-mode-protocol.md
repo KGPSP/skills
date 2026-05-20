@@ -12,7 +12,10 @@ source:
 > `/goal` = delegacja całej pętli Generator-Evaluator do Agent Teams z **mierzalnym stanem końcowym** + **sposobem weryfikacji** + **ograniczeniami**.
 
 > [!important] v1.7.0 — /goal respektuje wszystkie 6 bramek akceptacji
-> Decyzja projektowa: `/goal` **NIE jest już trybem „bez nadzoru przez wielogodziny".** Pętla zatrzymuje się na każdej z 6 bramek (`references/approval-gates-protocol.md`), emituje status `awaiting_gate_{n}`, zapisuje checkpoint i **zwraca kontrolę człowiekowi**. Praca nocna „odpal i zostaw" nie zadziała — proces będzie czekał na frazę akceptującą. Komunikuj to operatorowi przy starcie `/goal`.
+> Decyzja projektowa: domyślnie `/goal` **NIE jest trybem „bez nadzoru przez wielogodziny".** Pętla zatrzymuje się na każdej z 6 bramek (`references/approval-gates-protocol.md`), emituje status `awaiting_gate_{n}`, zapisuje checkpoint i **zwraca kontrolę człowiekowi**. Praca nocna „odpal i zostaw" domyślnie nie zadziała — proces będzie czekał na frazę akceptującą.
+
+> [!tip] `/YOLO /goal` — przywrócenie pełnej autonomii (v1.8.0)
+> Dodaj `/YOLO` do promptu, by **wyłączyć bramki** i odzyskać tryb „odpal i zostaw": agent sam stawia hipotezy, wybiera najbardziej prawdopodobną i auto-zatwierdza każdą bramkę. Zabezpieczenia destrukcyjne (§4) i walidatory pozostają aktywne. Pełny protokół: `references/approval-gates-protocol.md §9`.
 
 ---
 
@@ -181,8 +184,8 @@ User wraca rano, czyta raport, robi code review.
 
 ## 6. Bezpieczniki dla pracy między bramkami
 
-> [!warning] Praca nocna „odpal i zostaw" nie zadziała w v1.7.0
-> Pętla zatrzyma się na pierwszej bramce (#1 — plan) i będzie czekać na zgodę. `caffeinate` / auto-accept utrzymują sesję między bramkami, ale **nie zastępują człowieka** na bramce. Liczniki `MAX_GOAL_ITERATIONS` / `GOAL_TIMEOUT_HOURS` liczą się tylko między bramkami, nie w czasie oczekiwania na zgodę.
+> [!warning] Praca nocna „odpal i zostaw" — domyślnie OFF, włącz `/YOLO`
+> Bez `/YOLO` pętla zatrzyma się na pierwszej bramce (#1 — plan) i będzie czekać na zgodę. `caffeinate` / auto-accept utrzymują sesję między bramkami, ale **nie zastępują człowieka** na bramce. Liczniki `MAX_GOAL_ITERATIONS` / `GOAL_TIMEOUT_HOURS` liczą się tylko między bramkami, nie w czasie oczekiwania. **Z `/YOLO`** bramki są auto-zatwierdzane (`approval-gates-protocol.md §9`) — wtedy `caffeinate` + tipy poniżej mają sens dla pracy nocnej.
 
 Praktyczne tipy dla odcinków pracy między bramkami:
 

@@ -174,3 +174,44 @@ Exit 0 = wszystkie bramki domknięte zgodą. Exit ≠0 = brakująca/wisząca zgo
 - `gate_pending` bez następującego `gate_approved`/`gate_rejected`.
 
 **Każdy z tych sygnałów oznacza: wróć, przedstaw artefakt, poczekaj na frazę akceptującą.**
+
+---
+
+## 9. Tryb `/YOLO` — autonomia bez bramek (human-in-the-loop OFF)
+
+> `/YOLO` to **jawny opt-in** w prompcie użytkownika. Wyłącza wszystkie 6 bramek przeglądu: zamiast STOP+czekanie, agent sam podejmuje decyzję i kontynuuje. Najmocniejszy w parze z `/goal` (`/YOLO /goal <spec>`) — przywraca w pełni autonomiczną pętlę „odpal i zostaw" sprzed v1.7.0.
+
+### 9.1 Co się zmienia na każdej bramce
+
+Zamiast protokołu STOP (§2 kroki 3-4), parent agent wykonuje **YOLO-resolve**:
+
+1. **Uruchom walidator bramki** (`verify-plan-rigor.sh` / `check-contract-coverage.sh` / `check-evidence-completeness.sh` / ...). **Musi przejść.** Fail → STOP + `state/blockers.md` + eskalacja (autonomia NIE znosi weryfikacji).
+2. **Auto-decyzja:** wybierz najbardziej prawdopodobną opcję. Dla GATE #1 — Planner wybrał już JEDNĄ hipotezę (Idiomatic domyślnie, chyba że dowody faworyzują inną); YOLO akceptuje ten wybór bez pytania człowieka.
+3. **Auto-zatwierdź** — breadcrumb z jawnym znacznikiem autonomii:
+   ```bash
+   bash scripts/append-breadcrumb.sh "yolo" "gate_approved" \
+     "$(jq -nc --argjson g 1 --arg a "state/plan.md" '{gate: $g, artifact: $a, auto_approved: true}')"
+   ```
+4. **Kontynuuj** do następnej fazy bez czekania.
+
+### 9.2 Czego `/YOLO` NIE znosi (twarde rails)
+
+| Zachowane mimo YOLO | Powód |
+|---|---|
+| `verify-*.sh` muszą przechodzić | Autonomia ≠ udawanie zielonego. Fail = STOP + blockers. |
+| Brak `git push` / `npm publish` | Publikacja = nieodwracalny gest zewnętrzny, zawsze człowiek. |
+| Brak `DROP TABLE` / `DELETE` bez WHERE | Utrata danych nieodwracalna. |
+| Brak `rm -rf` poza katalogiem feature | Patrz `goal-mode-protocol.md §4`. |
+| Plan-Validate-Execute dla pivota | `references/pivot-protocol.md` — destruktywny reset wymaga planu + walidacji. |
+| Strefa wrażliwa (`.env`, `secrets/`, `~/.ssh/`) nietykalna | — |
+
+> **Mentalny model:** `/YOLO` przyspiesza **przegląd** (zgoda człowieka → auto-decyzja), nie autoryzuje **szkody**. Bramka recenzji ≠ zabezpieczenie destrukcyjne.
+
+### 9.3 Audit trail
+
+YOLO jest w pełni audytowalny: każda auto-decyzja to breadcrumb `gate_approved` z `actor: "yolo"` + `auto_approved: true`. `verify-approval-gates.sh` przechodzi (sprawdza obecność `gate_approved`, nie aktora), a `[WARN]` sygnalizuje że bramki zostały zatwierdzone autonomicznie. Po sesji człowiek widzi w breadcrumbs **dokładnie** które decyzje podjął agent zamiast niego.
+
+### 9.4 Komunikat startowy (obowiązkowy)
+
+Przed uruchomieniem `/YOLO` parent agent komunikuje użytkownikowi:
+> „Tryb /YOLO: wyłączam 6 bramek akceptacji. Sam wybieram hipotezy (najbardziej prawdopodobne), auto-zatwierdzam plan/kontrakty/sprinty/QA/review. Zabezpieczenia destrukcyjne (push/publish/drop/rm) i walidatory pozostają aktywne. Wracam do Ciebie przy fail walidatora, eskalacji lub operacji nieodwracalnej. Potwierdź start."

@@ -1,5 +1,24 @@
 # CHANGELOG — agent-teams-builder
 
+## [v1.8.0] — 2026-05-20 — Tryb /YOLO (autonomia bez bramek)
+
+### Added
+
+**`/YOLO`** — jawny opt-in wyłączający human-in-the-loop. Na każdej z 6 bramek agent sam podejmuje decyzję (Planner stawia 3 hipotezy i wybiera najbardziej prawdopodobną), auto-zatwierdza artefakt (breadcrumb `gate_approved` z `actor: "yolo"`, `auto_approved: true`) i kontynuuje bez czekania. Najmocniejszy w parze z `/goal`: **`/YOLO /goal <spec>`** przywraca w pełni autonomiczną pętlę „odpal i zostaw" sprzed v1.7.0.
+
+**Czego `/YOLO` NIE znosi** (twarde rails, nieodwracalne ≠ przegląd):
+- Walidatory `verify-*.sh` muszą przechodzić — fail = STOP + `blockers.md` (autonomia ≠ udawanie zielonego).
+- Brak `git push`, `npm publish`, `DROP TABLE`/`DELETE` bez WHERE, `rm` poza katalogiem feature.
+- Plan-Validate-Execute dla pivota. Strefa wrażliwa (`.env`, `secrets/`, `~/.ssh/`) nietykalna.
+
+### Changed
+
+- **`SKILL.md`** — frontmatter trigger `/YOLO`. Nowy callout „Tryb /YOLO — pełna autonomia (bramki OFF)". 2 wymówki anti-rat (YOLO ≠ pozwolenie na push/drop; YOLO ≠ pominięcie walidatora).
+- **`references/approval-gates-protocol.md`** — nowa sekcja §9: YOLO-resolve per bramka, twarde rails, audit trail (`actor: yolo`), obowiązkowy komunikat startowy.
+- **`references/goal-mode-protocol.md`** — `/YOLO /goal` przywraca pracę nocną; callout v1.8.0 + zaktualizowana sekcja „Bezpieczniki".
+- **`scripts/verify-approval-gates.sh`** — `[WARN]` audytowy gdy bramki zatwierdzone autonomicznie (`actor=yolo` / `auto_approved`). Walidator przechodzi (sprawdza obecność `gate_approved`, nie aktora).
+- **`tests/run-meta-tests.sh`** — Group 9 + case YOLO auto-approval (22/22).
+
 ## [v1.7.1] — 2026-05-20 — Planning = effort max (ultrathink)
 
 ### Changed

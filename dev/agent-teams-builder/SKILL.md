@@ -8,6 +8,7 @@ trigger:
   - "zbuduj aplikację od zera"
   - "/team"
   - "/goal" # delegacja do goal-mode-protocol.md
+  - "/YOLO" # autonomia bez bramek — patrz references/approval-gates-protocol.md §9
 do-not-trigger-for:
   - "przeczytaj plik X"
   - "wytłumacz co robi ta funkcja"
@@ -23,7 +24,7 @@ sources:
   - DOC/since_skill.md
   - DOC/agent-teams-generator-ewaluator.md
   - DOC/goal_mode.md
-version: v1.7.1
+version: v1.8.0
 size-limit: 500-lines-hard
 ---
 
@@ -52,6 +53,11 @@ size-limit: 500-lines-hard
 > 6. **GATE #6 — Ship** (Faza 7) — `state/final-report.md`.
 >
 > **Naruszenie litery bramki = naruszenie ducha bramki.** Cisza ≠ zgoda. `/goal` respektuje wszystkie bramki.
+
+> [!caution] Tryb `/YOLO` — pełna autonomia (bramki OFF)
+> `/YOLO` **wyłącza human-in-the-loop**: na każdej bramce agent sam podejmuje decyzję (Planner stawia 3 hipotezy i wybiera najbardziej prawdopodobną), auto-zatwierdza artefakt (breadcrumb `gate_approved` z `actor: "yolo"`, `auto_approved: true`) i kontynuuje **bez czekania na człowieka**. Najmocniejszy w parze z `/goal`: `/YOLO /goal <spec>` = w pełni autonomiczna pętla do celu (przywraca tryb „odpal i zostaw" sprzed v1.7.0, teraz jako jawny opt-in).
+>
+> **Czego `/YOLO` NIE znosi:** (1) walidatory `verify-*.sh` dalej muszą przechodzić — autonomia ≠ udawanie że kod działa; fail walidatora → STOP + `state/blockers.md`; (2) twarde zabezpieczenia destrukcyjne — brak `git push`, `npm publish`, `DROP TABLE`/`DELETE` bez WHERE, `rm` poza katalogiem feature; (3) Plan-Validate-Execute dla pivota. Pełny protokół: `references/approval-gates-protocol.md §9`.
 
 ---
 
@@ -266,6 +272,8 @@ Tabela ripost. **Każda riposta = blokada, nie sugestia.** Format: "Odrzucono. {
 | „Sprint przeszedł, lecę dalej bez akceptacji" | Odrzucono. **GATE #3 per sprint.** Człowiek widzi raport wykonania ZANIM kolejny sprint buduje na potencjalnie złej decyzji. Cisza ≠ zgoda. |
 | „/goal jest autonomiczny, bramki psują ideę" | Odrzucono. Decyzja projektowa v1.7.0: **`/goal` respektuje wszystkie 6 bramek.** Chcesz pełną autonomię bez bramek = zmiana wymagań do eskalacji (Non-negotiable #2), nie cichy skrót. |
 | „Człowiek napisał 'spoko', traktuję jako zgodę" | Odrzucono. Tylko frazy z whitelisty (`approval-gates-protocol.md §4`). Niejednoznaczność = dopytaj. |
+| „Jestem w `/YOLO`, więc mogę zrobić `git push` / `DROP TABLE`" | Odrzucono. **`/YOLO` znosi bramki PRZEGLĄDU, nie zabezpieczenia destrukcyjne.** Brak push/publish/drop/rm-poza-feature także w YOLO. Operacje nieodwracalne zawsze wymagają człowieka. |
+| „W `/YOLO` pominę walidator, leci autonomicznie" | Odrzucono. YOLO auto-zatwierdza artefakt **po** przejściu `verify-*.sh`. Fail walidatora w YOLO = STOP + `blockers.md`, nie auto-pass. Autonomia ≠ udawanie zielonego. |
 
 Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + library currency + domenowymi wariantami: `references/anti-rationalization.md §5` + `references/library-currency-protocol.md §7`.
 

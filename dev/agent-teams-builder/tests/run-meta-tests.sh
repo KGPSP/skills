@@ -297,6 +297,22 @@ assert_exit "GATE #1 przed spawnem + GATE #3 sprint passed → exit 0" "0" \
   bash -c "BASE_DIR='$TMP' bash '$SCRIPTS/verify-approval-gates.sh'"
 rm -rf "$TMP"
 
+# GOOD (YOLO): bramki auto-zatwierdzone przez actor=yolo → walidator przechodzi (WARN audytowy)
+TMP=$(mktemp -d)
+mkdir -p "$TMP/state"
+cat > "$TMP/state/breadcrumbs.json" <<'EOF'
+[
+  {"ts":"2026-05-20T10:00:00Z","actor":"bootstrap","event":"init","details":{}},
+  {"ts":"2026-05-20T10:03:00Z","actor":"yolo","event":"gate_approved","details":{"gate":1,"auto_approved":true}},
+  {"ts":"2026-05-20T10:05:00Z","actor":"parent","event":"role_spawned","details":{"name":"planner"}},
+  {"ts":"2026-05-20T11:00:00Z","actor":"yolo","event":"gate_approved","details":{"gate":3,"sprint":1,"auto_approved":true}}
+]
+EOF
+echo '{"features":[{"id":"f1","sprint":1,"status":"passed"}]}' > "$TMP/state/feature_list.json"
+assert_exit "YOLO: bramki auto-zatwierdzone (actor=yolo) → exit 0" "0" \
+  bash -c "BASE_DIR='$TMP' bash '$SCRIPTS/verify-approval-gates.sh'"
+rm -rf "$TMP"
+
 # BAD: spawn bez gate#1 + sprint passed bez gate#3
 TMP=$(mktemp -d)
 mkdir -p "$TMP/state"

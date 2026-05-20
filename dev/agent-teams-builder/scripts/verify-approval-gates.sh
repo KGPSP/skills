@@ -91,6 +91,12 @@ else
   ok "Brak wiszących bramek ($PENDING_COUNT pending / $RESOLVED_COUNT resolved)"
 fi
 
+# --- Audit: bramki zatwierdzone autonomicznie (YOLO) ---
+YOLO_COUNT=$(jq '[.[] | select(.event == "gate_approved" and (.actor == "yolo" or .details.auto_approved == true))] | length' "$BC" 2>/dev/null || echo 0)
+if [[ "$YOLO_COUNT" -gt 0 ]]; then
+  warn "YOLO: $YOLO_COUNT bramka(i) zatwierdzona autonomicznie (actor=yolo / auto_approved). Brak przeglądu człowieka — sprawdź audit trail."
+fi
+
 # === Summary ===
 echo ""
 echo "=== RESULT ==="
