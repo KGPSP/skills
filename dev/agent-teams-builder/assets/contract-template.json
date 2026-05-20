@@ -1,0 +1,154 @@
+{
+  "$schema": "../assets/contract-schema.json",
+  "sprint": 1,
+  "goal": "<jednolinijkowy cel sprintu — co użytkownik dostaje>",
+  "paths_in_scope": [
+    "src/feature-x/",
+    "tests/feature-x/"
+  ],
+  "out_of_scope": [
+    "src/auth/",
+    "src/legacy/",
+    "infra/k8s/"
+  ],
+  "dependencies": [
+    { "name": "playwright", "version": ">=1.40" },
+    { "name": "vitest", "version": ">=1.0" }
+  ],
+  "assumptions": [
+    "API endpoint /api/v2/feature-x istnieje i odpowiada w <200ms",
+    "DB ma istniejącą tabelę `features` z kolumną `name`"
+  ],
+  "proposed_criteria": [
+    {
+      "id": "C-01",
+      "type": "functional",
+      "binary": true,
+      "check": "POST /api/v2/feature-x z body {name: 'foo'} zwraca 201 i id w response.body",
+      "evidence_type": "curl_output",
+      "edge_case": false
+    },
+    {
+      "id": "C-02",
+      "type": "functional",
+      "binary": true,
+      "check": "POST /api/v2/feature-x z pustym body zwraca 400 z polem error.code='VALIDATION_FAILED'",
+      "evidence_type": "curl_output",
+      "edge_case": true
+    },
+    {
+      "id": "C-03",
+      "type": "functional",
+      "binary": true,
+      "check": "Wciśnięcie Enter w polu name wywołuje submit (playwright.keyboard.press('Enter'))",
+      "evidence_type": "playwright_screenshot",
+      "edge_case": false
+    },
+    {
+      "id": "C-04",
+      "type": "layout",
+      "binary": true,
+      "check": "Locator('.feature-x-form').boundingBox() nie przecina locator('.header').boundingBox() przy 1920x1080",
+      "evidence_type": "playwright_screenshot",
+      "edge_case": false
+    },
+    {
+      "id": "C-05",
+      "type": "design",
+      "binary": true,
+      "check": "Tło używa palety #1a1a2e/#16213e/#0f3460 — heatmapa kolorów ≥80% pikseli w tej palecie",
+      "evidence_type": "playwright_screenshot",
+      "edge_case": false
+    },
+    {
+      "id": "C-06",
+      "type": "design",
+      "binary": true,
+      "check": "Brak gradientów linear-gradient(...purple|violet|pink) w computedStyle 10 losowych elementów (anti AI slop)",
+      "evidence_type": "json_dump",
+      "edge_case": false
+    },
+    {
+      "id": "C-07",
+      "type": "craft",
+      "binary": true,
+      "check": "tsc --noImplicitAny --strict exit 0",
+      "evidence_type": "build_log",
+      "edge_case": false
+    },
+    {
+      "id": "C-08",
+      "type": "craft",
+      "binary": true,
+      "check": "grep -rE 'TODO|FIXME|throw new Error..not implemented' src/feature-x/ zwraca 0 linii",
+      "evidence_type": "bash_output",
+      "edge_case": false
+    },
+    {
+      "id": "C-09",
+      "type": "craft",
+      "binary": true,
+      "check": "Każdy publiczny export w src/feature-x/index.ts ma test w tests/feature-x/*.spec.ts (Beyoncé Rule)",
+      "evidence_type": "coverage_report",
+      "edge_case": false
+    },
+    {
+      "id": "C-10",
+      "type": "craft",
+      "binary": true,
+      "check": "npm run lint exit 0, 0 warnings",
+      "evidence_type": "build_log",
+      "edge_case": false
+    },
+    {
+      "id": "C-11",
+      "type": "functional",
+      "binary": true,
+      "check": "Kolejność: POST /feature-x → 201 → GET /feature-x/{id} → 200 (NIE odwrotnie — Prawo Hyruma)",
+      "evidence_type": "har_trace",
+      "edge_case": false
+    },
+    {
+      "id": "C-12",
+      "type": "functional",
+      "binary": true,
+      "check": "Persistence: po F5 stan formularza odtworzony z localStorage (jeśli draft mode)",
+      "evidence_type": "playwright_screenshot",
+      "edge_case": true
+    },
+    {
+      "id": "C-13",
+      "type": "functional",
+      "binary": true,
+      "check": "Race condition: 2 równoległe POST → idempotencja LUB jawny 409 Conflict",
+      "evidence_type": "har_trace",
+      "edge_case": true
+    },
+    {
+      "id": "C-14",
+      "type": "functional",
+      "binary": true,
+      "check": "Empty state: pusty input pokazuje EmptyState component, NIE null/blank",
+      "evidence_type": "playwright_screenshot",
+      "edge_case": true
+    },
+    {
+      "id": "C-15",
+      "type": "performance",
+      "binary": true,
+      "check": "Czas TTI <1500ms (performance.timing.domInteractive - navigationStart)",
+      "evidence_type": "chrome_devtools_trace",
+      "edge_case": false
+    }
+  ],
+  "acceptance_evidence": [
+    "playwright_screenshot",
+    "curl_output",
+    "build_log",
+    "har_trace",
+    "coverage_report"
+  ],
+  "max_iterations": 5,
+  "status": "draft-by-generator",
+  "evaluator_review": null
+}

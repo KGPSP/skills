@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "feature_list.json schema",
+  "description": "Append-only struktura statusu wszystkich funkcji w sesji Agent Teams",
+  "type": "object",
+  "required": ["version", "project", "features"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "project": { "type": "string", "minLength": 1 },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "sprint", "status", "history"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^F-[0-9]{3,}$"
+          },
+          "name": { "type": "string", "minLength": 1 },
+          "sprint": { "type": "integer", "minimum": 1 },
+          "status": {
+            "type": "string",
+            "enum": ["planned", "in_progress", "passed", "pivoted", "blocked", "shipped"]
+          },
+          "iterations": { "type": "integer", "minimum": 0 },
+          "last_evidence": { "type": "string" },
+          "history": {
+            "type": "array",
+            "description": "Append-only — każda zmiana statusu dodaje wpis, NIE modyfikuje istniejących",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["ts", "status"],
+              "properties": {
+                "ts": { "type": "string", "format": "date-time" },
+                "status": {
+                  "type": "string",
+                  "enum": ["planned", "in_progress", "passed", "pivoted", "blocked", "shipped"]
+                },
+                "reason": { "type": "string" },
+                "actor": { "type": "string" },
+                "commit_hash": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "breadcrumbs.json schema",
+  "description": "Append-only chronologiczny log iteracji zespołu agentów. Timestamps monotonicznie rosnące.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["ts", "actor", "event"],
+    "properties": {
+      "ts": {
+        "type": "string",
+        "format": "date-time",
+        "description": "ISO 8601 UTC, np. 2026-05-19T16:00:00Z"
+      },
+      "actor": {
+        "type": "string",
+        "enum": [
+          "bootstrap",
+          "planner",
+          "generator",
+          "evaluator",
+          "integrator",
+          "synthetic-data-gen",
+          "reviewer",
+          "pivot-trigger",
+          "goal-loop",
+          "smoke-test-runner",
+          "human"
+        ]
+      },
+      "event": {
+        "type": "string",
+        "enum": [
+          "init",
+          "session_resumed",
+          "plan_created",
+          "role_spawned",
+          "contract_drafted",
+          "contract_iteration",
+          "contract_accepted",
+          "iteration_start",
+          "iteration_verdict",
+          "commit",
+          "evidence_produced",
+          "pivot_requested",
+          "pivot_accepted",
+          "pivot_executed",
+          "pivot_aborted",
+          "escalation",
+          "blocker_resolved",
+          "sprint_passed",
+          "verify_passed",
+          "shipped",
+          "goal_loop_start",
+          "goal_iteration_failed",
+          "goal_achieved",
+          "goal_timeout",
+          "goal_escalated",
+          "goal_auto_pivot_triggered",
+          "assumption_declared",
+          "amendment_added"
+        ]
+      },
+      "details": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Pole swobodne — np. sprint, iteration, hash, evidence_path"
+      }
+    }
+  }
+}
