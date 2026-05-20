@@ -10,7 +10,7 @@ Użyj, gdy:
 
 - Zadanie wymaga **>2h pracy** i pojedynczy agent w pętli wpadłby w pułapkę łatania zepsutego fundamentu.
 - Budujesz **aplikację od zera** lub refaktoryzujesz moduł end-to-end.
-- Chcesz uruchomić tryb `/goal` z autonomiczną pracą wielogodzinną.
+- Chcesz pracy z **bramkami akceptacji** (domyślnie) lub w pełni autonomicznej pętli (`/YOLO /goal`).
 - Potrzebujesz **niezależnej krytyki** kodu (Evaluator) — nie samooceny Generatora.
 
 **NIE używaj dla:**
@@ -21,49 +21,82 @@ Użyj, gdy:
 
 ---
 
+## Tryby autonomii
+
+Trzy poziomy nadzoru, wybierane flagą w prompcie:
+
+| Tryb | Flaga | Bramki human-in-the-loop | Kiedy |
+|---|---|---|---|
+| **Domyślny** | (brak) | **6 bramek** — STOP + zgoda człowieka na plan / kontrakty / sprint / QA / review / ship | Praca dzienna pod nadzorem |
+| **Goal** | `/goal <spec>` | Nadzorowana pętla — zatrzymuje się na każdej bramce, emituje `awaiting_gate_{n}` | Mierzalny cel z checkpointami |
+| **YOLO** | `/YOLO /goal <spec>` | **OFF** — agent sam stawia hipotezy, wybiera najbardziej prawdopodobną, auto-zatwierdza | Praca nocna „odpal i zostaw" |
+
+**Planowanie (Faza 1) zawsze na `effort max` (ultrathink)** — błąd planu kaskaduje przez godziny pracy N agentów.
+
+`/YOLO` znosi bramki **przeglądu**, NIE zabezpieczenia destrukcyjne: walidatory `verify-*.sh` dalej muszą przechodzić, brak `git push`/`publish`/`DROP`/`rm` poza katalogiem feature, Plan-Validate-Execute dla pivota. Pełny protokół: `references/approval-gates-protocol.md`.
+
+---
+
 ## Struktura katalogu
 
 ```
 agent-teams-builder/
 ├── SKILL.md                          ← <500 linii, frontmatter pełny
 ├── README.md                         ← ten plik
+├── CHANGELOG.md                      ← semver + historia zmian
 ├── agents/                           ← gotowe sub-agenty Claude Code (kopiuj do .claude/agents/)
-│   ├── planner.md
+│   ├── planner.md                    ← effort max (ultrathink); 11-sekcyjny plan + PRD
 │   ├── generator.md
 │   └── evaluator.md
-├── references/                       ← progresywnie ładowane protokoły
+├── references/                       ← progresywnie ładowane protokoły (14)
+│   ├── approval-gates-protocol.md    ← 6 bramek human-in-the-loop + tryb /YOLO (§9)
+│   ├── goal-mode-protocol.md         ← Tryb /goal (nadzorowany; /YOLO znosi bramki)
+│   ├── planning-rigor.md             ← Faza 1 (3 hipotezy/sprint + Hyrum + rollback)
+│   ├── documentation-protocol.md     ← 10 typów dokumentów (PRD/ADR/retro/CR/QA)
 │   ├── contract-negotiation.md       ← Faza 3
-│   ├── evaluator-rubric.md           ← Faza 4 (4 filary, twarde progi)
+│   ├── evaluator-rubric.md           ← Faza 4 (twarde progi binarne)
 │   ├── pivot-protocol.md             ← Faza 5 (Plan-Validate-Execute)
 │   ├── memory-filesystem.md          ← Faza 0 + recovery
 │   ├── role-mapping.md               ← Faza 2 + skalowanie do 7+ agentów
-│   ├── goal-mode-protocol.md         ← Tryb /goal (respektuje bramki)
-│   ├── approval-gates-protocol.md    ← 6 bramek akceptacji człowieka (human-in-the-loop)
+│   ├── library-currency-protocol.md  ← context7 + fallback chain
 │   ├── anti-rationalization.md       ← Pełna tabela wymówek
 │   ├── non-negotiables.md            ← 5 zasad nienegocjowalnych
 │   ├── dod-evidence-protocol.md      ← Faza 6 (DoD audit)
 │   └── traces-reading.md             ← Kalibracja po realnych przebiegach
-├── scripts/                          ← deterministyczne narzędzia bash
+├── scripts/                          ← deterministyczne narzędzia bash (19)
 │   ├── init-team-state.sh
+│   ├── init-docs-structure.sh        ← tworzy state/{prd,...} + docs/{adr,...}
 │   ├── append-breadcrumb.sh
-│   ├── check-contract-coverage.sh
-│   ├── verify-evaluator-rubric.sh
-│   ├── pivot-trigger.sh
+│   ├── append-session-log.sh
+│   ├── setup-context7.sh
 │   ├── smoke-test-runner.sh
+│   ├── pivot-trigger.sh
+│   ├── run-goal-loop.sh
+│   ├── check-contract-coverage.sh
+│   ├── check-evidence-completeness.sh
+│   ├── check-scope-discipline.sh
 │   ├── check-breadcrumbs-append-only.sh
 │   ├── verify-role-isolation.sh
-│   ├── check-evidence-completeness.sh
-│   ├── run-goal-loop.sh
-│   ├── check-scope-discipline.sh
+│   ├── verify-evaluator-rubric.sh
+│   ├── verify-plan-rigor.sh
+│   ├── verify-documentation.sh
+│   ├── verify-library-currency.sh
 │   ├── verify-approval-gates.sh      ← egzekwuje 6 bramek (gate_approved w breadcrumbs)
 │   └── verify-non-negotiables.sh
-└── assets/                           ← szablony + few-shot examples
+└── assets/                           ← szablony + few-shot examples (14)
+    ├── plan-template.md              ← 11 sekcji planu
+    ├── prd-template.md               ← PRD per sprint (8 sekcji)
+    ├── sprint-report-template.md     ← raport wykonania sprintu (GATE #3)
+    ├── retrospective-template.md     ← retro po sprincie
+    ├── code-review-template.md       ← Five-Axis review (GATE #5)
+    ├── adr-template.md               ← Architecture Decision Record
+    ├── session-log-template.md
+    ├── claude-md-template.md
+    ├── mcp-config-template.json
     ├── contract-template.json
-    ├── rubric-example.md             ← good design vs AI slop
     ├── feature-list-schema.json
     ├── breadcrumbs-schema.json
-    ├── plan-template.md
-    ├── sprint-report-template.md     ← raport wykonania sprintu (GATE #3)
+    ├── rubric-example.md             ← good design vs AI slop
     └── prompt-templates.md           ← prompty systemowe dla 3 ról
 ```
 
@@ -71,27 +104,19 @@ agent-teams-builder/
 
 ## Quick start
 
-### 1. Skopiuj skill do repo
+### 1. Lokalizacja skilla
 
-```bash
-# Cel: /Users/sq13pl/Documents/GitHub/skills/dev/agent-teams-builder/
-cp -r /Users/sq13pl/Documents/Claude/Projects/SKILLS/agent-teams-builder \
-      /Users/sq13pl/Documents/GitHub/skills/dev/
-```
+Skill mieszka w repo: `dev/agent-teams-builder/`. W sesji Claude Code wywołasz go triggerem (`/team`, `/goal`, `/YOLO`, „zbuduj zespół agentów do…") — `SKILL.md` ładuje się automatycznie.
 
-### 2. Wpis do CHANGELOG repo
+### 2. Aktualny zakres (v1.8.0)
 
-```markdown
-## [v1.0.0] — 2026-05-19
+- 7-fazowa procedura (bootstrap → ship) z exit criteria + **6 bramek akceptacji**.
+- **14 protokołów** referencyjnych z progresywnym ładowaniem.
+- **19 skryptów** deterministycznych (init, smoke, pivot, 7 walidatorów `verify-*` + 4 `check-*`).
+- Tryby autonomii: domyślny (bramki) / `/goal` (nadzorowany) / `/YOLO /goal` (pełna autonomia).
+- Pełny audit trail dokumentów (PRD/ADR/retro/code-review/QA/sprint-report).
 
-### Added
-- dev/agent-teams-builder/ — orkiestracja Generator-Ewaluator dla zadań programistycznych.
-  - 7-fazowa procedura (bootstrap → ship) z exit criteria.
-  - 10 protokołów referencyjnych z progresywnym ładowaniem.
-  - 12 skryptów deterministycznych (init, smoke, pivot, walidatory).
-  - Tryb /goal z auto-pivotem.
-  - Source: DOC/agent-teams-generator-ewaluator.md, DOC/material_skill.md §8, DOC/since_skill.md.
-```
+Pełna historia zmian: [CHANGELOG.md](CHANGELOG.md). Źródła: `DOC/agent-teams-generator-ewaluator.md`, `DOC/material_skill.md §8`, `DOC/since_skill.md`, `DOC/goal_mode.md`.
 
 ### 3. Bootstrap pierwszej sesji
 
@@ -151,17 +176,20 @@ Trend rosnący w `false_successes` → uprząż dryfuje → poprawki w `referenc
 
 ## Bezpieczeństwo
 
-Operacje destruktywne (pivot, `rm -rf`) używają **Plan-Validate-Execute**:
+Dwie warstwy ochrony, niezależne od trybu autonomii:
 
-1. Plan napisany przez Evaluatora w `state/pivot_plan.md`.
-2. Walidacja: Generator akceptuje pisemnie w breadcrumbs.
-3. Execute: skrypt z archiwizacją branchu + commit.
+**1. Bramki przeglądu (6, human-in-the-loop)** — domyślnie STOP na plan/kontrakty/sprint/QA/review/ship. `/YOLO` je auto-zatwierdza (audit: `actor: yolo` w breadcrumbs). Walidator: `verify-approval-gates.sh`.
 
-Opcjonalny human hook: `PIVOT_REQUIRES_HUMAN=1` zatrzymuje pivot do czasu klawisza.
+**2. Zabezpieczenia destrukcyjne (zawsze aktywne, także w `/YOLO`):**
+- Operacje destruktywne (pivot, `rm -rf`) używają **Plan-Validate-Execute**: plan Evaluatora → pisemna walidacja Generatora w breadcrumbs → execute z archiwizacją branchu. Opcjonalny human hook `PIVOT_REQUIRES_HUMAN=1`.
+- **Nigdy** automatycznie: `git push`, `npm publish`, `DROP TABLE`/`DELETE` bez WHERE, `rm` poza katalogiem feature, dotykanie `.env`/`secrets/`/`~/.ssh/`.
+- Walidatory `verify-*.sh` muszą przechodzić nawet w `/YOLO` — fail = STOP + `state/blockers.md`.
 
 ---
 
-## Tipy do długich sesji (`/goal`)
+## Tipy do długich sesji (`/YOLO /goal`)
+
+> Bez `/YOLO` proces zatrzyma się na **pierwszej bramce** i będzie czekał na zgodę — praca nocna „odpal i zostaw" wymaga `/YOLO`.
 
 - Osobny `git worktree` — czysty main rano.
 - Auto mode w Claude Code — bez tego pauza co iterację.
