@@ -1,0 +1,36 @@
+{
+  "_fixture": "GOOD — kontrakt po akceptacji, 15 binarnych kryteriów, 3 out_of_scope",
+  "_expected_exit": "scripts/check-contract-coverage.sh → 0",
+  "sprint": 1,
+  "goal": "Komponent FeatureXForm: dodawanie nowej feature przez form z walidacją",
+  "paths_in_scope": ["src/feature-x/", "tests/feature-x/"],
+  "out_of_scope": ["src/auth/", "src/legacy/", "infra/"],
+  "dependencies": [{"name": "react", "version": ">=18"}, {"name": "zod", "version": ">=3.22"}],
+  "assumptions": ["API endpoint /api/v2/feature-x istnieje", "DB ma tabelę features"],
+  "criteria": [
+    {"id": "C-01", "type": "functional", "binary": true, "check": "POST /api/v2/feature-x z {name:'foo'} → 201 + id", "evidence_type": "curl_output"},
+    {"id": "C-02", "type": "functional", "binary": true, "check": "POST pusty body → 400 + error.code='VALIDATION_FAILED'", "evidence_type": "curl_output"},
+    {"id": "C-03", "type": "functional", "binary": true, "check": "Enter w polu name wywołuje submit", "evidence_type": "playwright_screenshot"},
+    {"id": "C-04", "type": "layout", "binary": true, "check": "Form bounding box nie przecina header bounding box przy 1920x1080", "evidence_type": "playwright_screenshot"},
+    {"id": "C-05", "type": "design", "binary": true, "check": "Paleta tła: #1a1a2e/#16213e/#0f3460, ≥80% pikseli w heatmapie", "evidence_type": "playwright_screenshot"},
+    {"id": "C-06", "type": "design", "binary": true, "check": "Brak linear-gradient.*(purple|violet|pink) w computedStyle 10 elementów", "evidence_type": "json_dump"},
+    {"id": "C-07", "type": "craft", "binary": true, "check": "tsc --noImplicitAny --strict exit 0", "evidence_type": "build_log"},
+    {"id": "C-08", "type": "craft", "binary": true, "check": "grep -rE 'TODO|FIXME|throw.*not implemented' src/feature-x/ = 0 linii", "evidence_type": "bash_output"},
+    {"id": "C-09", "type": "craft", "binary": true, "check": "Każdy publiczny export ma test w tests/feature-x/*.spec.ts", "evidence_type": "coverage_report"},
+    {"id": "C-10", "type": "craft", "binary": true, "check": "npm run lint exit 0, 0 warnings", "evidence_type": "build_log"},
+    {"id": "C-11", "type": "functional", "binary": true, "check": "Kolejność: POST → 201 → GET → 200 (Hyrum)", "evidence_type": "har_trace"},
+    {"id": "C-12", "type": "functional", "binary": true, "check": "F5 → stan formularza odtworzony z localStorage", "evidence_type": "playwright_screenshot"},
+    {"id": "C-13", "type": "functional", "binary": true, "check": "2 równoległe POST → idempotencja LUB 409 Conflict", "evidence_type": "har_trace"},
+    {"id": "C-14", "type": "functional", "binary": true, "check": "Pusty input → EmptyState component", "evidence_type": "playwright_screenshot"},
+    {"id": "C-15", "type": "performance", "binary": true, "check": "TTI <1500ms (domInteractive - navigationStart)", "evidence_type": "chrome_devtools_trace"}
+  ],
+  "acceptance_evidence": ["playwright_screenshot", "curl_output", "build_log", "har_trace", "coverage_report"],
+  "max_iterations": 5,
+  "status": "accepted",
+  "evaluator_review": {
+    "ts": "2026-05-19T16:00:00Z",
+    "verdict": "accepted",
+    "iterations": 3,
+    "final_notes": "Po 3 wymianach: kryteria pokrywają wszystkie 4 filary, brak skal, edge cases obecne."
+  }
+}

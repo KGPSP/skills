@@ -1,0 +1,18 @@
+[
+  {
+    "_comment": "BAD — wpis bez wymaganego pola 'event'. Walidator check-breadcrumbs-append-only.sh → exit 4 (INVALID entries).",
+    "ts": "2026-05-19T16:00:00Z",
+    "actor": "bootstrap",
+    "details": {"project": "broken"}
+  },
+  {
+    "ts": "2026-05-19T16:05:00Z",
+    "event": "plan_created",
+    "details": {"sprints": 6}
+  },
+  {
+    "actor": "generator",
+    "event": "commit",
+    "details": {"sprint": 1}
+  }
+]

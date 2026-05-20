@@ -11,9 +11,13 @@ BC="$BASE_DIR/state/breadcrumbs.json"
 [[ -f "$BC" ]] || { echo "[FAIL] $BC missing"; exit 1; }
 
 # git diff --unified=0 — sprawdź usunięte linie w tablicy
+# Wyłączamy pipefail w tym fragmencie — grep -E "^-" na pustym diff zwraca exit 1,
+# co przy set -e -o pipefail aborts skrypt mimo poprawnego DELETED_LINES=0.
 if [[ -d "$BASE_DIR/.git" ]]; then
+  set +o pipefail
   DELETED_LINES=$(cd "$BASE_DIR" && git diff --unified=0 state/breadcrumbs.json 2>/dev/null \
     | grep -E "^-" | grep -vE "^---" | grep -E '"ts"|"actor"|"event"' | wc -l | tr -d ' \n')
+  set -o pipefail
   DELETED_LINES="${DELETED_LINES:-0}"
 
   if [[ "$DELETED_LINES" -gt 0 ]]; then

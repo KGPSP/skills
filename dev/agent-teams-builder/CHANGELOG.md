@@ -1,5 +1,29 @@
 # CHANGELOG — agent-teams-builder
 
+## [v1.2.0] — 2026-05-20 — meta-tests & fixtures
+
+### Added
+
+- **tests/fixtures/** — 7 fixtures testowych dla walidatorów skilla:
+  - `contract-complete.json` (GOOD — 15 binarnych kryteriów, accepted)
+  - `contract-broken-scales.json` (BAD — kryteria w skali 1-10)
+  - `contract-broken-too-few.json` (BAD — 8 < 15 kryteriów)
+  - `breadcrumbs-valid.json` (GOOD — append-only, chronologiczny)
+  - `breadcrumbs-broken-schema.json` (BAD — wpisy bez wymaganych pól)
+  - `plan-complete.md` (GOOD — Open Questions wypełnione)
+  - `plan-empty-open-questions.md` (BAD — Non-negotiable #1 złamane)
+- **tests/run-meta-tests.sh** — uruchamia walidatory na fixtures i sprawdza exit codes (GOOD → 0, BAD → ≠0). Test 11 przypadków w 5 grupach: check-contract-coverage, verify-evaluator-rubric, check-breadcrumbs-append-only, verify-non-negotiables, verify-role-isolation.
+
+### Fixed
+
+- **`scripts/check-breadcrumbs-append-only.sh`** — bug `set -e -o pipefail` aborts skrypt gdy `grep -E "^-"` nie znajduje matchu na pustym git diff. Fix: `set +o pipefail` w fragmencie z pipe, `set -o pipefail` po. Wykryto przez nowy `run-meta-tests.sh`.
+
+### Test results
+
+- `bash tests/run-meta-tests.sh` → **11/11 passed**.
+
+---
+
 ## [v1.1.0] — 2026-05-19 — code review fixes
 
 ### Fixed (z review po v1.0.0)

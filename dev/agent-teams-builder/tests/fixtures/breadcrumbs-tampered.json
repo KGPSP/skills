@@ -1,0 +1,29 @@
+[
+  {
+    "_comment": "BAD — usunięto 3 wpisy z poprzedniej sesji (iteracje 1-2 zniknęły). Walidator wymaga git diff żeby wykryć — uruchom run-meta-tests.sh w trybie tampered-check.",
+    "_expected_behavior": "Walidator check-breadcrumbs-append-only.sh wykryje brak chronologicznej spójności LUB git diff pokaże usunięte linie z '-'.",
+    "ts": "2026-05-19T16:00:00Z",
+    "actor": "bootstrap",
+    "event": "init",
+    "details": {"project": "tampered-session"}
+  },
+  {
+    "ts": "2026-05-19T16:05:00Z",
+    "actor": "planner",
+    "event": "plan_created",
+    "details": {"sprints": 6}
+  },
+  {
+    "_comment": "Tu były iteracje 1-2, usunięte żeby ukryć regresję — TAMPERING.",
+    "ts": "2026-05-19T18:00:00Z",
+    "actor": "evaluator",
+    "event": "iteration_verdict",
+    "details": {"sprint": 1, "iteration": 2, "passed": 17, "total": 17, "verdict": "passed"}
+  },
+  {
+    "ts": "2026-05-19T18:05:00Z",
+    "actor": "evaluator",
+    "event": "sprint_passed",
+    "details": {"sprint": 1, "iterations": 2, "final_hash": "fakehash"}
+  }
+]

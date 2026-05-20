@@ -1,0 +1,29 @@
+{
+  "_fixture": "BAD — kontrakt z kryteriami w skali 1-10 (zakazane), walidator MUSI odrzucić",
+  "_expected_exit": "scripts/check-contract-coverage.sh → exit 4 (SCALE_HITS > 0)",
+  "_expected_exit_alt": "scripts/verify-evaluator-rubric.sh → exit ≥1 (§2.4 Binarne progi złamane)",
+  "sprint": 2,
+  "goal": "Komponent ze skalami (anty-wzorzec — nie powielać)",
+  "paths_in_scope": ["src/widget/"],
+  "out_of_scope": ["src/other/"],
+  "criteria": [
+    {"id": "C-01", "type": "functional", "binary": true, "check": "Jakość kodu: 7/10 lub wyżej (out of 10)", "evidence_type": "review"},
+    {"id": "C-02", "type": "design", "binary": true, "check": "Design rating: scale 1-10, akceptowalny ≥8", "evidence_type": "review"},
+    {"id": "C-03", "type": "functional", "binary": true, "check": "Performance grade A-B (out of A-F)", "evidence_type": "lighthouse"},
+    {"id": "C-04", "type": "craft", "binary": true, "check": "Build OK", "evidence_type": "build_log"},
+    {"id": "C-05", "type": "design", "binary": true, "check": "Layout jest 'good' (scale: bad/ok/good)", "evidence_type": "screenshot"},
+    {"id": "C-06", "type": "functional", "binary": true, "check": "Wszystkie testy zielone", "evidence_type": "tests_log"},
+    {"id": "C-07", "type": "craft", "binary": true, "check": "Czystość kodu rating: 6/10 minimum", "evidence_type": "lint"},
+    {"id": "C-08", "type": "functional", "binary": true, "check": "API odpowiada", "evidence_type": "curl"},
+    {"id": "C-09", "type": "functional", "binary": true, "check": "UX score ≥80/100", "evidence_type": "review"},
+    {"id": "C-10", "type": "design", "binary": true, "check": "Wygląd na 9/10", "evidence_type": "screenshot"},
+    {"id": "C-11", "type": "functional", "binary": true, "check": "Działa", "evidence_type": "manual"},
+    {"id": "C-12", "type": "performance", "binary": true, "check": "Speed rating 4 out of 5", "evidence_type": "lighthouse"},
+    {"id": "C-13", "type": "craft", "binary": true, "check": "Code quality grade B+", "evidence_type": "review"},
+    {"id": "C-14", "type": "functional", "binary": true, "check": "Wszystko OK", "evidence_type": "general"},
+    {"id": "C-15", "type": "design", "binary": true, "check": "Estetyka 7.5/10", "evidence_type": "screenshot"}
+  ],
+  "acceptance_evidence": ["screenshot"],
+  "max_iterations": 5,
+  "status": "accepted"
+}

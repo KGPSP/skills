@@ -1,0 +1,87 @@
+[
+  {
+    "_comment": "GOOD — append-only, chronologiczny, wszystkie wpisy mają ts/actor/event. Walidator: check-breadcrumbs-append-only.sh → exit 0",
+    "ts": "2026-05-19T16:00:00Z",
+    "actor": "bootstrap",
+    "event": "init",
+    "details": {"project": "retro-forge", "git_init_hash": "076b8b3293ca95e25b3b948e32aadab52f30021e"}
+  },
+  {
+    "ts": "2026-05-19T16:05:00Z",
+    "actor": "planner",
+    "event": "plan_created",
+    "details": {"plan_path": "state/plan.md", "sprints": 6}
+  },
+  {
+    "ts": "2026-05-19T16:10:00Z",
+    "actor": "main",
+    "event": "role_spawned",
+    "details": {"name": "generator", "tools": "Read,Write,Edit,Bash,Grep,Glob"}
+  },
+  {
+    "ts": "2026-05-19T16:10:30Z",
+    "actor": "main",
+    "event": "role_spawned",
+    "details": {"name": "evaluator", "tools": "Read,Bash,Grep,Glob,Write"}
+  },
+  {
+    "ts": "2026-05-19T16:20:00Z",
+    "actor": "generator",
+    "event": "contract_drafted",
+    "details": {"sprint": 1, "draft_path": "state/contracts/sprint-1.draft.json", "proposed_criteria": 12}
+  },
+  {
+    "ts": "2026-05-19T16:35:00Z",
+    "actor": "evaluator",
+    "event": "contract_iteration",
+    "details": {"sprint": 1, "iteration": 1, "missing_criteria": 5, "verdict": "rejected"}
+  },
+  {
+    "ts": "2026-05-19T16:50:00Z",
+    "actor": "generator",
+    "event": "contract_iteration",
+    "details": {"sprint": 1, "iteration": 2, "added_criteria": 5}
+  },
+  {
+    "ts": "2026-05-19T17:00:00Z",
+    "actor": "evaluator",
+    "event": "contract_accepted",
+    "details": {"sprint": 1, "total_criteria": 17}
+  },
+  {
+    "ts": "2026-05-19T17:05:00Z",
+    "actor": "generator",
+    "event": "iteration_start",
+    "details": {"sprint": 1, "iteration": 1, "start_hash": "076b8b3"}
+  },
+  {
+    "ts": "2026-05-19T17:25:00Z",
+    "actor": "generator",
+    "event": "commit",
+    "details": {"sprint": 1, "iteration": 1, "criteria_fixed": ["C-01", "C-02"], "hash": "a3f9b21"}
+  },
+  {
+    "ts": "2026-05-19T17:30:00Z",
+    "actor": "evaluator",
+    "event": "iteration_verdict",
+    "details": {"sprint": 1, "iteration": 1, "passed": 11, "total": 17, "verdict": "iterate"}
+  },
+  {
+    "ts": "2026-05-19T17:55:00Z",
+    "actor": "generator",
+    "event": "commit",
+    "details": {"sprint": 1, "iteration": 2, "criteria_fixed": ["C-08", "C-09", "C-15"], "hash": "8c4e1d2"}
+  },
+  {
+    "ts": "2026-05-19T18:00:00Z",
+    "actor": "evaluator",
+    "event": "iteration_verdict",
+    "details": {"sprint": 1, "iteration": 2, "passed": 17, "total": 17, "verdict": "passed"}
+  },
+  {
+    "ts": "2026-05-19T18:05:00Z",
+    "actor": "evaluator",
+    "event": "sprint_passed",
+    "details": {"sprint": 1, "iterations": 2, "final_hash": "8c4e1d2"}
+  }
+]

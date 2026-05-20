@@ -1,0 +1,21 @@
+{
+  "_fixture": "BAD — tylko 8 kryteriów (poniżej minimum 15), walidator MUSI odrzucić",
+  "_expected_exit": "scripts/check-contract-coverage.sh → exit 2 (TOTAL < MIN_CRITERIA)",
+  "sprint": 3,
+  "goal": "Sprint za prosty — generator próbuje uciec od granularności",
+  "paths_in_scope": ["src/small-widget/"],
+  "out_of_scope": ["src/everything-else/"],
+  "criteria": [
+    {"id": "C-01", "type": "functional", "binary": true, "check": "Komponent renderuje się", "evidence_type": "screenshot"},
+    {"id": "C-02", "type": "functional", "binary": true, "check": "Click na przycisk zamyka modal", "evidence_type": "playwright_screenshot"},
+    {"id": "C-03", "type": "craft", "binary": true, "check": "tsc exit 0", "evidence_type": "build_log"},
+    {"id": "C-04", "type": "craft", "binary": true, "check": "npm test exit 0", "evidence_type": "tests_log"},
+    {"id": "C-05", "type": "design", "binary": true, "check": "Brak gradientów purple/violet", "evidence_type": "computedStyle"},
+    {"id": "C-06", "type": "functional", "binary": true, "check": "ESC zamyka modal", "evidence_type": "playwright_screenshot"},
+    {"id": "C-07", "type": "layout", "binary": true, "check": "Modal centered horizontally na 1920px", "evidence_type": "playwright_screenshot"},
+    {"id": "C-08", "type": "craft", "binary": true, "check": "0 lint warnings", "evidence_type": "build_log"}
+  ],
+  "acceptance_evidence": ["playwright_screenshot", "tests_log"],
+  "max_iterations": 5,
+  "status": "accepted"
+}
