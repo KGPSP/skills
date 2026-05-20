@@ -1,14 +1,27 @@
 # `dev/` — Narzędzia developerskie
 
-Workflowy planowania i implementacji feature'a dla agentów AI. Trzy warianty pokrywają różne kombinacje **środowiska** (Claude Code vs Codex CLI) i **rygoru** (wygodny vs senior-grade).
+Workflowy planowania/implementacji feature'a, orkiestracja zespołów sub-agentów oraz QA end-to-end dla agentów AI.
 
-## Skille w tej kategorii
+## Planowanie feature'a
+
+Trzy warianty pokrywają różne kombinacje **środowiska** (Claude Code vs Codex CLI) i **rygoru** (wygodny vs senior-grade).
 
 | Skill | Wariant | Środowisko | Rygor | Wielkość |
 |---|---|---|---|---|
 | [`feature-planner`](feature-planner/) | **v2** | Claude Code | wygodny | ~2200 linii SKILL.md |
 | [`feature-planner-v3`](feature-planner-v3/) | **v3** | Claude Code | senior-grade | 344 linii SKILL.md + 12 refs + 5 scripts |
 | [`feature-planner-codex`](feature-planner-codex/) | **codex** | OpenAI Codex CLI | wygodny | krótszy, codex-native |
+
+## Orkiestracja i QA
+
+Dla projektów wielosprintowych (zespół agentów) i testów aplikacji webowych.
+
+| Skill | Wersja | Rola | Zastosowanie |
+|---|---|---|---|
+| [`agent-teams-builder`](agent-teams-builder/) | **v1.3.0** | orkiestrator | Zespół sub-agentów Generator-Ewaluator (Planner + Generator + Evaluator + specjaliści). 7-fazowa procedura, twarde rubryki, pivot (Plan-Validate-Execute), tryb `/goal`, meta-testy walidatorów (11/11). Dla „zbuduj aplikację od zera", projektów >2h. |
+| [`playwright-test-suite`](playwright-test-suite/) | **v1.0.1** | QA / Evaluator-Runtime | 5-fazowa procedura (smoke → UI → DevTools → a11y → visual) przez Playwright CLI + `@axe-core/playwright` + pixel-diff. Sub-agent `playwright-runner`, evidence zgodne z DoD agent-teams-builder. Standalone QA lub deleguje z evaluatora. |
+
+> **Relacja:** `agent-teams-builder` Evaluator deleguje pełne QA do sub-agenta `playwright-runner` z `playwright-test-suite` (`Task(subagent_type: "playwright-runner")`), zamiast wywoływać Playwright inline. Oba respektują Google DNA (Hyrum / Chesterton / Beyoncé / DAMP) — patrz audit w głównym [`CHANGELOG.md`](../CHANGELOG.md).
 
 ---
 

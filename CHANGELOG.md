@@ -2,7 +2,36 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
-## [2026-05-20] playwright-test-suite v1.0.0 + agent-teams-builder v1.3.0
+## [2026-05-20] audit(dev): Google DNA compliance — agent-teams-builder v1.3.0 + playwright-test-suite v1.0.1
+
+Audit pryncypiów wg `material_skill.md` §5 (Google DNA) + §8 (5 Non-negotiables) + `since_skill.md` §2 (5 filarów) wykrył luki w pokryciu 4 zasad inżynieryjnych Google. Naprawione w obu skillach.
+
+### Changed
+
+- **`dev/agent-teams-builder/`** → **v1.3.0**
+  - `SKILL.md` — 4 nowe wymówki anty-racjonalizacyjne (Chesterton's Fence / Hyrum's Law / Beyoncé Rule / DAMP > DRY).
+  - `references/anti-rationalization.md §5` — nowa sekcja "Google DNA" z 6 wymówkami i ripostami (przed: **brak Chesterton's Fence**).
+- **`dev/playwright-test-suite/`** → **v1.0.1**
+  - `SKILL.md` — nowa sekcja "Google DNA" + 4 nowe wymówki + DoD rozszerzony o Beyoncé/DAMP/Chesterton checks + explicit `(Non-negotiable #N)` labels + token budget L2 ≤5000.
+  - `references/playwright-ui-protocol.md §5` — nowa sekcja "Google DNA w testach" z przykładami ✅/❌.
+
+### Audit summary (po fixach)
+
+| Zasada | agent-teams-builder | playwright-test-suite |
+|---|---|---|
+| Hyrum's Law | 8+ wzmianek ✅ | (w obu) ✅ |
+| Chesterton's Fence | 5+ (było **0**) ✅ | ✅ |
+| Beyoncé Rule | 15+ ✅ | 6+ ✅ |
+| DAMP > DRY | 5+ ✅ | 7+ ✅ |
+
+### Sanity tests
+
+- `agent-teams-builder/tests/run-meta-tests.sh` → **11/11 passed** ✅
+- `verify-role-isolation.sh` z 4 sub-agentami → ✅
+
+---
+
+## [2026-05-20] playwright-test-suite v1.0.0 + agent-teams-builder integration
 
 ### Added
 

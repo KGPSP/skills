@@ -8,7 +8,7 @@ Zbiór wyspecjalizowanych **Claude Code Skills** używanych w Komendzie Główne
 skills/
 ├── pzp/      # Prawo Zamówień Publicznych
 ├── legal/    # Opinie prawne i analizy normatywne
-└── dev/      # Narzędzia developerskie (planowanie, implementacja)
+└── dev/      # Narzędzia developerskie (planowanie, orkiestracja agentów, QA)
 ```
 
 ## Katalog skilli
@@ -30,13 +30,22 @@ skills/
 
 ### `dev/` — Narzędzia developerskie
 
-Trzy warianty workflow planowania feature'a — wybór zależy od środowiska i wymaganego rygoru. Pełne porównanie i decyzja "który użyć kiedy" → [`dev/README.md`](dev/README.md).
+Workflowy planowania/implementacji feature'a + orkiestracja zespołów agentów + QA end-to-end. Pełne porównanie i decyzja "który użyć kiedy" → [`dev/README.md`](dev/README.md).
+
+**Planowanie feature'a** — trzy warianty (wybór zależy od środowiska i wymaganego rygoru):
 
 | Skill | Wariant | Zastosowanie |
 |-------|---------|--------------|
 | [`feature-planner`](dev/feature-planner/) | **v2** (Claude Code) | Replit Agent style z auto Agent Teams routing, ralph-loop autonomous, `/effort max`, 7 test scopes (unit/integration/system/acceptance/E2E/regression/perf+sec), worktree decision matrix. Domyślny wybór dla **typowych** zadań feature'owych. |
 | [`feature-planner-v3`](dev/feature-planner-v3/) | **v3** (senior-grade) | v2 + deterministyczna uprząż inżynieryjna: 15-wpisowa Anti-Rationalization Table, twardy DoD z surowymi artefaktami, PR Sizing 100/300/1000, Hyrum's Law, Chesterton's Fence, Beyoncé Rule 1:1 AC↔Test, DAMP over DRY, Five-Axis Review, Plan-Validate-Execute, Thin Vertical Slices, Prove-It Pattern. Dla zadań **wysokiego rygoru** — fragile ops, audytowalna delegacja, compliance. |
 | [`feature-planner-codex`](dev/feature-planner-codex/) | **codex-native** | Wariant bez Claude-Code-specific koncepcji (Agent Teams, slash commands). Do pracy w **OpenAI Codex CLI**. |
+
+**Orkiestracja i QA** — dla projektów wielosprintowych i testów aplikacji:
+
+| Skill | Wersja | Zastosowanie |
+|-------|--------|--------------|
+| [`agent-teams-builder`](dev/agent-teams-builder/) | **v1.3.0** | Orkiestracja zespołu sub-agentów (Planner + Generator + Evaluator + specjaliści) wg wzorca Generator-Ewaluator. 7-fazowa procedura, twarde rubryki, mechanizm pivota (Plan-Validate-Execute), tryb `/goal`, meta-testy walidatorów. Dla zadań „zbuduj aplikację od zera", projektów >2h. |
+| [`playwright-test-suite`](dev/playwright-test-suite/) | **v1.0.1** | QA end-to-end aplikacji webowej: 5-fazowa procedura (smoke → UI → DevTools → a11y → visual) przez Playwright CLI + `@axe-core/playwright` + pixel-diff. Dedykowany sub-agent `playwright-runner`, evidence zgodne z DoD agent-teams-builder. Standalone QA lub Evaluator-Runtime w pętli Generator-Ewaluator. |
 
 ## Użycie
 
