@@ -21,7 +21,7 @@ sources:
   - DOC/material_skill.md
   - DOC/since_skill.md
   - DOC/agent-teams-generator-ewaluator.md (§4 Rubryka, §6 Tooling QA)
-version: v1.0.0
+version: v1.2.0
 size-limit: 500-lines-hard
 ---
 

@@ -23,7 +23,7 @@ sources:
   - DOC/since_skill.md
   - DOC/agent-teams-generator-ewaluator.md
   - DOC/goal_mode.md
-version: v1
+version: v1.6.0
 size-limit: 500-lines-hard
 ---
 

@@ -18,10 +18,21 @@ Dla projektów wielosprintowych (zespół agentów) i testów aplikacji webowych
 
 | Skill | Wersja | Rola | Zastosowanie |
 |---|---|---|---|
-| [`agent-teams-builder`](agent-teams-builder/) | **v1.3.0** | orkiestrator | Zespół sub-agentów Generator-Ewaluator (Planner + Generator + Evaluator + specjaliści). 7-fazowa procedura, twarde rubryki, pivot (Plan-Validate-Execute), tryb `/goal`, meta-testy walidatorów (11/11). Dla „zbuduj aplikację od zera", projektów >2h. |
-| [`playwright-test-suite`](playwright-test-suite/) | **v1.0.1** | QA / Evaluator-Runtime | 5-fazowa procedura (smoke → UI → DevTools → a11y → visual) przez Playwright CLI + `@axe-core/playwright` + pixel-diff. Sub-agent `playwright-runner`, evidence zgodne z DoD agent-teams-builder. Standalone QA lub deleguje z evaluatora. |
+| [`agent-teams-builder`](agent-teams-builder/) | **v1.6.0** | orkiestrator | Zespół sub-agentów Generator-Ewaluator (Planner + Generator + Evaluator + specjaliści). 7-fazowa procedura, twarde rubryki, pivot (Plan-Validate-Execute), tryb `/goal`. Meta-testy walidatorów **19/19**. Dla „zbuduj aplikację od zera", projektów >2h. |
+| [`playwright-test-suite`](playwright-test-suite/) | **v1.2.0** | QA / Evaluator-Runtime | 5-fazowa procedura (smoke → UI → DevTools → a11y → visual) przez Playwright CLI + `@axe-core/playwright` + pixel-diff. Sub-agent `playwright-runner`, QA Report (`state/qa-reports/`), evidence zgodne z DoD agent-teams-builder. Standalone QA lub deleguje z evaluatora. |
 
-> **Relacja:** `agent-teams-builder` Evaluator deleguje pełne QA do sub-agenta `playwright-runner` z `playwright-test-suite` (`Task(subagent_type: "playwright-runner")`), zamiast wywoływać Playwright inline. Oba respektują Google DNA (Hyrum / Chesterton / Beyoncé / DAMP) — patrz audit w głównym [`CHANGELOG.md`](../CHANGELOG.md).
+### Ewolucja agent-teams-builder (v1.1 → v1.6)
+
+| Wersja | Kamień milowy |
+|---|---|
+| v1.1.0 | Bazowa orkiestracja (Planner/Generator/Evaluator + pivot + `/goal`) |
+| v1.2.0 | Meta-testy walidatorów + 7 fixtures |
+| v1.3.0 | Google DNA compliance (Chesterton / Hyrum / Beyoncé / DAMP) |
+| v1.4.0 | **context7 MCP** — Library Currency Protocol (eliminacja halucynacji API), 4-poziomowy fallback chain |
+| v1.5.0 | **Planning Rigor** (transfer z v3) — 3 hipotezy/sprint, 11 sekcji planu, Hyrum Impact, `verify-plan-rigor.sh` |
+| v1.6.0 | **Documentation Protocol** — pełen audit trail (10 typów dokumentów: PRD/ADR/retro/Five-Axis CR/QA/sessions), `verify-documentation.sh` |
+
+> **Relacja:** `agent-teams-builder` Evaluator deleguje pełne QA do sub-agenta `playwright-runner` z `playwright-test-suite` (`Task(subagent_type: "playwright-runner")`), zamiast wywoływać Playwright inline. Runner produkuje `state/qa-reports/sprint-N.md` zgodny z Documentation Protocol. Oba respektują Google DNA (Hyrum / Chesterton / Beyoncé / DAMP) i context7 MCP (currency check) — patrz audit w głównym [`CHANGELOG.md`](../CHANGELOG.md).
 
 ---
 

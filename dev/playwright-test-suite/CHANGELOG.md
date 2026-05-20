@@ -1,5 +1,17 @@
 # CHANGELOG — playwright-test-suite
 
+## [v1.2.0] — 2026-05-20 — QA Report (integracja z Documentation Protocol agent-teams-builder)
+
+### Added
+
+- **`agents/playwright-runner.md`** — po fazie 5 sub-agent generuje `state/qa-reports/sprint-{n}.md`: czytelną, human-friendly agregację `qa-summary.json` (tabela Faza → Status → Key metric → Evidence). Spina playwright-runner z warstwą dokumentów `agent-teams-builder` v1.6.0 (Documentation Protocol — `state/qa-reports/`), żeby QA werdykt był audytowalny bez czytania surowego JSON.
+
+### Why
+
+`agent-teams-builder` v1.6.0 wprowadził pełen audit trail (`state/qa-reports/` jako 1 z 10 typów dokumentów). Evaluator deleguje QA do `playwright-runner`, więc to runner musi wyprodukować czytelny raport — nie tylko `qa-summary.json` dla maszyny. Bez tego ślad audytu QA miał lukę.
+
+---
+
 ## [v1.1.0] — 2026-05-20 — context7 MCP integration
 
 ### Changed

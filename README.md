@@ -44,8 +44,8 @@ Workflowy planowania/implementacji feature'a + orkiestracja zespołów agentów 
 
 | Skill | Wersja | Zastosowanie |
 |-------|--------|--------------|
-| [`agent-teams-builder`](dev/agent-teams-builder/) | **v1.3.0** | Orkiestracja zespołu sub-agentów (Planner + Generator + Evaluator + specjaliści) wg wzorca Generator-Ewaluator. 7-fazowa procedura, twarde rubryki, mechanizm pivota (Plan-Validate-Execute), tryb `/goal`, meta-testy walidatorów. Dla zadań „zbuduj aplikację od zera", projektów >2h. |
-| [`playwright-test-suite`](dev/playwright-test-suite/) | **v1.0.1** | QA end-to-end aplikacji webowej: 5-fazowa procedura (smoke → UI → DevTools → a11y → visual) przez Playwright CLI + `@axe-core/playwright` + pixel-diff. Dedykowany sub-agent `playwright-runner`, evidence zgodne z DoD agent-teams-builder. Standalone QA lub Evaluator-Runtime w pętli Generator-Ewaluator. |
+| [`agent-teams-builder`](dev/agent-teams-builder/) | **v1.6.0** | Orkiestracja zespołu sub-agentów (Planner + Generator + Evaluator + specjaliści) wg wzorca Generator-Ewaluator. 7-fazowa procedura, twarde rubryki, mechanizm pivota (Plan-Validate-Execute), tryb `/goal`. **Planning Rigor** (3 hipotezy/sprint, 11 sekcji planu, Hyrum Impact), **context7 MCP** (library currency — eliminacja halucynacji API), **Documentation Protocol** (pełen audit trail: PRD/ADR/retro/Five-Axis CR/QA — 10 typów dokumentów). Meta-testy walidatorów **19/19**. Dla zadań „zbuduj aplikację od zera", projektów >2h. |
+| [`playwright-test-suite`](dev/playwright-test-suite/) | **v1.2.0** | QA end-to-end aplikacji webowej: 5-fazowa procedura (smoke → UI → DevTools → a11y → visual) przez Playwright CLI + `@axe-core/playwright` + pixel-diff. Dedykowany sub-agent `playwright-runner`, **context7 MCP** (currency check przed nowym importem), QA Report (`state/qa-reports/`) zgodny z Documentation Protocol agent-teams-builder. Standalone QA lub Evaluator-Runtime w pętli Generator-Ewaluator. |
 
 ## Użycie
 
