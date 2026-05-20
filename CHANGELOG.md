@@ -2,6 +2,26 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-20] Planning Rigor (transfer z feature-planner-v3) — agent-teams-builder v1.5.0
+
+### Added
+
+- **Planning Rigor protocol** — `agent-teams-builder` dziedziczy dyscyplinę planistyczną z `feature-planner-v3`:
+  - **3 hipotezy per sprint** (Minimal/Idiomatic/Ambitious) z trade-offs, Hyrum risk, kosztem.
+  - **11 obowiązkowych sekcji planu** (z 6 do 11): Goal, Sprints (z hipotezami), Dependencies, Open Questions, Out of scope, Success metric, Risks (skalowane H/M/L), **Recommendation summary** (nowa), **Hyrum Impact** (nowa), **Rollback plan** (nowa), **Alternatives considered** (nowa).
+  - **AC priorities** MUST/SHOULD/COULD (przejęte z `ac-protocol.md`).
+  - **Walidator** `verify-plan-rigor.sh` egzekwujący strukturę.
+
+### Why
+
+Planner v1.4 produkował płaską listę sprintów bez audytu wyborów architektonicznych. Po transferze rygoru z feature-planner-v3 — każda decyzja jest udokumentowana, alternatywy odrzucone explicite, Hyrum Impact wykrywany PRZED implementacją (nie po regresji).
+
+### Test results
+
+- `bash dev/agent-teams-builder/tests/run-meta-tests.sh` → **16/16 passed** (z 14 → 16).
+
+---
+
 ## [2026-05-20] context7 MCP integration — agent-teams-builder v1.4.0 + playwright-test-suite v1.1.0
 
 ### Added

@@ -1,5 +1,36 @@
 # CHANGELOG — agent-teams-builder
 
+## [v1.5.0] — 2026-05-20 — Planning Rigor (dziedziczone z feature-planner-v3)
+
+### Added
+
+- **`references/planning-rigor.md`** — pełen protokół planowania przejęty z `feature-planner-v3`:
+  - 3 hipotezy per sprint (Minimal/Idiomatic/Ambitious) + wybór + uzasadnienie wg 5 Non-negotiables.
+  - 11 obowiązkowych sekcji planu (z 6 do 11 — 5 nowych).
+  - Hyrum Impact analysis (klasyfikacja breaking/additive/internal per sprint dotykający API).
+  - Rollback plan per sprint (feature flag / migration `down()` / `git revert` strategy).
+  - Alternatives considered top-level (min. 2 odrzucone architektury).
+  - AC priorities MUST/SHOULD/COULD (przejęte z `ac-protocol.md`).
+- **`scripts/verify-plan-rigor.sh`** — walidator wszystkich 11 sekcji + 3 hipotez per sprint + min. 2 alternatives. Inteligentne awk z wykluczeniem self-match.
+- **`tests/fixtures/plan-rigorous.md`** (GOOD — wszystkie sekcje + 3 hipotezy/sprint + 4 alternatives) + **`plan-shallow.md`** (BAD — tylko 7 sekcji bez nowych v1.5).
+- **`tests/run-meta-tests.sh`** — 2 nowe testy w Group 7 (verify-plan-rigor).
+- **`assets/plan-template.md`** — rozszerzony z 6 do 11 sekcji z konkretnymi przykładami.
+
+### Changed
+
+- **`agents/planner.md`** — frontmatter `description` zaktualizowane (wymienia hipotezy/Hyrum/rollback/alternatives). Sekcja "Output" zaktualizowana z 7 do 11 obowiązkowych sekcji. Nowa reguła: minimum 3 hipotezy per sprint + min. 2 alternatives top-level + Hyrum Impact gdy dotyka API.
+- **`SKILL.md`** — 3 nowe wymówki w anti-rationalization (1 hipoteza/sprint, Hyrum później, rollback później). Nowy DoD item: `verify-plan-rigor.sh` exit 0. Tabela "Progresywne ładowanie" rozszerzona o `planning-rigor.md`.
+
+### Why
+
+Planowanie w v1.4 było płaskie: Planner produkował listę sprintów z mierzalnymi celami, ale **bez audytu wyborów architektonicznych**. Generator dostawał plan w którym nie było widać DLACZEGO wybrano X zamiast Y. Konsekwencja: w fazie 3 (negocjacja kontraktu) Evaluator nie miał punktu odniesienia do oceny czy proposed implementation realizuje cel biznesowy najlepszą dostępną metodą. Dziedzicząc rygor z `feature-planner-v3` (1 feature, sprawdzony) wprowadzamy ten sam standard do orkiestracji wielu sprintów.
+
+### Test results
+
+- `bash tests/run-meta-tests.sh` → **16/16 passed** (z 14 → 16).
+
+---
+
 ## [v1.4.0] — 2026-05-20 — context7 MCP + library currency protocol
 
 ### Added

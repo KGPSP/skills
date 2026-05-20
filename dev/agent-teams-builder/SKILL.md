@@ -203,6 +203,9 @@ Tabela ripost. **Każda riposta = blokada, nie sugestia.** Format: "Odrzucono. {
 | „Pamiętam jak działa useEffect, znam React od lat" | Odrzucono. **Halucynacja API.** Twoja wiedza ma cutoff date. Wywołaj `mcp__context7__get-library-docs` przed każdym importem. Patrz `references/library-currency-protocol.md`. |
 | „Lib jest stabilna, na pewno nie ma breaking changes" | Odrzucono. Stabilność ≠ brak deprecations. context7 → `topic: "breaking changes"`. Bez breadcrumb `library_currency_checked` → walidator odrzuca sprint. |
 | „Context7 zajmuje czas, pominę dla małych libów" | Odrzucono. Mała lib może mieć duże breaking changes (np. `chalk 5.x` przeszedł na ESM-only). Każdy nowy `import` → minimum `npm view {lib} version` + breadcrumb (source: npm-jsdoc). |
+| „Wystarczy jedna hipoteza per sprint, ta jest oczywista" | Odrzucono. **Planning rigor.** Bez 3 alternatyw (Minimal/Idiomatic/Ambitious) brak rzeczywistego wyboru architektonicznego. Patrz `references/planning-rigor.md §1`. |
+| „Hyrum Impact zaktualizuję jak będzie potrzebne" | Odrzucono. **Hyrum wykrywa się PRZED implementacją**, nie po regresji. Sekcja wymagana w `state/plan.md` (lub jawne "no public API changes in tej sesji"). |
+| „Rollback plan to zmartwienie później" | Odrzucono. Sprint bez rollback strategy = sprint który nie może być cofnięty bez data loss. Każdy sprint ma 1-linijkową strategię. |
 
 Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + library currency + domenowymi wariantami: `references/anti-rationalization.md §5` + `references/library-currency-protocol.md §7`.
 
@@ -222,8 +225,9 @@ Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + library currency +
 - [ ] **Pivot audit (jeśli dotyczy)** — branch `archive/...` istnieje, pisemna akceptacja Generatora w breadcrumbs.
 - [ ] **CHANGELOG + tag** — wersja zaktualizowana, tag wystawiony.
 - [ ] **Library currency** — `scripts/verify-library-currency.sh {sprint-n}` exit 0. Każda nowa paczka w `package.json` ma breadcrumb `library_currency_checked` z `source ∈ {context7, deepwiki, webfetch, npm-jsdoc}`.
+- [ ] **Plan rigor (faza 1)** — `scripts/verify-plan-rigor.sh` exit 0. `state/plan.md` ma wszystkie 11 sekcji + 3 hipotezy per sprint (Minimal/Idiomatic/Ambitious) + Hyrum Impact + Rollback plan + Alternatives considered (min. 2).
 
-Pełna procedura zbierania dowodów: `references/dod-evidence-protocol.md`. Pełen protokół currency: `references/library-currency-protocol.md`.
+Pełna procedura zbierania dowodów: `references/dod-evidence-protocol.md`. Pełen protokół currency: `references/library-currency-protocol.md`. Pełen rygor planistyczny: `references/planning-rigor.md`.
 
 ---
 
@@ -244,6 +248,7 @@ Załaduj `references/{plik}.md` **tylko** gdy spełniony warunek:
 | Faza 6 (verify) | `dod-evidence-protocol.md` (Five-Axis Review przez feature-planner-v3 jeśli zainstalowany) |
 | Kalibracja skilla po 3+ realnych przebiegach | `traces-reading.md` |
 | Planner/Generator/Evaluator dodaje bibliotekę LUB nowy import | `library-currency-protocol.md` (context7 + fallback chain) |
+| Faza 1 (Planner pisze state/plan.md) — ZAWSZE | `planning-rigor.md` (3 hipotezy/sprint + Hyrum Impact + Rollback + Alternatives) |
 
 **Reguła:** nie ładuj wszystkiego na raz. Token budget L2 ≤5000. Reszta progresywnie.
 

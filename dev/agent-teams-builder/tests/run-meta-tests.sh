@@ -189,6 +189,28 @@ assert_exit "sprint NIE dotyka deps → exit 0 (currency check pomijalny)" "0" \
   bash -c "cd '$TMP' && BASE_DIR='$TMP' bash '$SCRIPTS/verify-library-currency.sh' 1"
 rm -rf "$TMP"
 
+# ============ PLAN RIGOR FIXTURES ============
+echo ""
+echo "[Group 7] verify-plan-rigor.sh"
+
+setup_plan_rigor() {
+  local fixture="$1"
+  local TMP=$(mktemp -d)
+  mkdir -p "$TMP/state"
+  cp "$FIXTURES/$fixture" "$TMP/state/plan.md"
+  echo "$TMP"
+}
+
+TMP=$(setup_plan_rigor "plan-rigorous.md")
+assert_exit "plan-rigorous.md (11 sekcji + 3 hipotezy/sprint + 4 alternatives) → exit 0" "0" \
+  bash -c "cd '$TMP' && BASE_DIR='$TMP' bash '$SCRIPTS/verify-plan-rigor.sh'"
+rm -rf "$TMP"
+
+TMP=$(setup_plan_rigor "plan-shallow.md")
+assert_exit "plan-shallow.md (brak 4 sekcji NOWE w v1.5 + 1 hipoteza/sprint) → exit ≠0" "nonzero" \
+  bash -c "cd '$TMP' && BASE_DIR='$TMP' bash '$SCRIPTS/verify-plan-rigor.sh'"
+rm -rf "$TMP"
+
 # ============ SUMMARY ============
 TOTAL=$((PASS + FAIL))
 echo ""
