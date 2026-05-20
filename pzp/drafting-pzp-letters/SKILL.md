@@ -1,5 +1,6 @@
 ---
 name: drafting-pzp-letters
+version: v1.0.0
 description: Use when preparing pisma proceduralne (wezwania do uzupełnienia/wyjaśnień, informacje o odrzuceniu oferty, informacje o wykluczeniu wykonawcy, zawiadomienia o poprawie omyłki, wybór/unieważnienie) w postępowaniach o udzielenie zamówienia publicznego (PZP) na podstawie analizy oferty wygenerowanej skillem analyzing-pzp-offers. Triggers include: "przygotuj wezwanie", "napisz pismo do wykonawcy", "informacja o odrzuceniu", "wezwanie do uzupełnienia", "odrzuć ofertę", "wykluczenie wykonawcy", "poprawa omyłki", gdy user wskazuje folder z raportem analizy (03-braki-i-niezgodnosci-*.md, 05-ocena-ryzyka-*.md) lub wprost opisane znaleziska F1-F6. Produkuje pisma w formatach .md (do review) + .docx (osadzone w szablonie EZD KG PSP wzor_pismo_przewodnie.docx), z dokładną podstawą prawną i cytatami źródeł.
 ---
 

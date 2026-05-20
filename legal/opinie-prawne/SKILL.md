@@ -1,5 +1,6 @@
 ---
 name: opinie-prawne
+version: v1.0.0
 description: Use when sporządzanie opinii prawnej w polskim porządku prawnym — analiza zagadnienia prawnego, wykładnia przepisu, ocena dopuszczalności działania, odpowiedź na pytanie prawne, memorandum dla zarządu / dyrektora / komendanta. Triggers include "sporządź opinię prawną", "opinia prawna", "analiza prawna", "wykładnia art./§", "czy zgodne z prawem", "czy dopuszczalne", "opinia do pytania prawnego", "memorandum", "analiza przepisu", "interpretacja ustawy", whenever user asks for Polish-law legal analysis of a specific norm, situation, or doubt. Applies to prawo konstytucyjne, administracyjne, cywilne, karne, pracy, finansów publicznych, zamówień publicznych, IT/cyber, RODO — oraz każdej innej gałęzi prawa polskiego. Effort max, ultrathink required, deep research via WebSearch/WebFetch across oficjalne źródła (isap.sejm.gov.pl, eli.gov.pl, dziennikustaw.gov.pl, orzeczenia SN/NSA/TK).
 ---
 

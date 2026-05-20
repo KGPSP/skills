@@ -1,5 +1,6 @@
 ---
 name: odpowiedzi-pytania
+version: v1.0.0
 description: Use when preparing odpowiedzi Zamawiającego na pytania wykonawców (wyjaśnienia treści SWZ, modyfikacje SWZ/OPZ/umowy) w postępowaniu o udzielenie zamówienia publicznego prowadzonym w reżimie ustawy Pzp. Triggers include "odpowiedzi na pytania", "wyjaśnienia treści SWZ", "pytania wykonawców", "modyfikacja SWZ", "zmiana OPZ na podstawie pytań", "art. 135 Pzp", "art. 284 Pzp", gdy user wskazuje folder postępowania zawierający SWZ + pytania wykonawców (RTF/DOCX/PDF/MD) i chce kompletu plików roboczych do publikacji. Produkuje 7 plików w `odpowiedzi_<RRRR-MM-DD>/`: indeks dokumentów, rejestr pytań, analiza w modelu 3 hipotez, finalne odpowiedzi do publikacji, wykaz zmian dokumentacji, raport ryzyk, wersja do akceptacji kierownika zamawiającego.
 ---
 

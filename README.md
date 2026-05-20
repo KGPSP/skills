@@ -36,9 +36,9 @@ Workflowy planowania/implementacji feature'a + orkiestracja zespołów agentów 
 
 | Skill | Wariant | Zastosowanie |
 |-------|---------|--------------|
-| [`feature-planner`](dev/feature-planner/) | **v2** (Claude Code) | Replit Agent style z auto Agent Teams routing, ralph-loop autonomous, `/effort max`, 7 test scopes (unit/integration/system/acceptance/E2E/regression/perf+sec), worktree decision matrix. Domyślny wybór dla **typowych** zadań feature'owych. |
-| [`feature-planner-v3`](dev/feature-planner-v3/) | **v3** (senior-grade) | v2 + deterministyczna uprząż inżynieryjna: 15-wpisowa Anti-Rationalization Table, twardy DoD z surowymi artefaktami, PR Sizing 100/300/1000, Hyrum's Law, Chesterton's Fence, Beyoncé Rule 1:1 AC↔Test, DAMP over DRY, Five-Axis Review, Plan-Validate-Execute, Thin Vertical Slices, Prove-It Pattern. Dla zadań **wysokiego rygoru** — fragile ops, audytowalna delegacja, compliance. |
-| [`feature-planner-codex`](dev/feature-planner-codex/) | **codex-native** | Wariant bez Claude-Code-specific koncepcji (Agent Teams, slash commands). Do pracy w **OpenAI Codex CLI**. |
+| [`feature-planner`](dev/feature-planner/) | **v2** (Claude Code) · `v2.1.0` | Replit Agent style z auto Agent Teams routing, ralph-loop autonomous, `/effort max`, 7 test scopes (unit/integration/system/acceptance/E2E/regression/perf+sec), worktree decision matrix. Domyślny wybór dla **typowych** zadań feature'owych. |
+| [`feature-planner-v3`](dev/feature-planner-v3/) | **v3** (senior-grade) · `v3.1.0` | v2 + deterministyczna uprząż inżynieryjna: 15-wpisowa Anti-Rationalization Table, twardy DoD z surowymi artefaktami, PR Sizing 100/300/1000, Hyrum's Law, Chesterton's Fence, Beyoncé Rule 1:1 AC↔Test, DAMP over DRY, Five-Axis Review, Plan-Validate-Execute, Thin Vertical Slices, Prove-It Pattern. Dla zadań **wysokiego rygoru** — fragile ops, audytowalna delegacja, compliance. |
+| [`feature-planner-codex`](dev/feature-planner-codex/) | **codex-native** · `v1.0.0` | Wariant bez Claude-Code-specific koncepcji (Agent Teams, slash commands). Do pracy w **OpenAI Codex CLI**. |
 
 **Orkiestracja i QA** — dla projektów wielosprintowych i testów aplikacji:
 
@@ -70,6 +70,7 @@ Pełna decyzja w [`dev/README.md`](dev/README.md).
 ## Konwencje
 
 - Każdy skill jest **samodzielny** — wszystkie wymagane templates/references/scripts znajdują się w jego folderze.
+- **Wersjonowanie** — każdy skill ma w SKILL.md pole `version:` (semver `vX.Y.Z`) oraz własny `CHANGELOG.md`. Majory `v2`/`v3` w plannerach kodują generację wariantu. Wersje historyczne `pzp/`, `legal/`, `feature-planner*` zostały zrekonstruowane z historii git (backfill — oznaczone w CHANGELOG-ach). Stan startowy: `pzp/*` + `legal/opinie-prawne` = `v1.0.0`.
 - Skille operacyjne (`pzp/`, `legal/`) generują artefakty w **Obsidian Flavored Markdown** z frontmatterem YAML, gotowe do zapisu w vaulcie KG PSP.
 - Skille developerskie (`dev/`) zakładają pracę w repozytorium git z konwencjami `docs/plany/`, `docs/adr/`.
 - Pliki referencyjne (`references/X.md`) mają frontmatter z polami `name`, `type: reference`, `parent`, `sources`, `description`.

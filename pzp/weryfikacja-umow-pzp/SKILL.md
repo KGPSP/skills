@@ -1,5 +1,6 @@
 ---
 name: weryfikacja-umow-pzp
+version: v1.0.0
 description: Use when verifying draft contracts (projekt umowy / wzór umowy / PPU — projektowane postanowienia umowy) in Polish public procurement (PZP) before signing. Triggers include weryfikacja projektu umowy PZP, analiza wzoru umowy, audyt umowy przed podpisaniem, sprawdzenie PPU, korelacja umowy z SWZ/OPZ/ofertą, ocena postanowień umownych w reżimie zamówień publicznych, and whenever the user supplies a projekt umowy + folder z dokumentacją postępowania (SWZ, OPZ, oferta, pisma z odpowiedziami, harmonogram, załączniki). Produces a detailed report with explicit original-quote + proposed-new-wording pairs for each recommended correction.
 ---
 

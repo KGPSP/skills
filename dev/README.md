@@ -6,11 +6,11 @@ Workflowy planowania/implementacji feature'a, orkiestracja zespołów sub-agent�
 
 Trzy warianty pokrywają różne kombinacje **środowiska** (Claude Code vs Codex CLI) i **rygoru** (wygodny vs senior-grade).
 
-| Skill | Wariant | Środowisko | Rygor | Wielkość |
-|---|---|---|---|---|
-| [`feature-planner`](feature-planner/) | **v2** | Claude Code | wygodny | ~2200 linii SKILL.md |
-| [`feature-planner-v3`](feature-planner-v3/) | **v3** | Claude Code | senior-grade | 344 linii SKILL.md + 12 refs + 5 scripts |
-| [`feature-planner-codex`](feature-planner-codex/) | **codex** | OpenAI Codex CLI | wygodny | krótszy, codex-native |
+| Skill | Wariant | Wersja | Środowisko | Rygor | Wielkość |
+|---|---|---|---|---|---|
+| [`feature-planner`](feature-planner/) | **v2** | `v2.1.0` | Claude Code | wygodny | ~2200 linii SKILL.md |
+| [`feature-planner-v3`](feature-planner-v3/) | **v3** | `v3.1.0` | Claude Code | senior-grade | 344 linii SKILL.md + 12 refs + 5 scripts |
+| [`feature-planner-codex`](feature-planner-codex/) | **codex** | `v1.0.0` | OpenAI Codex CLI | wygodny | krótszy, codex-native |
 
 ## Orkiestracja i QA
 

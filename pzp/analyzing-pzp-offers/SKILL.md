@@ -1,5 +1,6 @@
 ---
 name: analyzing-pzp-offers
+version: v1.0.0
 description: Use when verifying offers in Polish public procurement (Prawo Zamówień Publicznych, PZP) procedures. Triggers include weryfikacja oferty PZP, badanie zgodności oferty z SWZ/OPZ, analiza kompletności oferty, ocena oferty wykonawcy, and whenever the user supplies a folder with ogłoszenie/SWZ/OPZ and a folder with oferta wykonawcy. Applies to przetarg nieograniczony, tryb podstawowy, negocjacje, zamówienia sektorowe oraz analizy przedprzetargowe wymagające cytowania źródeł.
 ---
 

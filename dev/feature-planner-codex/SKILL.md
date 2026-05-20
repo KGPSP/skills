@@ -1,5 +1,6 @@
 ---
 name: feature-planner-v2-codex
+version: v1.0.0
 description: Structured Codex-native feature planning and execution workflow. Use when the user asks to plan, analyze, implement, review, or document a software feature end-to-end with codebase analysis, acceptance criteria, tests, code review, and ADR-style decision records.
 ---
 

@@ -23,7 +23,7 @@ sources:
   - DOC/material_skill.md
   - DOC/since_skill.md
   - DOC/goal_mode.md
-version: v3
+version: v3.1.0
 extends: feature-planner-v2
 size-limit: 500-lines-hard
 ---
