@@ -1,5 +1,22 @@
 # CHANGELOG — agent-teams-builder
 
+## [v1.3.0] — 2026-05-20 — Google DNA compliance (Chesterton + Hyrum + Beyoncé + DAMP)
+
+### Added (z auditu pryncypiów)
+
+- **SKILL.md** — 4 nowe wymówki w tabeli anty-racjonalizacji obejmujące Google DNA:
+  - Chesterton's Fence ("wyrzucam ten test — wygląda na martwy")
+  - Hyrum's Law ("zmieniam sygnaturę helpera — nikt nie korzysta")
+  - Beyoncé Rule ("pominę test, fix to 5 linii")
+  - DAMP > DRY ("wyodrębniłem helper z 3 testów")
+- **references/anti-rationalization.md §5** — nowa sekcja "Google DNA" z 6 wymówkami i ripostami obejmującymi 4 zasady inżynieryjne z material_skill.md §5.
+
+### Why
+
+Audit pryncypiów wykrył lukę: SKILL.md odwoływał się do Beyoncé Rule (w DoD) i Hyruma (w referencjach), ale **Chesterton's Fence nie był nigdzie wspomniany**. To 1 z 4 elementów Google DNA z material_skill.md §5 — krytyczne dla skilla orkiestrującego pivot (gdzie kasowanie kodu jest standardową operacją).
+
+---
+
 ## [v1.2.0] — 2026-05-20 — meta-tests & fixtures
 
 ### Added

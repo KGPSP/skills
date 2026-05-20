@@ -196,8 +196,12 @@ Tabela ripost. **Każda riposta = blokada, nie sugestia.** Format: "Odrzucono. {
 | „Skala 7/10 wystarczy dla tego kryterium" | Odrzucono. Modele osiadają na 7/10 i przepuszczają niestabilny kod. **Tylko progi binarne** (`tests pass: yes/no`, `0 TypeScript errors`, `0 console.error w Playwright`). |
 | „Ewaluator może użyć Markdown do `feature_list`" | Odrzucono. JSON dla statusu i list. Markdown nadpisuje całe pliki, JSON wymusza dopisywanie kluczy. |
 | „Pivot bez archiwizacji branchu, kasujemy" | Odrzucono. Plan-Validate-Execute dla operacji destruktywnych. Archiwizacja branchu = obowiązek, nie opcja. |
+| „Wyrzucam ten test/walidator — wygląda na martwy" | Odrzucono. **Płot Chestertona.** Zanim usuniesz cokolwiek pozornie zbędnego, sprawdź `git log -p` + breadcrumbs + ADR. Brak wyjaśnienia = obowiązek pozostawienia. |
+| „Zmieniam sygnaturę funkcji helpera — nikt nie korzysta" | Odrzucono. **Prawo Hyruma.** `grep -rn 'fnName('` zwraca >0 = ktoś korzysta. Każda zmiana interfejsu wymaga analizy wpływu. |
+| „Pominę test, fix to 5 linii" | Odrzucono. **Zasada Beyoncé.** Każda zmiana w kodzie zasługuje na test. Heurystyka: `git diff --name-only` z `src/` → odpowiadające testy w `tests/`. |
+| „Wyodrębniłem helper z 3 testów — DRY" | Odrzucono. **DAMP > DRY w testach.** Test musi czytać się jak specyfikacja. Cofnij abstrakcję. |
 
-Pełna tabela z domenowymi wariantami: `references/anti-rationalization.md`.
+Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + domenowymi wariantami: `references/anti-rationalization.md §5`.
 
 ---
 

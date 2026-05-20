@@ -89,7 +89,22 @@ source:
 
 ---
 
-## 5. Anty-wzorce w prompcie systemowym (jeśli sam piszesz prompty)
+## 5. Google DNA — wymówki obejmujące Hyrum/Chesterton/Beyoncé/DAMP
+
+> Cztery zasady z *Software Engineering at Google* (material_skill.md §5). Każda z konkretnymi wymówkami i ripostami.
+
+| Wymówka | Riposta (Google DNA) |
+|---|---|
+| **Hyrum:** „Pomijam test kolejności API — to nieudokumentowane zachowanie" | **Odrzucono. Prawo Hyruma.** Każde obserwowalne zachowanie API (nawet nieudokumentowane) staje się zależnością przy dostatecznej liczbie użytkowników. Test C-XX kolejności endpointów obowiązkowy. |
+| **Hyrum:** „Zmieniam sygnaturę funkcji helpera — nikt z niej nie korzysta poza modułem" | **Odrzucono.** `grep -rn 'helperName(' .` zwraca >0 → ktoś korzysta. Bez `git log -S` i analizy wpływu — zmiana zablokowana. |
+| **Chesterton:** „Usuwam ten kod, wygląda na martwy" | **Odrzucono. Płot Chestertona.** Przed usunięciem przedstaw pisemny dowód zrozumienia *dlaczego* ten kod tu jest. Sprawdź `git log -p {file}`, `git blame {linia}`, issue tracker. Brak wyjaśnienia = obowiązek pozostawienia kodu nietkniętego. |
+| **Chesterton:** „Wyłączam ten test, jest dziwny" | **Odrzucono.** `git log` na pliku testowym + analiza incydentu z commit message. Dziwny test często = ślad realnego buga. Wyłączenie wymaga ADR w `docs/adr/`. |
+| **Beyoncé:** „Zmiana mała, pominę test" | **Odrzucono. Zasada Beyoncé** — *"If you liked it, you should have put a test on it."* Zmiana bez testu = dług technologiczny. Heurystyka walidacji: `git diff --name-only HEAD` z `src/` → odpowiadające testy w `tests/`. |
+| **DAMP:** „Wyodrębniłem helper testowy z 5 testów — DRY" | **Odrzucono w testach.** DAMP > DRY — *Descriptive And Meaningful Phrases*. Test musi się czytać jak specyfikacja. Nadmiernie abstrakcyjny test = niemożliwy do zdiagnozowania przy awarii. Cofnij abstrakcję. |
+
+---
+
+## 6. Anty-wzorce w prompcie systemowym (jeśli sam piszesz prompty)
 
 | Anty-wzorzec | Co źle | Zamiast |
 |---|---|---|
@@ -100,7 +115,7 @@ source:
 
 ---
 
-## 6. Procedura aktualizacji tabeli
+## 7. Procedura aktualizacji tabeli
 
 Po każdej rzeczywistej sesji `/goal`:
 

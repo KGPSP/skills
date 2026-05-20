@@ -54,7 +54,66 @@ source:
 | „Test pominę bo działa lokalnie" | **Odrzucono.** "Działa lokalnie" ≠ działa. Wklej `npx playwright show-report` URL. |
 | „Generator może modyfikować test żeby przeszedł" | **Odrzucono.** Test jest specyfikacją kontraktu. Modyfikacja testu = renegocjacja kontraktu. |
 
-## 5. Debug guide
+## 5. Google DNA w testach (Beyoncé / DAMP / Hyrum / Chesterton)
+
+### Beyoncé Rule
+
+> *"If you liked it, you should have put a test on it."* — material_skill.md §5
+
+**Operacyjnie:** każdy publiczny export aplikacji ma odpowiadający test Playwright. Walidacja w playwright-runner heurystyką:
+
+```bash
+git diff --name-only HEAD~N..HEAD | grep -E "src/.*\.(ts|tsx|js)$" | while read f; do
+  base=$(basename "$f" | sed 's/\.[^.]*$//')
+  find tests/ -name "${base}.spec.ts" -o -name "${base}.test.ts" | head -1 || echo "MISSING TEST FOR: $f"
+done
+```
+
+Brak testu = blokada przed merge.
+
+### DAMP over DRY (w testach)
+
+> *Descriptive And Meaningful Phrases* > *Don't Repeat Yourself* — material_skill.md §5
+
+✅ **DAMP test:**
+```typescript
+test('user sees error when submitting empty form', async ({ page }) => {
+  await page.goto('/form');
+  await page.locator('button[type=submit]').click();
+  await expect(page.locator('.error')).toHaveText('Name is required');
+});
+```
+
+❌ **Over-DRY test (anty-wzorzec):**
+```typescript
+test('error case A', async ({ page }) => {
+  await testHelper(page, 'A', '/form', null, '.error', 'Name is required');
+});
+```
+
+W teście **czytelność > unikanie powtórzeń**. Awaria w abstrakcyjnym teście jest niemożliwa do zdiagnozowania bez debugger'a.
+
+### Hyrum's Law (kolejność API + zachowania)
+
+> *"Przy odpowiedniej liczbie użytkowników API, każde zauważalne zachowanie zostanie wykorzystane."*
+
+**Operacyjnie:** test sprawdza nie tylko *czy* request wraca 200, ale też *w jakiej kolejności* i *z jakimi side effects*. Patrz `chrome-devtools-protocol.md §1 (HAR — kolejność requestów)`.
+
+### Chesterton's Fence (wyłączanie testów)
+
+> *"Nie usuwaj ogrodzenia, dopóki nie zrozumiesz, dlaczego zostało postawione."*
+
+**Operacyjnie:** zanim wyłączysz test (`.skip`, `.only` na innym, `test.fixme`):
+
+1. Sprawdź `git log -p {test-file}` — kiedy test dodano, dlaczego.
+2. Sprawdź `git log --all --grep "{test name}"` — czy był związany z incydentem.
+3. Sprawdź issue tracker — `gh issue list --search "{test name}"`.
+
+Brak wyjaśnienia = **NIE wyłączaj**. Dziwny test często = ślad realnego buga, który ktoś zabezpieczył.
+
+Wymagany ADR w `docs/adr/` przy każdym `.skip` na permanentny.
+
+## 7. Debug guide
 
 Gdy test fail:
 

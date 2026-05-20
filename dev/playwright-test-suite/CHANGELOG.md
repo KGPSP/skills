@@ -1,5 +1,26 @@
 # CHANGELOG — playwright-test-suite
 
+## [v1.0.1] — 2026-05-20 — Google DNA + Non-negotiables labels
+
+### Added (z auditu pryncypiów)
+
+- **SKILL.md** — nowa sekcja "Google DNA" z 4 zasadami (Hyrum/Chesterton/Beyoncé/DAMP) operacyjnie zmapowanymi na fazy QA.
+- **SKILL.md** — 4 nowe wymówki w tabeli anty-racjonalizacji (Chesterton dla `.skip`, Beyoncé dla testów bez assertion, DAMP dla over-DRY helpers).
+- **SKILL.md** — DoD checklist rozszerzony o 3 punkty (Beyoncé Rule heurystyka, DAMP w testach, Chesterton check przy `.skip`).
+- **SKILL.md** — explicite `(Non-negotiable #N)` labels w 4 wymówkach (test który mockuje API → #1, brak evidence → #4, modyfikacja testu → #5, test sprawdza implementację → #3).
+- **SKILL.md** — explicit token budget L2 ≤5000 mention w sekcji "Progresywne ładowanie".
+- **references/playwright-ui-protocol.md §5** — nowa sekcja "Google DNA w testach" z konkretnymi przykładami:
+  - Beyoncé Rule jako walidator heurystyczny (`git diff --name-only` → odpowiadające testy)
+  - DAMP > DRY z przykładami ✅/❌
+  - Hyrum's Law przez HAR check
+  - Chesterton's Fence jako preflight przed `.skip`
+
+### Why
+
+Audit pryncypiów wykrył, że skill testowy nie wspominał jawnie Beyoncé Rule i DAMP — fundamentalnych zasad dla testów. Chesterton's Fence (zakaz wyłączania testów bez analizy) też był luką krytyczną.
+
+---
+
 ## [v1.0.0] — 2026-05-20 — initial release
 
 ### Added

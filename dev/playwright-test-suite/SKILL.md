@@ -117,15 +117,32 @@ size-limit: 500-lines-hard
 | Wymówka | Riposta (blokada) |
 |---|---|
 | „Smoke wystarczy, UI tests są ciężkie" | **Odrzucono.** Smoke = aplikacja startuje. UI tests = aplikacja DZIAŁA. To 2 osobne weryfikacje. |
-| „Testuję headless, bez screenshots — szybciej" | **Odrzucono.** Bez screenshot/HAR/trace nie ma evidence → DoD złamane. |
-| „Mock'uję API w teście" | **Odrzucono.** Test integracyjny musi hit'ować real API. Jeśli API nie ma — `MSW` z warning że to integracja-light. |
+| „Testuję headless, bez screenshots — szybciej" | **Odrzucono. Non-negotiable #4 (twardy dowód).** Bez screenshot/HAR/trace w `state/evidence/` werdykt jest deklaracją, nie dowodem. |
+| „Mock'uję API w teście" | **Odrzucono. Non-negotiable #1 (założenia).** Test integracyjny mockuje API = nie testuje produkcji. Jawnie zgłoś założenie LUB użyj real API. |
 | „Pominę axe-core, mamy lighthouse" | **Odrzucono.** Lighthouse mierzy ogólnie, axe-core daje konkretne violations z WCAG ref. Oba potrzebne. |
 | „Visual regression jest flaky" | **Odrzucono w tej formie.** Flaky = zła konfiguracja `maxDiffPixels`/`threshold`. Skalibruj na 5 runach. |
 | „Test failed → przepisuję selektor" | **Odrzucono.** Najpierw zrozum DLACZEGO selektor nie matchuje (DOM się zmienił? Async?). Patrz `references/playwright-ui-protocol.md §debug`. |
 | „LCP 3.5s → akceptowalne dla naszej domeny" | **Odrzucono bez ADR.** Core Web Vitals to twardy próg Google. Wyjątek wymaga `docs/adr/` z uzasadnieniem biznesowym. |
-| „Test sprawdza implementację, nie zachowanie" | **Odrzucono.** Black-box. Test wciska klawisz i sprawdza co user widzi, nie wewnętrzne state. |
+| „Test sprawdza implementację, nie zachowanie" | **Odrzucono. Non-negotiable #3 (nudne rozwiązania).** Black-box. Test wciska klawisz i sprawdza co user widzi, nie wewnętrzne Redux/Vuex state. |
+| „Modyfikuję test żeby przeszedł zamiast naprawiać kod" | **Odrzucono. Non-negotiable #5 (Scope Discipline).** Test jest specyfikacją kontraktu. Modyfikacja testu = renegocjacja kontraktu. Bug w kodzie? Naprawia Generator. |
+| „Wyłączam ten test, jest dziwny" | **Odrzucono (Chesterton's Fence).** Sprawdź `git log -p {test-file}` zanim wyłączysz. Dziwny test często = ślad realnego buga. Wymagany ADR dla `.skip`. |
+| „Test bez assertion, sprawdza tylko że nie crashuje" | **Odrzucono (Beyoncé Rule).** Test bez `expect(...)` to no-op. Każda zmiana w kodzie zasługuje na test z assertion. |
+| „Wyekstrahowałem helper z 5 testów (DRY)" | **Odrzucono w testach (DAMP > DRY).** Test musi czytać się jak specyfikacja. Abstrakcja = nieczytelność przy awarii. Cofnij. |
 
-Pełna tabela: `references/playwright-ui-protocol.md §anti-rationalization`.
+Pełna tabela + Google DNA wymówki (Hyrum/Chesterton/Beyoncé/DAMP): `references/playwright-ui-protocol.md §5`.
+
+---
+
+## Google DNA (material_skill.md §5)
+
+| Zasada | Operacyjnie w skillu |
+|---|---|
+| **Hyrum's Law** | HAR check kolejności requestów (§3 chrome-devtools-protocol). Test sprawdza nie tylko status code, ale i sekwencję wywołań. |
+| **Chesterton's Fence** | Zakaz wyłączania testów (`.skip`, `test.fixme`) bez `git log` + ADR. Dziwny test często = ślad realnego buga. |
+| **Beyoncé Rule** | Każdy publiczny export aplikacji ma odpowiadający test Playwright. Heurystyka walidacji w playwright-runner. |
+| **DAMP over DRY** | Test musi czytać się jak specyfikacja. Zakaz `testHelper(page, A, B, C)` — preferuj jawne kroki nawet z duplikacją. |
+
+Szczegóły: `references/playwright-ui-protocol.md §5 (Google DNA w testach)`.
 
 ---
 
@@ -137,6 +154,9 @@ Pełna tabela: `references/playwright-ui-protocol.md §anti-rationalization`.
 - [ ] Chrome DevTools: `console errors == 0`, Core Web Vitals w progu.
 - [ ] Accessibility: `violations[impact in critical|serious] == 0`.
 - [ ] Visual regression: pixel-diff ≤ threshold per view.
+- [ ] **Beyoncé Rule:** każdy publiczny export aplikacji w `src/` ma odpowiadający test w `tests/`.
+- [ ] **DAMP w testach:** test czyta się jak specyfikacja (brak nadmiernych helperów ukrywających kroki).
+- [ ] **Chesterton check:** żaden test nie ma `.skip`/`.fixme` bez ADR w `docs/adr/`.
 - [ ] Evidence w `state/evidence/sprint-{n}/` z metadata.json per plik.
 - [ ] `state/evidence/sprint-{n}/qa-summary.json` zagregowany — pass/fail per faza.
 - [ ] Werdykt JSON w kontrakcie sprintu (jeśli wywoływany z agent-teams-builder).
@@ -145,11 +165,13 @@ Pełna tabela: `references/playwright-ui-protocol.md §anti-rationalization`.
 
 ## Progresywne ładowanie
 
+> **Reguła:** nie ładuj wszystkiego na raz. Token budget L2 (SKILL.md) ≤ 5000 znaków. Każdy plik z `references/` ładowany **tylko** gdy spełniony warunek poniżej.
+
 | Warunek | Plik do załadowania |
 |---|---|
 | Faza 0 (bootstrap) | `references/setup-protocol.md` |
 | Faza 1 (smoke) | `references/smoke-protocol.md` |
-| Faza 2 (UI interactions) | `references/playwright-ui-protocol.md` |
+| Faza 2 (UI interactions) — Google DNA, debug guide | `references/playwright-ui-protocol.md` |
 | Faza 3 (perf/network) | `references/chrome-devtools-protocol.md` |
 | Faza 4 (a11y) | `references/accessibility-protocol.md` |
 | Faza 5 (visual) | `references/visual-regression-protocol.md` |
