@@ -200,8 +200,11 @@ Tabela ripost. **Każda riposta = blokada, nie sugestia.** Format: "Odrzucono. {
 | „Zmieniam sygnaturę funkcji helpera — nikt nie korzysta" | Odrzucono. **Prawo Hyruma.** `grep -rn 'fnName('` zwraca >0 = ktoś korzysta. Każda zmiana interfejsu wymaga analizy wpływu. |
 | „Pominę test, fix to 5 linii" | Odrzucono. **Zasada Beyoncé.** Każda zmiana w kodzie zasługuje na test. Heurystyka: `git diff --name-only` z `src/` → odpowiadające testy w `tests/`. |
 | „Wyodrębniłem helper z 3 testów — DRY" | Odrzucono. **DAMP > DRY w testach.** Test musi czytać się jak specyfikacja. Cofnij abstrakcję. |
+| „Pamiętam jak działa useEffect, znam React od lat" | Odrzucono. **Halucynacja API.** Twoja wiedza ma cutoff date. Wywołaj `mcp__context7__get-library-docs` przed każdym importem. Patrz `references/library-currency-protocol.md`. |
+| „Lib jest stabilna, na pewno nie ma breaking changes" | Odrzucono. Stabilność ≠ brak deprecations. context7 → `topic: "breaking changes"`. Bez breadcrumb `library_currency_checked` → walidator odrzuca sprint. |
+| „Context7 zajmuje czas, pominę dla małych libów" | Odrzucono. Mała lib może mieć duże breaking changes (np. `chalk 5.x` przeszedł na ESM-only). Każdy nowy `import` → minimum `npm view {lib} version` + breadcrumb (source: npm-jsdoc). |
 
-Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + domenowymi wariantami: `references/anti-rationalization.md §5`.
+Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + library currency + domenowymi wariantami: `references/anti-rationalization.md §5` + `references/library-currency-protocol.md §7`.
 
 ---
 
@@ -218,8 +221,9 @@ Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + domenowymi wariant
 - [ ] **Independent verification** — kto pisał kod (Generator) NIE pisał ewidencji (Evaluator). Verified w breadcrumbs.
 - [ ] **Pivot audit (jeśli dotyczy)** — branch `archive/...` istnieje, pisemna akceptacja Generatora w breadcrumbs.
 - [ ] **CHANGELOG + tag** — wersja zaktualizowana, tag wystawiony.
+- [ ] **Library currency** — `scripts/verify-library-currency.sh {sprint-n}` exit 0. Każda nowa paczka w `package.json` ma breadcrumb `library_currency_checked` z `source ∈ {context7, deepwiki, webfetch, npm-jsdoc}`.
 
-Pełna procedura zbierania dowodów: `references/dod-evidence-protocol.md`.
+Pełna procedura zbierania dowodów: `references/dod-evidence-protocol.md`. Pełen protokół currency: `references/library-currency-protocol.md`.
 
 ---
 
@@ -239,6 +243,7 @@ Załaduj `references/{plik}.md` **tylko** gdy spełniony warunek:
 | Konflikt wymagań LUB eskalacja | `non-negotiables.md` |
 | Faza 6 (verify) | `dod-evidence-protocol.md` (Five-Axis Review przez feature-planner-v3 jeśli zainstalowany) |
 | Kalibracja skilla po 3+ realnych przebiegach | `traces-reading.md` |
+| Planner/Generator/Evaluator dodaje bibliotekę LUB nowy import | `library-currency-protocol.md` (context7 + fallback chain) |
 
 **Reguła:** nie ładuj wszystkiego na raz. Token budget L2 ≤5000. Reszta progresywnie.
 

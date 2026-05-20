@@ -128,6 +128,8 @@ size-limit: 500-lines-hard
 | „Wyłączam ten test, jest dziwny" | **Odrzucono (Chesterton's Fence).** Sprawdź `git log -p {test-file}` zanim wyłączysz. Dziwny test często = ślad realnego buga. Wymagany ADR dla `.skip`. |
 | „Test bez assertion, sprawdza tylko że nie crashuje" | **Odrzucono (Beyoncé Rule).** Test bez `expect(...)` to no-op. Każda zmiana w kodzie zasługuje na test z assertion. |
 | „Wyekstrahowałem helper z 5 testów (DRY)" | **Odrzucono w testach (DAMP > DRY).** Test musi czytać się jak specyfikacja. Abstrakcja = nieczytelność przy awarii. Cofnij. |
+| „Używam `page.locator('.btn')` bo pamiętam że tak było w Playwright 1.30" | **Odrzucono.** Halucynacja API. Wywołaj `mcp__context7__get-library-docs` z `libraryID: "/microsoft/playwright"` przed setup'em. Patrz `dev/agent-teams-builder/references/library-currency-protocol.md`. |
+| „axe-core ma stabilny API od lat" | **Odrzucono.** axe-core 4.8+ wprowadziło WCAG 2.2 rules. Sprawdź context7 dla aktualnych reguł i ich `impact` levels. |
 
 Pełna tabela + Google DNA wymówki (Hyrum/Chesterton/Beyoncé/DAMP): `references/playwright-ui-protocol.md §5`.
 
@@ -157,6 +159,7 @@ Szczegóły: `references/playwright-ui-protocol.md §5 (Google DNA w testach)`.
 - [ ] **Beyoncé Rule:** każdy publiczny export aplikacji w `src/` ma odpowiadający test w `tests/`.
 - [ ] **DAMP w testach:** test czyta się jak specyfikacja (brak nadmiernych helperów ukrywających kroki).
 - [ ] **Chesterton check:** żaden test nie ma `.skip`/`.fixme` bez ADR w `docs/adr/`.
+- [ ] **Library currency:** breadcrumb `library_currency_checked` dla `@playwright/test` i `@axe-core/playwright` (faza 0) — `source` przez context7 lub fallback chain.
 - [ ] Evidence w `state/evidence/sprint-{n}/` z metadata.json per plik.
 - [ ] `state/evidence/sprint-{n}/qa-summary.json` zagregowany — pass/fail per faza.
 - [ ] Werdykt JSON w kontrakcie sprintu (jeśli wywoływany z agent-teams-builder).

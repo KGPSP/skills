@@ -1,0 +1,33 @@
+[
+  {
+    "_comment": "BAD — sprint dodał bibliotekę (zmiana package.json) ALE BRAK event library_currency_checked. Walidator verify-library-currency.sh → exit 2.",
+    "ts": "2026-05-20T10:00:00Z",
+    "actor": "bootstrap",
+    "event": "init",
+    "details": {"project": "test-missing-currency"}
+  },
+  {
+    "ts": "2026-05-20T10:05:00Z",
+    "actor": "planner",
+    "event": "plan_created",
+    "details": {"sprints": 3}
+  },
+  {
+    "ts": "2026-05-20T10:15:00Z",
+    "actor": "generator",
+    "event": "iteration_start",
+    "details": {"sprint": "1", "iteration": 1, "start_hash": "abc1234"}
+  },
+  {
+    "ts": "2026-05-20T10:30:00Z",
+    "actor": "generator",
+    "event": "commit",
+    "details": {
+      "sprint": "1",
+      "iteration": 1,
+      "criteria_fixed": ["C-01"],
+      "hash": "def5678",
+      "_notes": "Generator dodał paczkę react do package.json ALE pominął currency check — halucynacja API ryzyko."
+    }
+  }
+]

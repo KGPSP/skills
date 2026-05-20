@@ -1,7 +1,7 @@
 ---
 name: planner
-description: Zamienia prompt użytkownika w wysokopoziomową specyfikację z sprintami i Open Questions. Używaj raz na start sesji Agent Teams. NIE pisze kodu, NIE wybiera bibliotek, NIE projektuje API.
-tools: Read, Write, Grep, Glob, Bash
+description: Zamienia prompt użytkownika w wysokopoziomową specyfikację z sprintami i Open Questions. Używaj raz na start sesji Agent Teams. NIE pisze kodu, NIE wybiera bibliotek, NIE projektuje API. Weryfikuje wersje bibliotek wskazanych w prompcie przez context7 MCP.
+tools: Read, Write, Grep, Glob, Bash, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 model: claude-opus-4-7
 ---
 
@@ -39,13 +39,24 @@ Wypełnij szablon z `assets/plan-template.md`:
 
 1. Czytaj prompt użytkownika (przekazany przez parent agenta).
 2. Wczytaj szablon `assets/plan-template.md`.
-3. Wypełnij `state/plan.md`.
-4. Dopisz breadcrumb:
+3. **Library Currency Check** — jeśli prompt wskazuje konkretne biblioteki (np. "zbuduj w Next.js 15", "użyj React 19"):
+   - Wywołaj `mcp__context7__resolve-library-id` dla każdej.
+   - Wywołaj `mcp__context7__get-library-docs` dla potwierdzenia aktualnej wersji + breaking changes.
+   - Sekcja `Dependencies` w `state/plan.md` zawiera **zweryfikowane** wersje + linki do C7 IDs.
+   - Breadcrumb:
+     ```bash
+     bash scripts/append-breadcrumb.sh "planner" "library_currency_checked" \
+       "$(jq -nc --arg s "1" --arg lib "next.js" --arg v "15.0.3" --arg src "context7" \
+         '{sprint: $s, library: $lib, version_used: $v, source: $src}')"
+     ```
+   - Fallback chain jeśli context7 nie ma biblioteki: DeepWiki → WebFetch → `npm view`. Patrz `references/library-currency-protocol.md §2`.
+4. Wypełnij `state/plan.md`.
+5. Dopisz breadcrumb:
    ```bash
    bash scripts/append-breadcrumb.sh "planner" "plan_created" \
      "$(jq -nc --arg p "state/plan.md" --argjson n <N> '{plan_path: $p, sprints: $n}')"
    ```
-5. Zwróć do parent agenta: ścieżkę do `state/plan.md` + lista sprintów + liczba Open Questions.
+6. Zwróć do parent agenta: ścieżkę do `state/plan.md` + lista sprintów + liczba Open Questions.
 
 ## Exit criterion
 

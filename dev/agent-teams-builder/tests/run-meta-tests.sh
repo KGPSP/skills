@@ -149,6 +149,46 @@ assert_exit "Generator z mcp__playwright w tools → exit ≠0 (izolacja złaman
   bash -c "cd '$TMP' && BASE_DIR='$TMP' bash '$SCRIPTS/verify-role-isolation.sh'"
 rm -rf "$TMP"
 
+# ============ LIBRARY CURRENCY FIXTURES ============
+echo ""
+echo "[Group 6] verify-library-currency.sh"
+
+setup_currency() {
+  local fixture="$1"; local add_package="$2"
+  local TMP=$(mktemp -d)
+  mkdir -p "$TMP/state"
+  cp "$FIXTURES/$fixture" "$TMP/state/breadcrumbs.json"
+  # Init git + create initial package.json bez deps
+  (cd "$TMP" && \
+    git -c user.email=t@t -c user.name=t init -q && \
+    echo '{"name":"test","version":"1.0.0"}' > package.json && \
+    git add . && \
+    git -c user.email=t@t -c user.name=t commit -q -m "init")
+  # Symuluj dodanie biblioteki w sprincie (jeśli żądane)
+  if [[ "$add_package" == "1" ]]; then
+    (cd "$TMP" && \
+      echo '{"name":"test","version":"1.0.0","dependencies":{"react":"19.0.0"}}' > package.json && \
+      git add . && \
+      git -c user.email=t@t -c user.name=t commit -q -m "add react")
+  fi
+  echo "$TMP"
+}
+
+TMP=$(setup_currency "breadcrumbs-with-currency-check.json" "1")
+assert_exit "sprint dodał react + ma library_currency_checked → exit 0" "0" \
+  bash -c "cd '$TMP' && BASE_DIR='$TMP' bash '$SCRIPTS/verify-library-currency.sh' 1"
+rm -rf "$TMP"
+
+TMP=$(setup_currency "breadcrumbs-missing-currency.json" "1")
+assert_exit "sprint dodał react ale BRAK currency event → exit ≠0" "nonzero" \
+  bash -c "cd '$TMP' && BASE_DIR='$TMP' bash '$SCRIPTS/verify-library-currency.sh' 1"
+rm -rf "$TMP"
+
+TMP=$(setup_currency "breadcrumbs-missing-currency.json" "0")
+assert_exit "sprint NIE dotyka deps → exit 0 (currency check pomijalny)" "0" \
+  bash -c "cd '$TMP' && BASE_DIR='$TMP' bash '$SCRIPTS/verify-library-currency.sh' 1"
+rm -rf "$TMP"
+
 # ============ SUMMARY ============
 TOTAL=$((PASS + FAIL))
 echo ""

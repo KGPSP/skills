@@ -1,0 +1,55 @@
+[
+  {
+    "_comment": "GOOD — sprint dodający bibliotekę MA event library_currency_checked. Walidator verify-library-currency.sh → exit 0.",
+    "ts": "2026-05-20T10:00:00Z",
+    "actor": "bootstrap",
+    "event": "init",
+    "details": {"project": "test-with-currency"}
+  },
+  {
+    "ts": "2026-05-20T10:05:00Z",
+    "actor": "planner",
+    "event": "plan_created",
+    "details": {"sprints": 3}
+  },
+  {
+    "ts": "2026-05-20T10:15:00Z",
+    "actor": "generator",
+    "event": "iteration_start",
+    "details": {"sprint": "1", "iteration": 1, "start_hash": "abc1234"}
+  },
+  {
+    "ts": "2026-05-20T10:18:00Z",
+    "actor": "generator",
+    "event": "library_currency_checked",
+    "details": {
+      "sprint": "1",
+      "library": "react",
+      "version_used": "19.0.0",
+      "source": "context7",
+      "library_id": "/facebook/react",
+      "deprecations_checked": true,
+      "deprecations_found": [],
+      "breaking_changes_reviewed": true,
+      "notes": "Verified useTransition signature from v19 (not v18)"
+    }
+  },
+  {
+    "ts": "2026-05-20T10:19:00Z",
+    "actor": "generator",
+    "event": "library_currency_checked",
+    "details": {
+      "sprint": "1",
+      "library": "zod",
+      "version_used": "3.22.4",
+      "source": "context7",
+      "library_id": "/colinhacks/zod"
+    }
+  },
+  {
+    "ts": "2026-05-20T10:30:00Z",
+    "actor": "generator",
+    "event": "commit",
+    "details": {"sprint": "1", "iteration": 1, "criteria_fixed": ["C-01", "C-02"], "hash": "def5678"}
+  }
+]

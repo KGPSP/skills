@@ -2,6 +2,23 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-20] context7 MCP integration — agent-teams-builder v1.4.0 + playwright-test-suite v1.1.0
+
+### Added
+
+- **Library Currency Protocol** — wszystkie 4 sub-agenty (planner/generator/evaluator/playwright-runner) OBOWIĄZKOWO wywołują **context7 MCP** przed każdym nowym importem lub setupie biblioteki. Eliminuje halucynacje API (pierwsza przyczyna zerwanej pętli generator-ewaluator).
+- **4-poziomowy fallback chain**: context7 → DeepWiki MCP → WebFetch → `npm view` + JSDoc (offline).
+- **`scripts/setup-context7.sh`** — idempotentny instalator MCP (per-user `claude mcp add` LUB per-project `.mcp.json`).
+- **`scripts/verify-library-currency.sh`** — walidator: każdy sprint dotykający `package.json`/`Cargo.toml`/`requirements.txt`/`go.mod` MUSI mieć breadcrumb `library_currency_checked` z prawidłowym `source`.
+- **`references/library-currency-protocol.md`** + **`assets/mcp-config-template.json`** + **`assets/claude-md-template.md`** (auto-invoke regułą).
+- **3 nowe meta-testy** w `run-meta-tests.sh` (14/14 passed).
+
+### Why
+
+Halucynacja API (LLM cutoff date) była pierwszą przyczyną patologicznej pętli: Generator pisze przeterminowany kod → Evaluator widzi runtime error → kolejne iteracje z kolejnymi halucynacjami → pivot. Context7 dostarcza aktualną, version-specific dokumentację bibliotek bezpośrednio do kontekstu agenta.
+
+---
+
 ## [2026-05-20] audit(dev): Google DNA compliance — agent-teams-builder v1.3.0 + playwright-test-suite v1.0.1
 
 Audit pryncypiów wg `material_skill.md` §5 (Google DNA) + §8 (5 Non-negotiables) + `since_skill.md` §2 (5 filarów) wykrył luki w pokryciu 4 zasad inżynieryjnych Google. Naprawione w obu skillach.

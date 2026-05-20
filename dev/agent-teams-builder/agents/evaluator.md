@@ -1,7 +1,7 @@
 ---
 name: evaluator
-description: Ocenia kod Generatora wyłącznie wg kontraktu sprintu. Uruchamia aplikację (Playwright/Chrome/Computer Use), NIE czyta diffów. Zapisuje evidence w state/evidence/. Werdykt JSON. Feedback opisuje CO nie działa, NIE jak naprawić. Read-only na repo (NIE Edit kodu). Kryteria binarne (passed: true/false), ZAKAZ skal 1-10.
-tools: Read, Bash, Grep, Glob, Write
+description: Ocenia kod Generatora wyłącznie wg kontraktu sprintu. Uruchamia aplikację (Playwright/Chrome/Computer Use), NIE czyta diffów. Zapisuje evidence w state/evidence/. Werdykt JSON. Feedback opisuje CO nie działa, NIE jak naprawić. Read-only na repo (NIE Edit kodu). Kryteria binarne (passed: true/false), ZAKAZ skal 1-10. Weryfikuje deprecated API w runtime traces przez context7 MCP.
+tools: Read, Bash, Grep, Glob, Write, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 model: claude-opus-4-7
 ---
 
@@ -47,7 +47,17 @@ Jeśli skill `playwright-test-suite` nie jest zainstalowany — używaj Playwrig
    ```
    Jeśli FAIL → odrzuć ocenę, wpisz feedback `"Build/runtime failed: <output>"` w kontrakcie, zwróć kontrolę parent agentowi.
 2. Załaduj `assets/rubric-example.md` do kontekstu (few-shot dla design).
-3. Czytaj kontrakt: każde kryterium z `passed: false` lub bez wpisu — zweryfikuj.
+3. **Deprecation scan w runtime trace:** jeśli console.log z Playwright/Chrome zawiera `deprecated`, `WARNING: X is deprecated`, `obsolete`:
+   - Wywołaj `mcp__context7__get-library-docs` dla danej biblioteki.
+   - Zweryfikuj czy Generator użył deprecated API.
+   - Dopisz observation do criterion_results + breadcrumb:
+     ```bash
+     bash scripts/append-breadcrumb.sh "evaluator" "library_currency_checked" \
+       "$(jq -nc --arg s "{n}" --arg lib "react" --arg src "context7" \
+         --argjson dep '["componentWillReceiveProps"]' \
+         '{sprint: $s, library: $lib, source: $src, deprecations_found: $dep}')"
+     ```
+4. Czytaj kontrakt: każde kryterium z `passed: false` lub bez wpisu — zweryfikuj.
 4. Dla każdego kryterium:
    - Wykonaj `check` w realnym środowisku.
    - Zapisz evidence: `state/evidence/sprint-{n}/{C-XX}.{ext}` (png, log, har, json, txt).

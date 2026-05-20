@@ -1,0 +1,16 @@
+{
+  "$schema": "https://schemas.modelcontextprotocol.io/mcp.json",
+  "_comment": "Per-project .mcp.json template. Skopiuj do <project>/.mcp.json (root). API key wstaw przez ENV CONTEXT7_API_KEY albo dopisz --api-key YOUR_KEY do args[] context7.",
+  "mcpServers": {
+    "context7": {
+      "_comment": "Primary: aktualna dokumentacja bibliotek. https://github.com/upstash/context7",
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "deepwiki": {
+      "_comment": "Fallback #2: wiki-style docs gdy context7 nie ma biblioteki. Opcjonalne.",
+      "command": "npx",
+      "args": ["-y", "mcp-deepwiki@latest"]
+    }
+  }
+}

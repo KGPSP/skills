@@ -1,5 +1,34 @@
 # CHANGELOG — agent-teams-builder
 
+## [v1.4.0] — 2026-05-20 — context7 MCP + library currency protocol
+
+### Added
+
+- **`scripts/setup-context7.sh`** — instaluje context7 MCP (per-user via `claude mcp add` LUB per-project via `.mcp.json`). Idempotent. Wspiera ENV `CONTEXT7_API_KEY`.
+- **`scripts/verify-library-currency.sh`** — walidator: sprint dotykający `package.json`/`requirements.txt`/`Cargo.toml`/`go.mod` MUSI mieć breadcrumb `library_currency_checked` z `source ∈ {context7, deepwiki, webfetch, npm-jsdoc}`. Heurystyczne wykrywanie nowych paczek + walidacja struktury eventów.
+- **`references/library-currency-protocol.md`** — pełen protokół: 4-poziomowy fallback chain (context7 → DeepWiki → WebFetch → npm/JSDoc), format breadcrumb event, mapowanie per agent (planner/generator/evaluator/playwright-runner), anti-rationalization.
+- **`assets/mcp-config-template.json`** — `.mcp.json` template dla projektu (context7 primary + DeepWiki fallback).
+- **`assets/claude-md-template.md`** — `CLAUDE.md` template z **auto-invoke regułą** (Claude automatycznie woła context7 bez czekania na "use context7" w prompcie).
+- **`tests/fixtures/breadcrumbs-with-currency-check.json`** + **`breadcrumbs-missing-currency.json`** — GOOD/BAD fixtures.
+- **`tests/run-meta-tests.sh`** — 3 nowe testy w Group 6 (verify-library-currency).
+
+### Changed
+
+- **`agents/planner.md`** — frontmatter `tools` rozszerzone o `mcp__context7__*`. Workflow Step 3: library currency check dla bibliotek wskazanych w prompcie usera.
+- **`agents/generator.md`** — `tools` + workflow Step 2: **OBOWIĄZKOWO** context7 PRZED każdym nowym `import { X } from 'lib'`. Zakaz halucynacji API.
+- **`agents/evaluator.md`** — `tools` + workflow Step 3: deprecation scan w runtime traces (console.log → context7 lookup → breadcrumb).
+- **`SKILL.md`** — 3 nowe wymówki w tabeli anty-racjonalizacji (halucynacja API / "lib jest stabilna" / "context7 zajmuje czas dla małych libów"). Nowy DoD item: `verify-library-currency.sh` exit 0. Tabela "Progresywne ładowanie" rozszerzona o `library-currency-protocol.md`.
+
+### Why
+
+Halucynacja API (LLM cutoff date) to **pierwsza przyczyna zerwanej pętli generator-ewaluator**: Generator pisze kod używający nieaktualnego/nieistniejącego API → Evaluator widzi runtime error → feedback → Generator próbuje naprawić kolejną halucynacją → 5 iteracji bez progresu → pivot. Context7 + walidator currency eliminuje ten patologiczny wzorzec u źródła.
+
+### Test results
+
+- `bash tests/run-meta-tests.sh` → **14/14 passed** (z 11 → 14).
+
+---
+
 ## [v1.3.0] — 2026-05-20 — Google DNA compliance (Chesterton + Hyrum + Beyoncé + DAMP)
 
 ### Added (z auditu pryncypiów)

@@ -1,5 +1,18 @@
 # CHANGELOG — playwright-test-suite
 
+## [v1.1.0] — 2026-05-20 — context7 MCP integration
+
+### Changed
+
+- **`agents/playwright-runner.md`** — frontmatter `tools` rozszerzone o `mcp__context7__*`. Faza 0 (Detect mode) rozszerzona o **library currency check**: sprawdza zainstalowaną wersję `@playwright/test` + `@axe-core/playwright`, woła context7 dla breaking changes / WCAG 2.2 rules updates, dopisuje breadcrumb `library_currency_checked`.
+- **`SKILL.md`** — 2 nowe wymówki w tabeli anty-racj. (halucynacja Playwright API, "axe-core stabilny od lat"). DoD rozszerzony o library currency item.
+
+### Integration
+
+Współdzieli protokół `dev/agent-teams-builder/references/library-currency-protocol.md` + walidator `verify-library-currency.sh` + setup script `setup-context7.sh`. NIE duplikuje implementacji.
+
+---
+
 ## [v1.0.1] — 2026-05-20 — Google DNA + Non-negotiables labels
 
 ### Added (z auditu pryncypiów)
