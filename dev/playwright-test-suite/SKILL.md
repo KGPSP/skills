@@ -122,6 +122,7 @@ size-limit: 500-lines-hard
 | „Pominę axe-core, mamy lighthouse" | **Odrzucono.** Lighthouse mierzy ogólnie, axe-core daje konkretne violations z WCAG ref. Oba potrzebne. |
 | „Visual regression jest flaky" | **Odrzucono w tej formie.** Flaky = zła konfiguracja `maxDiffPixels`/`threshold`. Skalibruj na 5 runach. |
 | „Test failed → przepisuję selektor" | **Odrzucono.** Najpierw zrozum DLACZEGO selektor nie matchuje (DOM się zmienił? Async?). Patrz `references/playwright-ui-protocol.md §debug`. |
+| „Test specyfikuje X, kontrakt mówi Y — wybiorę bardziej elastyczne" | **Odrzucono. Non-negotiable #2 (konflikt → STOP).** Konflikt między testem a kontraktem = eskalacja do parent agenta (zwykle Evaluator z agent-teams-builder), NIE samodzielna interpretacja. Dopisz do `state/blockers.md`. |
 | „LCP 3.5s → akceptowalne dla naszej domeny" | **Odrzucono bez ADR.** Core Web Vitals to twardy próg Google. Wyjątek wymaga `docs/adr/` z uzasadnieniem biznesowym. |
 | „Test sprawdza implementację, nie zachowanie" | **Odrzucono. Non-negotiable #3 (nudne rozwiązania).** Black-box. Test wciska klawisz i sprawdza co user widzi, nie wewnętrzne Redux/Vuex state. |
 | „Modyfikuję test żeby przeszedł zamiast naprawiać kod" | **Odrzucono. Non-negotiable #5 (Scope Discipline).** Test jest specyfikacją kontraktu. Modyfikacja testu = renegocjacja kontraktu. Bug w kodzie? Naprawia Generator. |
