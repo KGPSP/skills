@@ -1,0 +1,36 @@
+import { test, expect } from '@playwright/test';
+
+/**
+ * Smoke test — najprostszy proof of life.
+ * Sprawdza: app responds + brak console errors + tytuł nie zawiera Error/404/500 + landmark visible.
+ */
+test.describe('smoke', () => {
+  test('app responds and renders', async ({ page }) => {
+    const consoleErrors: string[] = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
+
+    const response = await page.goto('/');
+    expect(response?.status()).toBeLessThan(400);
+
+    // Tytuł nie krzyczy "Error"
+    const title = await page.title();
+    expect(title).not.toMatch(/^(Error|404|500|Internal Server Error)/i);
+
+    // Co najmniej jeden landmark
+    const hasLandmark = await page.locator('header, nav, main, [role="main"], [role="navigation"]').count();
+    expect(hasLandmark).toBeGreaterThan(0);
+
+    // Zero console errors
+    expect(consoleErrors, `Console errors: ${consoleErrors.join('\n')}`).toEqual([]);
+  });
+
+  test('response time reasonable', async ({ page }) => {
+    const start = Date.now();
+    await page.goto('/', { waitUntil: 'networkidle' });
+    const duration = Date.now() - start;
+    // Smoke threshold = lenient (5s). Faza 3 (perf) ma twarde progi Core Web Vitals.
+    expect(duration).toBeLessThan(5000);
+  });
+});

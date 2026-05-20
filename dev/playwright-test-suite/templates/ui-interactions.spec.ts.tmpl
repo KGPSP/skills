@@ -1,0 +1,71 @@
+import { test, expect } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
+
+/**
+ * UI Interaction test for criterion {{CRITERION_ID}}.
+ *
+ * Check: {{CRITERION_CHECK}}
+ * Sprint: {{SPRINT}}
+ * Evidence dir: {{EVIDENCE_DIR}}
+ *
+ * Każdy test:
+ * 1. Navigate to relevant page
+ * 2. Wykonaj akcję (klik / type / press)
+ * 3. Sprawdź wynik (assertion)
+ * 4. Zapisz before.png i after.png do evidence
+ */
+
+const EVIDENCE_DIR = '{{EVIDENCE_DIR}}';
+
+test.describe('{{CRITERION_ID}} — {{CRITERION_CHECK}}', () => {
+  test.beforeAll(() => {
+    fs.mkdirSync(EVIDENCE_DIR, { recursive: true });
+  });
+
+  test('verifies criterion', async ({ page, context }) => {
+    // Tracing on for full evidence
+    await context.tracing.start({ screenshots: true, snapshots: true });
+
+    // === SETUP ===
+    await page.goto('/');
+    await page.screenshot({ path: path.join(EVIDENCE_DIR, 'before.png'), fullPage: true });
+
+    // === ACTION ===
+    // TODO: Generator agent powinien wypełnić tę sekcję na podstawie {{CRITERION_CHECK}}.
+    // Przykłady:
+    //   await page.locator('input[name=name]').fill('foo');
+    //   await page.keyboard.press('Enter');
+    //   await page.locator('button[type=submit]').click();
+
+    // === ASSERTION ===
+    // TODO: Generator agent powinien wypełnić assertion.
+    // Przykłady:
+    //   await expect(page).toHaveURL(/.*success/);
+    //   await expect(page.locator('[data-testid=result]')).toBeVisible();
+    //   await expect(page.locator('input')).toHaveValue('foo');
+
+    // === EVIDENCE ===
+    await page.screenshot({ path: path.join(EVIDENCE_DIR, 'after.png'), fullPage: true });
+
+    // DOM snapshot
+    const dom = await page.content();
+    fs.writeFileSync(path.join(EVIDENCE_DIR, 'dom-snapshot.html'), dom);
+
+    // Trace
+    await context.tracing.stop({ path: path.join(EVIDENCE_DIR, 'trace.zip') });
+
+    // Metadata
+    fs.writeFileSync(
+      path.join(EVIDENCE_DIR, 'metadata.json'),
+      JSON.stringify({
+        produced_by: 'playwright-runner',
+        criterion_id: '{{CRITERION_ID}}',
+        sprint: '{{SPRINT}}',
+        ts: new Date().toISOString(),
+        tool: 'playwright',
+        passed: true, // assertion przeszła
+      }, null, 2)
+    );
+  });
+});

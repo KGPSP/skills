@@ -2,6 +2,52 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-20] playwright-test-suite v1.0.0 + agent-teams-builder v1.3.0
+
+### Added
+
+- **`dev/playwright-test-suite/`** — dedykowany skill QA dla aplikacji webowych. 5-fazowa procedura (smoke → UI → DevTools → a11y → visual) przez Playwright CLI + `@axe-core/playwright` + pixelmatch. Pełna struktura:
+  - SKILL.md (~250 linii)
+  - **agents/playwright-runner.md** — dedykowany sub-agent Claude Code
+  - references/ (7 protokołów)
+  - scripts/ (7 orchestratorów)
+  - templates/ (7 Playwright .ts.tmpl)
+
+### Changed
+
+- **`dev/agent-teams-builder/agents/evaluator.md`** — sekcja "Delegacja do playwright-runner" z gotowym wzorcem `Task(subagent_type: "playwright-runner")`. Evaluator deleguje pełne QA do dedykowanego sub-agenta zamiast wywoływać Playwright/Chrome inline.
+- **`dev/agent-teams-builder/scripts/verify-role-isolation.sh`** — uznaje `playwright-runner` jako allowed producer evidence files + dodaje walidację jego izolacji (read-only na kodzie).
+
+### Architecture (po tym sprincie)
+
+```
+parent agent (główne okno)
+   ├── Task(planner)    → state/plan.md
+   ├── Task(generator)  → kod w src/
+   └── Task(evaluator)  → werdykt
+              └── Task(playwright-runner)  ← NOWY skill
+                     ├── 5 faz QA
+                     └── state/evidence/sprint-{n}/qa-summary.json
+```
+
+---
+
+## [2026-05-20] agent-teams-builder v1.2.0 — meta-tests
+
+### Added
+
+- **`dev/agent-teams-builder/tests/`** — 7 fixtures testowych (GOOD/BAD przykłady dla każdego walidatora) + `run-meta-tests.sh` (11 testów w 5 grupach, sprawdza że walidatory zachowują się zgodnie z oczekiwaniem).
+
+### Fixed
+
+- `scripts/check-breadcrumbs-append-only.sh` — bug `set -e -o pipefail` aborts skrypt gdy `grep` nie znajduje matchu w pipe. Naprawione przez lokalne `set +o pipefail`.
+
+### Test results
+
+- `bash tests/run-meta-tests.sh` → **11/11 passed**.
+
+---
+
 ## [2026-05-20] agent-teams-builder v1.1.0
 
 ### Added

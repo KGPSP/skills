@@ -89,21 +89,38 @@ if [[ -n "$PLAN_FILE" ]]; then
   fi
 fi
 
-# 4. Evidence produced_by — wszystkie evidence files muszą być produced_by == evaluator
+# 3b. playwright-runner — opcjonalny sub-agent z dev/playwright-test-suite
+PWR_FILE=""
+for candidate in "$AGENTS_DIR/playwright-runner.md" "$AGENTS_DIR/playwright-runner.yaml"; do
+  [[ -f "$candidate" ]] && PWR_FILE="$candidate" && break
+done
+
+if [[ -n "$PWR_FILE" ]]; then
+  TOOLS_LINE=$(awk '/^---/{c++;next} c==1 && /^tools:/{print;exit}' "$PWR_FILE")
+  if echo "$TOOLS_LINE" | grep -qwE "Edit"; then
+    echo "[FAIL] $PWR_FILE: tools zawiera Edit — playwright-runner musi być read-only na kodzie"
+    ERRORS=$((ERRORS + 1))
+  else
+    echo "[OK]   playwright-runner: brak Edit (read-only na kodzie aplikacji)"
+  fi
+fi
+
+# 4. Evidence produced_by — wszystkie evidence files muszą być produced_by == evaluator|smoke-test-runner|playwright-runner
 EVIDENCE_DIR="$BASE_DIR/state/evidence"
 if [[ -d "$EVIDENCE_DIR" ]]; then
   WRONG=0
+  ALLOWED_PRODUCERS="evaluator smoke-test-runner playwright-runner"
   while IFS= read -r md; do
     [[ -z "$md" ]] && continue
     PRODUCER=$(jq -r '.produced_by // "missing"' "$md" 2>/dev/null || echo "missing")
-    if [[ "$PRODUCER" != "evaluator" && "$PRODUCER" != "smoke-test-runner" ]]; then
-      echo "[FAIL] $md: produced_by=$PRODUCER (oczekiwano: evaluator lub smoke-test-runner)"
+    if ! echo "$ALLOWED_PRODUCERS" | grep -qw "$PRODUCER"; then
+      echo "[FAIL] $md: produced_by=$PRODUCER (oczekiwano: $ALLOWED_PRODUCERS)"
       WRONG=$((WRONG + 1))
     fi
   done < <(find "$EVIDENCE_DIR" -name "*.metadata.json" 2>/dev/null)
 
   if [[ "$WRONG" -eq 0 ]]; then
-    echo "[OK]   Wszystkie evidence files produced_by == evaluator|smoke-test-runner"
+    echo "[OK]   Wszystkie evidence files produced_by ∈ {$ALLOWED_PRODUCERS}"
   else
     ERRORS=$((ERRORS + WRONG))
   fi

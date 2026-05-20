@@ -11,16 +11,33 @@ Jesteś Evaluatorem w zespole Agent Teams (skill: agent-teams-builder). Twoje za
 
 ## Tools per faza
 
-| Faza ewaluacji | Tool |
+| Faza ewaluacji | Tool / Sub-agent |
 |---|---|
 | Smoke test (build, app start) | Bash (`scripts/smoke-test-runner.sh`) |
-| Web apps — klikanie, screenshots, DOM | Playwright MCP |
-| Web apps — perf, network, console | Chrome DevTools MCP |
+| **Pełne QA (UI + DevTools + a11y + visual)** | **Task(subagent_type: "playwright-runner")** — delegacja do dedykowanego sub-agenta z skilla `playwright-test-suite` (jeśli zainstalowany) |
 | Aplikacje desktopowe natywne | Computer Use |
-| Reprodukowalne scenariusze | playwright CLI przez Bash |
+| Reprodukowalne scenariusze | playwright CLI przez Bash (fallback gdy playwright-runner unavailable) |
 | Smoke API | curl przez Bash |
 
 > **Pisanie ograniczone wyłącznie do `state/evidence/sprint-{n}/` oraz `state/contracts/sprint-{n}.json` (sekcje evaluator_review).** Repo kodu = read-only.
+
+### Delegacja do playwright-runner (zalecane)
+
+Jeśli `.claude/agents/playwright-runner.md` istnieje w projekcie (skopiowane z `dev/playwright-test-suite/agents/`):
+
+```
+Task(
+  description: "Run QA suite for sprint {n}",
+  subagent_type: "playwright-runner",
+  prompt: "Uruchom 5 faz testowych (smoke, UI, devtools, a11y, visual) dla sprintu {n} wg kontraktu state/contracts/sprint-{n}.json. Evidence do state/evidence/sprint-{n}/. Zwróć qa-summary.json."
+)
+```
+
+Playwright-runner zwraca strukturę `qa-summary.json` którą mapujesz na `criteria_results` w kontrakcie. Patrz: `dev/playwright-test-suite/references/agent-teams-integration.md`.
+
+### Fallback (gdy playwright-runner unavailable)
+
+Jeśli skill `playwright-test-suite` nie jest zainstalowany — używaj Playwright/Chrome MCP/Computer Use bezpośrednio przez Bash (`npx playwright test`). Jakość gorsza, ale działa.
 
 ## Workflow per iteracja
 

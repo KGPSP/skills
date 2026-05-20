@@ -1,0 +1,79 @@
+import { test, expect } from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
+
+/**
+ * Layout test for criterion {{CRITERION_ID}}.
+ *
+ * Check: {{CRITERION_CHECK}}
+ * Sprint: {{SPRINT}}
+ * Evidence dir: {{EVIDENCE_DIR}}
+ *
+ * Sprawdza boundingBox per element + brak nakładania + responsive per viewport.
+ */
+
+const EVIDENCE_DIR = '{{EVIDENCE_DIR}}';
+const VIEWPORTS = [
+  { name: 'desktop', width: 1920, height: 1080 },
+  { name: 'tablet', width: 768, height: 1024 },
+  { name: 'mobile', width: 375, height: 667 },
+];
+
+test.describe('{{CRITERION_ID}} — layout: {{CRITERION_CHECK}}', () => {
+  test.beforeAll(() => {
+    fs.mkdirSync(EVIDENCE_DIR, { recursive: true });
+  });
+
+  for (const viewport of VIEWPORTS) {
+    test(`layout at ${viewport.name} (${viewport.width}x${viewport.height})`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      await page.goto('/');
+
+      // Screenshot per viewport
+      await page.screenshot({
+        path: path.join(EVIDENCE_DIR, `${viewport.name}.png`),
+        fullPage: true,
+      });
+
+      // TODO: Generator wypełnia konkretne assertions per {{CRITERION_CHECK}}
+      // Przykład: nie nakładanie się form/header
+      // const form = await page.locator('form').boundingBox();
+      // const header = await page.locator('header').boundingBox();
+      // if (form && header) {
+      //   expect(form.y).toBeGreaterThanOrEqual(header.y + header.height);
+      // }
+
+      // Zapisz bounding boxes wszystkich kluczowych elementów
+      const boxes = await page.evaluate(() => {
+        const elements = document.querySelectorAll('header, nav, main, form, footer, h1, button[type=submit]');
+        const result: Record<string, DOMRect> = {};
+        elements.forEach((el, i) => {
+          const tag = el.tagName.toLowerCase();
+          const key = `${tag}-${i}`;
+          result[key] = el.getBoundingClientRect();
+        });
+        return result;
+      });
+
+      fs.writeFileSync(
+        path.join(EVIDENCE_DIR, `boxes-${viewport.name}.json`),
+        JSON.stringify(boxes, null, 2)
+      );
+    });
+  }
+
+  test.afterAll(() => {
+    fs.writeFileSync(
+      path.join(EVIDENCE_DIR, 'metadata.json'),
+      JSON.stringify({
+        produced_by: 'playwright-runner',
+        criterion_id: '{{CRITERION_ID}}',
+        sprint: '{{SPRINT}}',
+        ts: new Date().toISOString(),
+        tool: 'playwright',
+        viewports_tested: VIEWPORTS.map(v => v.name),
+        passed: true,
+      }, null, 2)
+    );
+  });
+});

@@ -1,0 +1,60 @@
+import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+import * as fs from 'fs';
+
+/**
+ * Accessibility audit — sprint {{SPRINT}}
+ * Standard: WCAG 2.1 AA + best-practice
+ * Threshold: critical=0, serious=0 (HARD); moderate≤3, minor≤10 (WARN)
+ */
+
+const A11Y_DIR = '{{A11Y_DIR}}';
+
+test.describe('a11y @ sprint {{SPRINT}}', () => {
+  test.beforeAll(() => {
+    fs.mkdirSync(A11Y_DIR, { recursive: true });
+  });
+
+  test('home page WCAG 2.1 AA', async ({ page }) => {
+    await page.goto('/');
+
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'])
+      .analyze();
+
+    // Pełen wynik do evidence
+    fs.writeFileSync(`${A11Y_DIR}/violations.json`, JSON.stringify(results, null, 2));
+
+    // Group by impact
+    const critical = results.violations.filter(v => v.impact === 'critical');
+    const serious = results.violations.filter(v => v.impact === 'serious');
+    const moderate = results.violations.filter(v => v.impact === 'moderate');
+    const minor = results.violations.filter(v => v.impact === 'minor');
+
+    // HARD failures
+    expect(
+      critical,
+      `Critical violations:\n${critical.map(v => `  - ${v.id}: ${v.description}`).join('\n')}`
+    ).toEqual([]);
+
+    expect(
+      serious,
+      `Serious violations:\n${serious.map(v => `  - ${v.id}: ${v.description}`).join('\n')}`
+    ).toEqual([]);
+
+    // SOFT warnings (don't fail, but log)
+    if (moderate.length > 3) {
+      console.warn(`[WARN] ${moderate.length} moderate violations (threshold: 3)`);
+    }
+    if (minor.length > 10) {
+      console.warn(`[WARN] ${minor.length} minor violations (threshold: 10)`);
+    }
+  });
+
+  // Per-route a11y check — Generator dodaje per route z aplikacji
+  // test('login page WCAG 2.1 AA', async ({ page }) => {
+  //   await page.goto('/login');
+  //   const results = await new AxeBuilder({ page }).analyze();
+  //   expect(results.violations.filter(v => v.impact === 'critical' || v.impact === 'serious')).toEqual([]);
+  // });
+});

@@ -1,0 +1,54 @@
+import { test, expect } from '@playwright/test';
+import * as fs from 'fs';
+
+/**
+ * Visual regression — sprint {{SPRINT}}
+ * Porównuje screenshoty current vs baseline (tests/snapshots/).
+ *
+ * Pierwsze uruchomienie: npx playwright test visual.spec --update-snapshots
+ *   (PO Plan-Validate-Execute z human review)
+ * Kolejne: npx playwright test visual.spec (verify against baseline)
+ */
+
+const VISUAL_DIR = '{{VISUAL_DIR}}';
+
+// Lista widoków do testowania (Generator dodaje per aplikację)
+const VIEWS = [
+  { name: 'home-desktop', route: '/', viewport: { width: 1920, height: 1080 } },
+  { name: 'home-tablet', route: '/', viewport: { width: 768, height: 1024 } },
+  { name: 'home-mobile', route: '/', viewport: { width: 375, height: 667 } },
+  // Dodaj per kontrakt:
+  // { name: 'login-desktop', route: '/login', viewport: { width: 1920, height: 1080 } },
+  // { name: 'dashboard-desktop', route: '/dashboard', viewport: { width: 1920, height: 1080 } },
+];
+
+test.describe('visual regression @ sprint {{SPRINT}}', () => {
+  test.beforeAll(() => {
+    fs.mkdirSync(VISUAL_DIR, { recursive: true });
+  });
+
+  for (const view of VIEWS) {
+    test(`view: ${view.name}`, async ({ page }) => {
+      await page.setViewportSize(view.viewport);
+      await page.goto(view.route);
+
+      // Wyłącz animacje — flaky source #1
+      await page.addStyleTag({
+        content: `*, *::before, *::after { transition: none !important; animation: none !important; }`,
+      });
+
+      // Wait for fonts and images
+      await page.waitForLoadState('networkidle');
+      await page.evaluate(() => document.fonts.ready);
+
+      // Compare with baseline
+      await expect(page).toHaveScreenshot(`${view.name}.png`, {
+        fullPage: true,
+        maxDiffPixels: 100,
+        threshold: 0.1,
+        // Mask elementy z dynamic content (timestamps, live counters)
+        // mask: [page.locator('.timestamp'), page.locator('.live-counter')],
+      });
+    });
+  }
+});

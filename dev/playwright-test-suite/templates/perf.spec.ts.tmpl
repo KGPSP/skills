@@ -1,0 +1,116 @@
+import { test, expect } from '@playwright/test';
+import * as fs from 'fs';
+
+/**
+ * Performance / DevTools test — sprint {{SPRINT}}
+ * Mierzy: Core Web Vitals, console errors, network HAR.
+ *
+ * Thresholds (override w kontrakcie):
+ *   LCP < {{LCP_THRESHOLD}}ms
+ *   FCP < {{FCP_THRESHOLD}}ms
+ *   CLS < {{CLS_THRESHOLD}}
+ */
+
+const PERF_DIR = '{{PERF_DIR}}';
+const THRESHOLDS = {
+  LCP_ms: {{LCP_THRESHOLD}},
+  FCP_ms: {{FCP_THRESHOLD}},
+  CLS: {{CLS_THRESHOLD}},
+};
+
+test.describe('perf @ sprint {{SPRINT}}', () => {
+  test.beforeAll(() => {
+    fs.mkdirSync(PERF_DIR, { recursive: true });
+  });
+
+  test('Core Web Vitals + console + HAR', async ({ page, context }) => {
+    // Console capture
+    const consoleErrors: Array<{ ts: string; level: string; text: string }> = [];
+    page.on('console', msg => {
+      consoleErrors.push({
+        ts: new Date().toISOString(),
+        level: msg.type(),
+        text: msg.text(),
+      });
+    });
+
+    // Tracing
+    await context.tracing.start({ screenshots: true, snapshots: true });
+
+    // Navigate
+    await page.goto('/', { waitUntil: 'networkidle' });
+
+    // Core Web Vitals — używamy Performance API
+    const vitals = await page.evaluate(() => {
+      return new Promise((resolve) => {
+        const result: Record<string, number> = {};
+
+        // FCP, LCP via PerformanceObserver
+        if ('PerformanceObserver' in window) {
+          new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              if (entry.name === 'first-contentful-paint') {
+                result.FCP = entry.startTime;
+              }
+            }
+          }).observe({ type: 'paint', buffered: true });
+
+          new PerformanceObserver((list) => {
+            const entries = list.getEntries();
+            if (entries.length > 0) {
+              result.LCP = entries[entries.length - 1].startTime;
+            }
+          }).observe({ type: 'largest-contentful-paint', buffered: true });
+
+          // CLS
+          let cls = 0;
+          new PerformanceObserver((list) => {
+            for (const entry of list.getEntries() as PerformanceEntry[] & { hadRecentInput?: boolean; value?: number }[]) {
+              const e = entry as any;
+              if (!e.hadRecentInput) cls += e.value;
+            }
+            result.CLS = cls;
+          }).observe({ type: 'layout-shift', buffered: true });
+        }
+
+        // TTFB via navigation timing
+        const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+        if (nav) {
+          result.TTFB_ms = nav.responseStart - nav.requestStart;
+          result.domInteractive_ms = nav.domInteractive - nav.startTime;
+        }
+
+        setTimeout(() => resolve(result), 3000);
+      });
+    });
+
+    // Zapisz vitals
+    fs.writeFileSync(`${PERF_DIR}/vitals.json`, JSON.stringify(vitals, null, 2));
+
+    // Console log
+    fs.writeFileSync(
+      `${PERF_DIR}/console.log`,
+      consoleErrors.map(e => `${e.ts} [${e.level}] ${e.text}`).join('\n')
+    );
+
+    // Trace.zip
+    await context.tracing.stop({ path: `${PERF_DIR}/trace.zip` });
+
+    // === ASSERTIONS ===
+    const v = vitals as Record<string, number>;
+
+    if (v.LCP !== undefined) {
+      expect(v.LCP, `LCP=${v.LCP}ms exceeded ${THRESHOLDS.LCP_ms}ms`).toBeLessThan(THRESHOLDS.LCP_ms);
+    }
+    if (v.FCP !== undefined) {
+      expect(v.FCP, `FCP=${v.FCP}ms exceeded ${THRESHOLDS.FCP_ms}ms`).toBeLessThan(THRESHOLDS.FCP_ms);
+    }
+    if (v.CLS !== undefined) {
+      expect(v.CLS, `CLS=${v.CLS} exceeded ${THRESHOLDS.CLS}`).toBeLessThan(THRESHOLDS.CLS);
+    }
+
+    // Console errors must be empty
+    const errors = consoleErrors.filter(e => e.level === 'error');
+    expect(errors, `Console errors:\n${errors.map(e => e.text).join('\n')}`).toEqual([]);
+  });
+});
