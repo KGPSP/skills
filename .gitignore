@@ -55,3 +55,4 @@ coverage/
 /tmp/test-*.log
 .claude/ralph-loop.local.md
 .claude/plan-*.state
+.claude/settings.local.json
