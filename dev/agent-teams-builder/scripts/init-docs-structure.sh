@@ -10,7 +10,7 @@ BASE_DIR="${BASE_DIR:-$(pwd)}"
 echo "=== Init docs structure in: $BASE_DIR ==="
 
 # state/ (ephemeral)
-mkdir -p "$BASE_DIR"/state/{prd,retrospectives,sessions,qa-reports,contracts,evidence,rubric/examples,archives}
+mkdir -p "$BASE_DIR"/state/{prd,retrospectives,sprint-reports,sessions,qa-reports,contracts,evidence,rubric/examples,archives}
 echo "[OK] state/ subdirs created"
 
 # docs/ (committable)

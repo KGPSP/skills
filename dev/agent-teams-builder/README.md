@@ -37,7 +37,8 @@ agent-teams-builder/
 │   ├── pivot-protocol.md             ← Faza 5 (Plan-Validate-Execute)
 │   ├── memory-filesystem.md          ← Faza 0 + recovery
 │   ├── role-mapping.md               ← Faza 2 + skalowanie do 7+ agentów
-│   ├── goal-mode-protocol.md         ← Tryb /goal
+│   ├── goal-mode-protocol.md         ← Tryb /goal (respektuje bramki)
+│   ├── approval-gates-protocol.md    ← 6 bramek akceptacji człowieka (human-in-the-loop)
 │   ├── anti-rationalization.md       ← Pełna tabela wymówek
 │   ├── non-negotiables.md            ← 5 zasad nienegocjowalnych
 │   ├── dod-evidence-protocol.md      ← Faza 6 (DoD audit)
@@ -54,6 +55,7 @@ agent-teams-builder/
 │   ├── check-evidence-completeness.sh
 │   ├── run-goal-loop.sh
 │   ├── check-scope-discipline.sh
+│   ├── verify-approval-gates.sh      ← egzekwuje 6 bramek (gate_approved w breadcrumbs)
 │   └── verify-non-negotiables.sh
 └── assets/                           ← szablony + few-shot examples
     ├── contract-template.json
@@ -61,6 +63,7 @@ agent-teams-builder/
     ├── feature-list-schema.json
     ├── breadcrumbs-schema.json
     ├── plan-template.md
+    ├── sprint-report-template.md     ← raport wykonania sprintu (GATE #3)
     └── prompt-templates.md           ← prompty systemowe dla 3 ról
 ```
 

@@ -276,6 +276,41 @@ assert_exit "init-docs-structure.sh → exit 0 + tworzy katalogi" "0" \
 [[ -d "$TMP/state/prd" && -d "$TMP/docs/adr" ]] && echo "  [PASS] Katalogi state/prd + docs/adr istnieją" || echo "  [FAIL] Katalogi nie powstały"
 cd / && rm -rf "$TMP"
 
+# ============ APPROVAL GATES ============
+echo ""
+echo "[Group 9] verify-approval-gates.sh"
+
+# GOOD: plan zatwierdzony przed spawnem, sprint passed zatwierdzony, brak wiszących bramek
+TMP=$(mktemp -d)
+mkdir -p "$TMP/state/contracts"
+cat > "$TMP/state/breadcrumbs.json" <<'EOF'
+[
+  {"ts":"2026-05-20T10:00:00Z","actor":"bootstrap","event":"init","details":{}},
+  {"ts":"2026-05-20T10:02:00Z","actor":"parent","event":"gate_pending","details":{"gate":1,"artifact":"state/plan.md"}},
+  {"ts":"2026-05-20T10:03:00Z","actor":"human","event":"gate_approved","details":{"gate":1,"artifact":"state/plan.md"}},
+  {"ts":"2026-05-20T10:05:00Z","actor":"parent","event":"role_spawned","details":{"name":"planner"}},
+  {"ts":"2026-05-20T11:00:00Z","actor":"human","event":"gate_approved","details":{"gate":3,"sprint":1}}
+]
+EOF
+echo '{"features":[{"id":"f1","sprint":1,"status":"passed"}]}' > "$TMP/state/feature_list.json"
+assert_exit "GATE #1 przed spawnem + GATE #3 sprint passed → exit 0" "0" \
+  bash -c "BASE_DIR='$TMP' bash '$SCRIPTS/verify-approval-gates.sh'"
+rm -rf "$TMP"
+
+# BAD: spawn bez gate#1 + sprint passed bez gate#3
+TMP=$(mktemp -d)
+mkdir -p "$TMP/state"
+cat > "$TMP/state/breadcrumbs.json" <<'EOF'
+[
+  {"ts":"2026-05-20T10:00:00Z","actor":"bootstrap","event":"init","details":{}},
+  {"ts":"2026-05-20T10:05:00Z","actor":"parent","event":"role_spawned","details":{"name":"planner"}}
+]
+EOF
+echo '{"features":[{"id":"f1","sprint":1,"status":"passed"}]}' > "$TMP/state/feature_list.json"
+assert_exit "spawn bez GATE #1 + sprint passed bez GATE #3 → exit ≠0" "nonzero" \
+  bash -c "BASE_DIR='$TMP' bash '$SCRIPTS/verify-approval-gates.sh'"
+rm -rf "$TMP"
+
 # ============ SUMMARY ============
 TOTAL=$((PASS + FAIL))
 echo ""

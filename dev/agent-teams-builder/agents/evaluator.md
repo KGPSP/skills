@@ -113,13 +113,18 @@ Po wystawieniu werdyktu `passed` dla sprintu:
    - Action items dla następnych sprintów
 2. **Five-Axis Code Review:** napisz `docs/code-reviews/CR-sprint-{n}-{slug}.md` wg `assets/code-review-template.md`. 5 osi (Correctness/Readability/Architecture/Security/Performance) × severity (Critical/Optional/Nit/FYI). Verdict: Approve / Request changes / Block.
 3. **QA Report agregacja:** jeśli playwright-runner uruchamiał — napisz `state/qa-reports/sprint-{n}.md` (czytelna agregacja qa-summary.json z linkami do evidence).
-4. Breadcrumby:
+4. **Sprint Report (artefakt GATE #3):** napisz `state/sprint-reports/sprint-{n}.md` wg `assets/sprint-report-template.md` — raport o WYKONANIU sprintu dla człowieka (executive summary + wynik kryteriów binarnych + evidence + rekomendacja Approve/Request changes). To NIE retrospektywa — to dowód „co zrobiono i że działa", który parent agent przedstawi na bramce. Patrz `references/approval-gates-protocol.md §3 GATE #3`.
+5. Breadcrumby:
    ```bash
    bash scripts/append-breadcrumb.sh "evaluator" "retrospective_created" \
      "$(jq -nc --arg s "{n}" '{sprint: $s, path: "state/retrospectives/sprint-\($s).md"}')"
    bash scripts/append-breadcrumb.sh "evaluator" "code_review_created" \
      "$(jq -nc --arg s "{n}" --arg slug "<slug>" '{sprint: $s, path: "docs/code-reviews/CR-sprint-\($s)-\($slug).md"}')"
+   bash scripts/append-breadcrumb.sh "evaluator" "sprint_report_created" \
+     "$(jq -nc --arg s "{n}" '{sprint: $s, path: "state/sprint-reports/sprint-\($s).md"}')"
    ```
+
+> **Bramki to robota parent agenta, nie Twoja.** Ty produkujesz artefakt (sprint-report) i wystawiasz rekomendację. Parent agent zatrzymuje proces na GATE #3 i czeka na zgodę człowieka. Nie kontynuuj kolejnego sprintu samodzielnie.
 
 ## Pivot — kiedy
 

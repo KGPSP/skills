@@ -1,5 +1,30 @@
 # CHANGELOG — agent-teams-builder
 
+## [v1.7.0] — 2026-05-20 — Approval Gates Protocol (6 bramek human-in-the-loop, transfer z feature-planner-v3)
+
+### Added
+
+Pełny mechanizm **6 bramek akceptacji człowieka** (human-in-the-loop) przeniesiony z `feature-planner-v3`. Proces ZATRZYMUJE się na każdej bramce i czeka na jawną frazę akceptującą — **także w trybie `/goal`** (decyzja projektowa: wszystkie bramki aktywne, `/goal` je respektuje).
+
+**6 bramek mapowanych na fazy:**
+- **GATE #1 — Plan** (po Fazie 1, przed spawnem) — `state/plan.md` + PRD.
+- **GATE #2 — Kontrakty** (po Fazie 3, przed pętlą) — `state/contracts/sprint-{n}.json`.
+- **GATE #3 — Sprint** (po każdym sprincie w Fazie 4) — `state/sprint-reports/sprint-{n}.md`.
+- **GATE #4 — QA/Runtime** (po QA playwright) — `state/qa-reports/sprint-{n}.md` + screenshoty per AC-F.
+- **GATE #5 — Code Review** (Faza 6) — `docs/code-reviews/CR-sprint-{n}-*.md`, zero Critical.
+- **GATE #6 — Ship** (Faza 7, przed `git tag`) — `state/final-report.md`.
+
+### New files
+
+- **`references/approval-gates-protocol.md`** — pełny protokół: mapa bramek, protokół STOP, checklisty per bramka, whitelist fraz akceptujących, interakcja z `/goal`, anti-rationalization, red flags.
+- **`assets/sprint-report-template.md`** — raport o **wykonaniu sprintu** prezentowany na GATE #3 (executive summary + wynik kryteriów + evidence + rekomendacja Evaluatora). Odrębny od retrospektywy.
+- **`scripts/verify-approval-gates.sh`** — egzekwuje breadcrumby `gate_approved`: GATE #1 przed pierwszym `role_spawned`, GATE #3 per passed sprint, GATE #2/#6 jeśli artefakty istnieją, brak wiszących `gate_pending`.
+
+### Changed
+
+- **`SKILL.md`** — preambuła „Strefa pracy" przeredagowana na tryb nadzorowany + callout „6 APPROVAL GATES". Bramki wstawione jako STOP w fazy 1→2, 3→4, 4 (per sprint), 6, 7. Nowy plik stanu `state/sprint-reports/`. Nowy DoD item (`verify-approval-gates.sh` exit 0). 4 nowe wymówki anti-rat (plan bez GATE #1, sprint bez akceptacji, /goal vs bramki, „spoko" jako zgoda). Wiersz progresywnego ładowania + wiersz kalibracji „Human-in-the-loop". Faza 6 verify krok 7 = `verify-approval-gates.sh`. (337 linii, <500 limit).
+- **`references/goal-mode-protocol.md`** — `/goal` przeredagowany z „pełnej autonomii bez nadzoru" na „pętlę nadzorowaną z bramkami". Workflow Krok 4 oznaczony STOP-ami per bramka. Sekcja 6 „Bezpieczniki" ostrzega że praca nocna „odpal i zostaw" nie zadziała.
+
 ## [v1.6.0] — 2026-05-20 — Documentation Protocol (PRD + ADR + retrospectives + code reviews + QA reports)
 
 ### Added

@@ -23,7 +23,7 @@ sources:
   - DOC/since_skill.md
   - DOC/agent-teams-generator-ewaluator.md
   - DOC/goal_mode.md
-version: v1.6.0
+version: v1.7.0
 size-limit: 500-lines-hard
 ---
 
@@ -40,7 +40,18 @@ size-limit: 500-lines-hard
 > 5. Dotykaj tylko tego, o co cię poproszono.
 
 > [!warning] Strefa pracy
-> Ten skill operuje w **trybie autonomicznym wielogodzinnym**. Przy operacjach destruktywnych (pivot = `rm` katalogu, force push, drop bazy) wchodzi w **Plan-Validate-Execute** — patrz `references/pivot-protocol.md`. Bez wyjątków.
+> Ten skill operuje w **trybie nadzorowanym z 6 bramkami akceptacji człowieka** (human-in-the-loop). Pętla **zatrzymuje się** na każdej bramce i czeka na jawną zgodę — także w trybie `/goal`. Przy operacjach destruktywnych (pivot = `rm` katalogu, force push, drop bazy) dodatkowo wchodzi w **Plan-Validate-Execute** — patrz `references/pivot-protocol.md`. Bez wyjątków.
+
+> [!important] 6 APPROVAL GATES (pełny protokół: `references/approval-gates-protocol.md`)
+> Proces ZATRZYMUJE się i czeka na jawną frazę akceptującą człowieka:
+> 1. **GATE #1 — Plan** (po Fazie 1) — `state/plan.md` + PRD.
+> 2. **GATE #2 — Kontrakty** (po Fazie 3) — `state/contracts/sprint-{n}.json`.
+> 3. **GATE #3 — Sprint** (po każdym sprincie w Fazie 4) — `state/sprint-reports/sprint-{n}.md`.
+> 4. **GATE #4 — QA/Runtime** (po QA) — `state/qa-reports/sprint-{n}.md` + screenshoty.
+> 5. **GATE #5 — Code Review** (Faza 6) — `docs/code-reviews/CR-sprint-{n}-*.md`.
+> 6. **GATE #6 — Ship** (Faza 7) — `state/final-report.md`.
+>
+> **Naruszenie litery bramki = naruszenie ducha bramki.** Cisza ≠ zgoda. `/goal` respektuje wszystkie bramki.
 
 ---
 
@@ -60,6 +71,7 @@ Agent Teams **nie polegają na oknie kontekstowym** (context rot). Stan dzielony
 | `state/rubric/{phase}.md` | Markdown | Planner / Evaluator | Evaluator | Few-shot examples obowiązkowe |
 | `state/todo.md` | Markdown | Generator (snapshot per iteracja) | Wszyscy | Persistowany TodoWrite |
 | `state/retrospectives/sprint-{n}.md` | Markdown | Evaluator (po passed) | Wszyscy + human | 8 sekcji retro |
+| `state/sprint-reports/sprint-{n}.md` | Markdown | Evaluator (przed GATE #3) | Human | Raport wykonania do akceptacji |
 | `state/qa-reports/sprint-{n}.md` | Markdown | playwright-runner (po fazie 5 QA) | Evaluator, human | Agregacja qa-summary.json |
 | `state/decision-log.md` | Markdown | Każdy agent (lekkie decyzje) | Wszyscy | Append-only |
 | `state/sessions/{YYYY-MM-DD}.md` | Markdown | Auto (skrypt) | Human | Auto-generated |
@@ -101,6 +113,9 @@ Agent Teams **nie polegają na oknie kontekstowym** (context rot). Stan dzielony
    - Listę **niewiadomych do eskalacji** (Non-negotiable #1: uwidaczniaj założenia).
 
 **Exit criterion:** `state/plan.md` istnieje, zawiera sekcję "Sprints", "Dependencies", "Open Questions". Hash gita w breadcrumbs.
+
+> [!important] 🚦 GATE #1 — Plan (STOP przed Fazą 2)
+> Walidacja: `scripts/verify-plan-rigor.sh` exit 0 + `state/prd/sprint-*.md` istnieje per sprint. Przedstaw `state/plan.md` + PRD człowiekowi z checklistą (`references/approval-gates-protocol.md §3`). Breadcrumb `gate_pending` (gate:1). **STOP — czekaj na „zatwierdzam plan" / „proceed".** Bez frazy akceptującej NIE spawnuj zespołu. Po zgodzie → breadcrumb `gate_approved` (gate:1).
 
 ### Faza 2 — Spawn ról (Claude Code Agent Teams)
 
@@ -149,6 +164,9 @@ Faza najważniejsza. Bez sztywnego kontraktu — rozmyta krytyka → generator i
 
 **Exit criterion:** `scripts/check-contract-coverage.sh {n}` → exit 0 + plik ma ≥15 kryteriów binarnych + Evaluator dopisał "accepted: true" w breadcrumbs.
 
+> [!important] 🚦 GATE #2 — Kontrakty (STOP przed Fazą 4)
+> Walidacja: `check-contract-coverage.sh {n}` exit 0 dla każdego sprintu + zero skal 1-10. Przedstaw `state/contracts/sprint-*.json` człowiekowi. Breadcrumb `gate_pending` (gate:2). **STOP — czekaj na „zatwierdzam kontrakty".** Po zgodzie → `gate_approved` (gate:2).
+
 ### Faza 4 — Pętla generator-ewaluator (hill climbing)
 
 Powtarzaj **dla każdego sprintu** osobno:
@@ -161,6 +179,9 @@ Powtarzaj **dla każdego sprintu** osobno:
 6. **Loop until** `passed_criteria == total_criteria` LUB `iteration >= MAX_ITERATIONS` (domyślnie 5).
 
 **Exit criterion:** wszystkie kryteria z kontraktu = passed + screenshot/log w `state/evidence/sprint-{n}/` + `git commit` z hash w breadcrumbs.
+
+> [!important] 🚦 GATE #3 — Sprint + 🚦 GATE #4 — QA (STOP po każdym sprincie)
+> Evaluator pisze `state/sprint-reports/sprint-{n}.md` (`assets/sprint-report-template.md`). Walidacja: `check-evidence-completeness.sh {n}` exit 0. **STOP — czekaj na „zatwierdzam sprint {n}"** przed kolejnym sprintem. Jeśli playwright-runner robił QA → dodatkowo **GATE #4**: przedstaw `state/qa-reports/sprint-{n}.md` + screenshoty per AC-F, **STOP — „zatwierdzam QA"**. Breadcrumby `gate_approved` (gate:3, sprint:n) i (gate:4, sprint:n).
 
 ### Faza 5 — Pivot (jeśli zacięcie)
 
@@ -187,17 +208,23 @@ Po zakończeniu wszystkich sprintów:
 4. Uruchom `scripts/check-breadcrumbs-append-only.sh` — brak usuniętych wpisów (audit trail).
 5. Five-Axis Review (opcjonalnie, jeśli `dev/feature-planner-v3` jest zainstalowany): Correctness, Readability, Architecture, Security, Performance — wywołaj przez Task tool z `subagent_type: "reviewer"` z feature-planner-v3.
 6. **Beyoncé Rule:** każda funkcja w diffie ma test. Brak testu = blokada (heurystyka: `git diff --name-only HEAD~N | grep -E "src/.*\\.(ts|js|py)$" | xargs -I {} sh -c 'test -f "tests/$(basename {} | sed s/src//).spec.{ts,js,py}"'`).
+7. Uruchom `scripts/verify-approval-gates.sh` — wszystkie bramki (#1-#5) domknięte zgodą człowieka w breadcrumbs.
+
+> [!important] 🚦 GATE #5 — Code Review (STOP przed Fazą 7)
+> Five-Axis Review → `docs/code-reviews/CR-sprint-{n}-*.md` per sprint. Zero findings `Critical`. Przedstaw człowiekowi. Breadcrumb `gate_pending` (gate:5). **STOP — czekaj na „zatwierdzam review".** Po zgodzie → `gate_approved` (gate:5).
 
 **Exit criterion:** wszystkie checki zielone + raport `state/verify-report.md` zawiera linki do evidence per sprint + `git log --oneline` pokazuje atomowe commity ≤300 linii.
 
 ### Faza 7 — Ship
 
-1. PR Sizing check: każdy commit ≤100 linii (≤300 z uzasadnieniem, >1000 = blokada). Sprawdź: `git log --stat HEAD~N..HEAD`.
-2. CHANGELOG entry: ręcznie dopisz wersję + zmiany do `CHANGELOG.md` (lub przez `keepachangelog` jeśli zainstalowany).
-3. Tag: `git tag -a v{x.y.z} -m "{description}"`.
-4. **Human approval gate** — przed `git push` do remote zatrzymaj proces. Trzymaj się zasady: `/goal` NIE robi `git push` (patrz `references/goal-mode-protocol.md §4`).
+1. Planner pisze `state/final-report.md` (executive summary — `references/documentation-protocol.md §3 Dokument 8`).
+2. **🚦 GATE #6 — Ship:** walidacja `verify-approval-gates.sh` exit 0 (bramki #1-#5 domknięte) + wszystkie `verify-*.sh` exit 0. Przedstaw `state/final-report.md` człowiekowi. Breadcrumb `gate_pending` (gate:6). **STOP — czekaj na „zatwierdzam ship"** przed `git tag`. Po zgodzie → `gate_approved` (gate:6).
+3. PR Sizing check: każdy commit ≤100 linii (≤300 z uzasadnieniem, >1000 = blokada). Sprawdź: `git log --stat HEAD~N..HEAD`.
+4. CHANGELOG entry: ręcznie dopisz wersję + zmiany do `CHANGELOG.md` (lub przez `keepachangelog` jeśli zainstalowany).
+5. Tag: `git tag -a v{x.y.z} -m "{description}"`.
+6. **Osobny human gate dla push** — przed `git push` do remote zatrzymaj proces. Trzymaj się zasady: `/goal` NIE robi `git push` (patrz `references/goal-mode-protocol.md §4`).
 
-**Exit criterion:** `git tag` istnieje + `git log` clean + CHANGELOG zaktualizowany.
+**Exit criterion:** `gate_approved` (gate:6) w breadcrumbs + `git tag` istnieje + `git log` clean + CHANGELOG zaktualizowany.
 
 ---
 
@@ -232,6 +259,10 @@ Tabela ripost. **Każda riposta = blokada, nie sugestia.** Format: "Odrzucono. {
 | „TODO jest w mojej głowie, persistencja niepotrzebna" | Odrzucono. Pivot LUB recovery sesji = TODO z głowy stracone. `state/todo.md` snapshot z TodoWrite raz na iterację. |
 | „Retrospective to ceremoniał, sprint przeszedł = done" | Odrzucono. **Calibration loop.** Bez retrospective uprząż dryfuje. To 5 punktów lessons learned, NIE 30 stron analizy. Patrz `assets/retrospective-template.md`. |
 | „Code review już zrobił Evaluator w werdykcie" | Odrzucono. Werdykt = pass/fail per kryterium. Code review = analiza JAK kod jest napisany (Five-Axis: Correctness/Readability/Architecture/Security/Performance). Dwie różne rzeczy. |
+| „Plan oczywisty, spawnuję zespół bez GATE #1" | Odrzucono. **GATE #1 nienegocjowalny.** Błędny plan kaskaduje przez godziny pracy N agentów. Bez `gate_approved` (gate:1) → blokada spawnu. Patrz `references/approval-gates-protocol.md`. |
+| „Sprint przeszedł, lecę dalej bez akceptacji" | Odrzucono. **GATE #3 per sprint.** Człowiek widzi raport wykonania ZANIM kolejny sprint buduje na potencjalnie złej decyzji. Cisza ≠ zgoda. |
+| „/goal jest autonomiczny, bramki psują ideę" | Odrzucono. Decyzja projektowa v1.7.0: **`/goal` respektuje wszystkie 6 bramek.** Chcesz pełną autonomię bez bramek = zmiana wymagań do eskalacji (Non-negotiable #2), nie cichy skrót. |
+| „Człowiek napisał 'spoko', traktuję jako zgodę" | Odrzucono. Tylko frazy z whitelisty (`approval-gates-protocol.md §4`). Niejednoznaczność = dopytaj. |
 
 Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + library currency + domenowymi wariantami: `references/anti-rationalization.md §5` + `references/library-currency-protocol.md §7`.
 
@@ -253,8 +284,9 @@ Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + library currency +
 - [ ] **Library currency** — `scripts/verify-library-currency.sh {sprint-n}` exit 0. Każda nowa paczka w `package.json` ma breadcrumb `library_currency_checked` z `source ∈ {context7, deepwiki, webfetch, npm-jsdoc}`.
 - [ ] **Plan rigor (faza 1)** — `scripts/verify-plan-rigor.sh` exit 0. `state/plan.md` ma wszystkie 11 sekcji + 3 hipotezy per sprint (Minimal/Idiomatic/Ambitious) + Hyrum Impact + Rollback plan + Alternatives considered (min. 2).
 - [ ] **Documentation** — `scripts/verify-documentation.sh` exit 0. Każdy passed sprint ma PRD (8 sekcji) + retrospective + code review (Five-Axis). Architektoniczne decyzje mają ADR w `docs/adr/`. TODO snapshot aktualny. QA report jeśli playwright-runner uruchamiał.
+- [ ] **Approval gates** — `scripts/verify-approval-gates.sh` exit 0. Każda z 6 bramek (#1-#6) ma `gate_approved` w breadcrumbs z jawną zgodą człowieka, w prawidłowej kolejności (plan przed spawnem, sprint przed kolejnym). Brak wiszących `gate_pending`.
 
-Pełna procedura zbierania dowodów: `references/dod-evidence-protocol.md`. Pełen protokół currency: `references/library-currency-protocol.md`. Pełen rygor planistyczny: `references/planning-rigor.md`. Pełen audit trail dokumentów: `references/documentation-protocol.md`.
+Pełna procedura zbierania dowodów: `references/dod-evidence-protocol.md`. Pełen protokół currency: `references/library-currency-protocol.md`. Pełen rygor planistyczny: `references/planning-rigor.md`. Pełen audit trail dokumentów: `references/documentation-protocol.md`. Pełen protokół bramek akceptacji: `references/approval-gates-protocol.md`.
 
 ---
 
@@ -277,6 +309,7 @@ Załaduj `references/{plik}.md` **tylko** gdy spełniony warunek:
 | Planner/Generator/Evaluator dodaje bibliotekę LUB nowy import | `library-currency-protocol.md` (context7 + fallback chain) |
 | Faza 1 (Planner pisze state/plan.md) — ZAWSZE | `planning-rigor.md` (3 hipotezy/sprint + Hyrum Impact + Rollback + Alternatives) |
 | Faza 1 (Planner) + Faza 4-end (Evaluator po sprincie) — ZAWSZE | `documentation-protocol.md` (PRD/ADR/retro/code-review/QA report) |
+| Start sesji (każdy tryb, włącznie z /goal) — ZAWSZE | `approval-gates-protocol.md` (6 bramek human-in-the-loop) |
 
 **Reguła:** nie ładuj wszystkiego na raz. Token budget L2 ≤5000. Reszta progresywnie.
 
@@ -291,6 +324,7 @@ Załaduj `references/{plik}.md` **tylko** gdy spełniony warunek:
 | 4 (pętla gen-eval) | Strefa wolna dla Generatora, **Fragile** dla Evaluatora | Evaluator nie improwizuje rubryki — czyta z pliku. |
 | 5 (pivot) | **Destruktywne** | Plan-Validate-Execute obowiązkowe. Opcjonalny human hook. |
 | 6 (verify) | Fragile | Wszystkie skrypty exit 0 zanim faza zamknięta. |
+| Każda bramka #1-#6 (przejścia faz) | **Human-in-the-loop** | STOP, przedstaw artefakt, czekaj na frazę akceptującą. Cisza ≠ zgoda. Także w /goal. |
 
 ---
 

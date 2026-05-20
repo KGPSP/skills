@@ -7,9 +7,12 @@ source:
   - DOC/since_skill.md §6 (Calibration — destruktywne = Plan-Validate-Execute)
 ---
 
-# Tryb /goal — pełna autonomia z bramkami
+# Tryb /goal — pętla nadzorowana z bramkami
 
-> `/goal` = delegacja całej pętli Generator-Evaluator do Agent Teams bez interakcji z human przez wielogodziny. Wymaga **mierzalnego stanu końcowego** + **sposobu weryfikacji** + **ograniczeń**.
+> `/goal` = delegacja całej pętli Generator-Evaluator do Agent Teams z **mierzalnym stanem końcowym** + **sposobem weryfikacji** + **ograniczeniami**.
+
+> [!important] v1.7.0 — /goal respektuje wszystkie 6 bramek akceptacji
+> Decyzja projektowa: `/goal` **NIE jest już trybem „bez nadzoru przez wielogodziny".** Pętla zatrzymuje się na każdej z 6 bramek (`references/approval-gates-protocol.md`), emituje status `awaiting_gate_{n}`, zapisuje checkpoint i **zwraca kontrolę człowiekowi**. Praca nocna „odpal i zostaw" nie zadziała — proces będzie czekał na frazę akceptującą. Komunikuj to operatorowi przy starcie `/goal`.
 
 ---
 
@@ -153,13 +156,13 @@ Failed walidacja → zwróć user'owi błąd z konkretną sugestią poprawki, NI
 scripts/run-goal-loop.sh state/goal-current.json
 ```
 
-Skrypt:
-1. Uruchamia Planner (Faza 1 SKILL.md) z prompt'em wygenerowanym z `end_state`.
+Skrypt (zatrzymuje się na każdej bramce, `references/approval-gates-protocol.md §5`):
+1. Uruchamia Planner (Faza 1 SKILL.md) z prompt'em wygenerowanym z `end_state`. → **🚦 GATE #1** (STOP).
 2. Spawn Generator + Evaluator (Faza 2).
-3. Negocjacja kontraktu wokół `verification` (Faza 3) — kryteria binarne wynikają z komend weryfikacji.
-4. Pętla generator-ewaluator (Faza 4) z `MAX_GOAL_ITERATIONS`.
-5. Verify (Faza 6) z pełnym audytem.
-6. **NIE wchodzi w Fazę 7 (Ship)** — `/goal` zostawia gotową pracę na branchu, user decyduje o `git tag` i merge.
+3. Negocjacja kontraktu wokół `verification` (Faza 3) — kryteria binarne wynikają z komend weryfikacji. → **🚦 GATE #2** (STOP).
+4. Pętla generator-ewaluator (Faza 4) z `MAX_GOAL_ITERATIONS`, per sprint → **🚦 GATE #3** (+ **GATE #4** jeśli QA) (STOP).
+5. Verify (Faza 6) z pełnym audytem → **🚦 GATE #5** (STOP).
+6. **NIE wchodzi w Fazę 7 (Ship) autonomicznie** — `/goal` zostawia gotową pracę na branchu po **🚦 GATE #6**, user decyduje o `git tag` i merge.
 
 ### Krok 5 — Raport końcowy
 
@@ -176,9 +179,12 @@ User wraca rano, czyta raport, robi code review.
 
 ---
 
-## 6. Bezpieczniki dla nocnej pracy
+## 6. Bezpieczniki dla pracy między bramkami
 
-Praktyczne tipy z dokumentu źródłowego:
+> [!warning] Praca nocna „odpal i zostaw" nie zadziała w v1.7.0
+> Pętla zatrzyma się na pierwszej bramce (#1 — plan) i będzie czekać na zgodę. `caffeinate` / auto-accept utrzymują sesję między bramkami, ale **nie zastępują człowieka** na bramce. Liczniki `MAX_GOAL_ITERATIONS` / `GOAL_TIMEOUT_HOURS` liczą się tylko między bramkami, nie w czasie oczekiwania na zgodę.
+
+Praktyczne tipy dla odcinków pracy między bramkami:
 
 - **Osobny worktree** — Claude pracuje na izolowanym branchu, masz czysty main rano.
 - **Auto-accept narzędzi** — bez tego `/goal` zatrzymuje się co 5 minut na permission prompt.
