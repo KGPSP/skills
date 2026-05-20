@@ -23,7 +23,7 @@ sources:
   - DOC/since_skill.md
   - DOC/agent-teams-generator-ewaluator.md
   - DOC/goal_mode.md
-version: v1.7.0
+version: v1.7.1
 size-limit: 500-lines-hard
 ---
 
@@ -105,7 +105,10 @@ Agent Teams **nie polegają na oknie kontekstowym** (context rot). Stan dzielony
 
 ### Faza 1 — Planner (specyfikacja sprintów)
 
-1. Uruchom sub-agenta **Planner** (osobne okno kontekstowe) z promptem: "Zamień prompt użytkownika na specyfikację wysokopoziomową podzieloną na sprinty/user stories. **Bez szczegółów technicznych.** Output: `state/plan.md`."
+> [!important] Planning = effort max (ultrathink)
+> Planowanie to faza o najwyższej dźwigni — błąd planu kaskaduje przez godziny pracy N agentów. **Spawnuj Plannera z maksymalnym budżetem rozumowania**: w prompcie Task dla Plannera dodaj słowo **`ultrathink`** (najwyższy próg extended thinking). Nie optymalizuj tej fazy pod szybkość. To nienegocjowalne — szybki płytki plan kosztuje więcej niż wolny głęboki.
+
+1. Uruchom sub-agenta **Planner** (osobne okno kontekstowe) z promptem rozpoczętym od **`ultrathink`**: "ultrathink. Zamień prompt użytkownika na specyfikację wysokopoziomową podzieloną na sprinty/user stories. **Bez szczegółów technicznych.** Output: `state/plan.md`."
 2. Planner **nie pisze kodu**. Nie projektuje API. Nie wybiera bibliotek. Błąd na tym etapie kaskaduje przez godziny pracy.
 3. Output Plannera musi zawierać:
    - Listę 3-15 sprintów z mierzalnymi celami biznesowymi.
@@ -137,7 +140,7 @@ Agent Teams **nie polegają na oknie kontekstowym** (context rot). Stan dzielony
    Task(
      description: "Spawn Planner — wypełnij state/plan.md",
      subagent_type: "planner",
-     prompt: "<oryginalny prompt użytkownika + ścieżka do assets/plan-template.md>"
+     prompt: "ultrathink. <oryginalny prompt użytkownika + ścieżka do assets/plan-template.md>"
    )
    ```
    Analogicznie dla Generatora i Evaluatora w fazach 3-4.

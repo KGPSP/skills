@@ -1,5 +1,13 @@
 # CHANGELOG — agent-teams-builder
 
+## [v1.7.1] — 2026-05-20 — Planning = effort max (ultrathink)
+
+### Changed
+
+- **Faza 1 (Planner) pracuje z maksymalnym budżetem rozumowania.** Planowanie to faza o najwyższej dźwigni — błąd kaskaduje przez godziny pracy N agentów, więc nie wolno optymalizować jej pod szybkość.
+  - `SKILL.md` Faza 1 — nowy callout „Planning = effort max (ultrathink)" + prompt spawnu Plannera zaczyna się od `ultrathink`. Przykład `Task()` w Fazie 2 prependuje `ultrathink`.
+  - `agents/planner.md` — nowa reguła na starcie roli: praca z maksymalnym budżetem rozumowania, głęboka analiza przed każdą hipotezą / klasyfikacją Hyrum / wyborem architektury.
+
 ## [v1.7.0] — 2026-05-20 — Approval Gates Protocol (6 bramek human-in-the-loop, transfer z feature-planner-v3)
 
 ### Added
