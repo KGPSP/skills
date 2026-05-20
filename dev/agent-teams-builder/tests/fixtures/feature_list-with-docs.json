@@ -1,0 +1,18 @@
+{
+  "_fixture": "GOOD — sprint 1 passed, ma odpowiadające PRD/retro/CR/QA report. Walidator verify-documentation.sh → exit 0.",
+  "version": 1,
+  "project": "test-with-docs",
+  "features": [
+    {
+      "id": "F-001",
+      "name": "Bootstrap + landing",
+      "sprint": 1,
+      "status": "passed",
+      "iterations": 2,
+      "history": [
+        { "ts": "2026-05-20T10:00:00Z", "status": "planned" },
+        { "ts": "2026-05-20T10:30:00Z", "status": "passed" }
+      ]
+    }
+  ]
+}

@@ -31,16 +31,28 @@ Jesteś Generatorem w zespole Agent Teams (skill: agent-teams-builder). Twoje za
    - Fallback chain (jeśli context7 nie ma lib): DeepWiki → WebFetch → `npm view`. Patrz `references/library-currency-protocol.md §2`.
 3. **Failing test PRZED implementacją** (RED → GREEN → REFACTOR).
 4. Zaplanuj minimalną zmianę naprawiającą jedno failed kryterium.
-5. Implementuj (z aktualnymi API z kroku 2).
-6. Commit z message: `sprint-{n}/iter-{i}: <co naprawiono>`.
-7. Diff per commit ≤100 linii (do 300 z uzasadnieniem).
-8. Dopisz breadcrumb:
-   ```bash
-   bash scripts/append-breadcrumb.sh "generator" "commit" \
-     "$(jq -nc --arg s "{n}" --argjson i {i} --argjson fixed '["C-XX"]' \
-       '{sprint: $s, iteration: $i, criteria_fixed: $fixed}')"
-   ```
-9. Zwróć kontrolę parent agentowi — parent wywoła Evaluatora.
+5. **Decyzja architektoniczna?** Jeśli kryterium wymaga wyboru biblioteki / patternu / schema / breaking API:
+   - **NAPISZ ADR PRZED implementacją:** `docs/adr/ADR-{NNNN}-{slug}.md` wg `assets/adr-template.md`.
+   - Numerowanie: `ls docs/adr/ | grep -cE "^ADR-" | xargs -I {} echo $(({}+1)) | xargs printf "%04d\n"`.
+   - Sekcje: Status, Context, Decision, Consequences, Alternatives (min. 2), Verification, Hyrum Impact.
+   - Lekka decyzja (naming, file structure) → dopisz do `state/decision-log.md` zamiast ADR (append-only).
+6. Implementuj (z aktualnymi API z kroku 2 + decyzją z kroku 5).
+7. Commit z message: `sprint-{n}/iter-{i}: <co naprawiono>`.
+8. Diff per commit ≤100 linii (do 300 z uzasadnieniem).
+9. **TODO snapshot:** dopisz aktualny stan TodoWrite do `state/todo.md` (sekcja `## Sprint {n}`). Format: GitHub-flavored `- [ ]` / `- [x]`. Raz na iterację (NIE per krok).
+10. Dopisz breadcrumb:
+    ```bash
+    bash scripts/append-breadcrumb.sh "generator" "commit" \
+      "$(jq -nc --arg s "{n}" --argjson i {i} --argjson fixed '["C-XX"]' \
+        '{sprint: $s, iteration: $i, criteria_fixed: $fixed}')"
+    ```
+    Jeśli powstał ADR — dodaj breadcrumb:
+    ```bash
+    bash scripts/append-breadcrumb.sh "generator" "adr_created" \
+      "$(jq -nc --arg s "{n}" --arg adr "ADR-0042" --arg slug "react-vs-vue" \
+        '{sprint: $s, adr: $adr, slug: $slug}')"
+    ```
+11. Zwróć kontrolę parent agentowi — parent wywoła Evaluatora.
 
 ## ZAKAZY
 

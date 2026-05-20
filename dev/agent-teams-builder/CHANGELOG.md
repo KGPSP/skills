@@ -1,5 +1,58 @@
 # CHANGELOG — agent-teams-builder
 
+## [v1.6.0] — 2026-05-20 — Documentation Protocol (PRD + ADR + retrospectives + code reviews + QA reports)
+
+### Added
+
+Pełen audit trail wszystkich dokumentów pracy zespołu agentów. **10 typów dokumentów** w dwóch warstwach:
+
+**Ephemeral (state/):**
+- `state/plan.md` (istniejące)
+- `state/prd/sprint-{n}.md` — **PRD per sprint** (8 sekcji: User story / Problem / Personas / FR / NFR / Out of scope / Success metrics / Open questions)
+- `state/todo.md` — TODO snapshot z TodoWrite (persistowany per iteracja)
+- `state/retrospectives/sprint-{n}.md` — **Sprint retrospective** (8 sekcji: summary / went well / didn't / lessons per agent / pivot history / cost / action items)
+- `state/sessions/{YYYY-MM-DD}.md` — auto-generated daily log
+- `state/decision-log.md` — lekkie decyzje (append-only)
+- `state/qa-reports/sprint-{n}.md` — czytelna agregacja `qa-summary.json` od playwright-runner
+- `state/final-report.md` — executive summary po fazie 7
+
+**Committable (docs/):**
+- `docs/adr/ADR-{NNNN}-{slug}.md` — **Architecture Decision Records** sekwencyjne, per decyzja architektoniczna (template przejęty z feature-planner-v3)
+- `docs/code-reviews/CR-sprint-{n}-{slug}.md` — **Five-Axis Code Review** per sprint passed (Correctness/Readability/Architecture/Security/Performance × Critical/Optional/Nit/FYI)
+- `docs/reports/final-{slug}.md` — kopia state/final-report.md (committable)
+
+### New files
+
+- **`references/documentation-protocol.md`** (~280 linii) — pełen protokół: 10 typów dokumentów × kto/kiedy/format/walidator.
+- **`assets/prd-template.md`** + **`adr-template.md`** + **`retrospective-template.md`** + **`code-review-template.md`** + **`session-log-template.md`** (5 templates).
+- **`scripts/init-docs-structure.sh`** — idempotent, tworzy state/{prd,retrospectives,sessions,qa-reports} + docs/{adr,code-reviews,reports} + sensible `.gitignore`.
+- **`scripts/verify-documentation.sh`** — egzekwuje completeness per passed sprint: PRD (8 sekcji), retrospective, code review, QA report (jeśli evidence istnieje), ADR jeśli sprint dotknął architektury.
+- **`scripts/append-session-log.sh`** — auto-generuje daily session log z breadcrumbs + git log + feature_list.
+- **`tests/fixtures/feature_list-with-docs.json`** + **`feature_list-passed-no-docs.json`** + Group 8 meta-tests.
+
+### Changed
+
+- **`agents/planner.md`** — workflow rozszerzony: krok 3 (init docs structure), krok 6 (PRD per sprint), krok 7 (final report skeleton).
+- **`agents/generator.md`** — workflow krok 5 (ADR per decyzja architektoniczna LUB decision-log.md dla lekkich), krok 9 (TODO snapshot per iteracja).
+- **`agents/evaluator.md`** — nowa sekcja "Dokumenty po sprincie": retrospective + Five-Axis code review + QA report agregacja po `sprint_passed`.
+- **`playwright-test-suite/agents/playwright-runner.md`** — po fazie 5 pisze `state/qa-reports/sprint-{n}.md`.
+- **`SKILL.md`** — sekcja "Konwencja zapisu stanu" rozszerzona z 5 plików do **15** (5 ephemeral istniejących + 5 nowych ephemeral + 3 committable). 5 nowych wymówek anti-rat ("PRD overhead", "ADR później", "TODO w głowie", "retrospective ceremoniał", "code review w werdykcie"). Nowy DoD item: `verify-documentation.sh` exit 0. Tabela progresywnego ładowania rozszerzona o `documentation-protocol.md`.
+
+### Why
+
+User chce **wiedzieć co dzieje** w trakcie pracy zespołu agentów. Do tej pory:
+- Stan był rozproszony: kontrakty (JSON), breadcrumbs (JSON), evidence files (heterogenne).
+- Brakowało **czytelnych dokumentów** do code review, audit compliance, knowledge handoff.
+- ADRs i Five-Axis reviews były tylko w `feature-planner-v3` (1 feature) — nie w orkiestracji zespołu.
+
+Po v1.6: każda decyzja udokumentowana, każdy sprint ma retrospektywę, code review ze Five-Axis, ADR w `docs/adr/` (committable). Po sesji `/goal` można prześledzić KAŻDĄ decyzję bez czytania surowych breadcrumbs.
+
+### Test results
+
+- `bash tests/run-meta-tests.sh` → **19/19 passed** (z 16 → 19, Group 8 dodana).
+
+---
+
 ## [v1.5.0] — 2026-05-20 — Planning Rigor (dziedziczone z feature-planner-v3)
 
 ### Added

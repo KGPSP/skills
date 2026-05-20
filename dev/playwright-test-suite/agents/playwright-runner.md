@@ -173,6 +173,41 @@ Output `state/evidence/sprint-{n}/qa-summary.json`:
 }
 ```
 
+### QA Report (czytelna agregacja dla human + Evaluator)
+
+Po fazie 5 napisz `state/qa-reports/sprint-{n}.md` — czytelna wersja `qa-summary.json`:
+
+```markdown
+# QA Report — Sprint {n}
+
+## Summary
+
+| Faza | Status | Key metric | Evidence |
+|---|---|---|---|
+| Smoke | ✅ | 4.2s build+start+HTTP | state/evidence/sprint-{n}/smoke.log |
+| UI | ✅ | 3/3 criteria | state/evidence/sprint-{n}/ui/ |
+| Perf | ❌ | LCP=3200ms (target 2500) | state/evidence/sprint-{n}/perf/vitals.json |
+| A11y | ✅ | 0 critical, 2 moderate | state/evidence/sprint-{n}/a11y/violations.json |
+| Visual | ✅ | 47px diff (threshold 100) | state/evidence/sprint-{n}/visual/ |
+
+## Blocking failures
+
+- `perf.LCP_above_threshold` — LCP=3200ms exceeds 2500ms threshold.
+  - Action: review LCP element + critical rendering path.
+
+## Recommendations
+
+- Optimize LCP image (largest-contentful-paint w HAR pokazuje hero image 280KB).
+- Moderate a11y violations (color-contrast w hover) — fix przed ship LUB ADR.
+```
+
+Breadcrumb po raporcie:
+```bash
+bash scripts/append-breadcrumb.sh "playwright-runner" "qa_report_created" \
+  "$(jq -nc --arg s "{n}" --arg path "state/qa-reports/sprint-{n}.md" \
+    '{sprint: $s, path: $path}')"
+```
+
 ## ZAKAZY
 
 - **Nie modyfikuj kodu** w `src/` (nie masz Edit, ale dla pewności — nie próbuj przez Bash `sed`/`echo >`).

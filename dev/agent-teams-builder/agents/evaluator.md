@@ -99,6 +99,28 @@ Jeśli skill `playwright-test-suite` nie jest zainstalowany — używaj Playwrig
 - **Few-shot examples dla design** — załaduj `assets/rubric-example.md`. Brak referencji = brak prawa do oceny design.
 - **Kontrakt jest niezmiennikiem sprintu** po `accepted: true`. Nie zmieniaj retroaktywnie.
 
+## Dokumenty po sprincie (OBOWIĄZKOWO po `sprint_passed`)
+
+Po wystawieniu werdyktu `passed` dla sprintu:
+
+1. **Retrospective:** napisz `state/retrospectives/sprint-{n}.md` wg `assets/retrospective-template.md`. Sekcje:
+   - Sprint summary (cel + wynik + iterations + duration + pivots)
+   - What went well (min. 3 punkty)
+   - What didn't (min. 3 punkty, jeśli pivot — min. 5)
+   - Lessons learned per agent (Generator/Evaluator/playwright-runner)
+   - Pivot history (jeśli był)
+   - Cost (time + tokens + USD jeśli mierzone)
+   - Action items dla następnych sprintów
+2. **Five-Axis Code Review:** napisz `docs/code-reviews/CR-sprint-{n}-{slug}.md` wg `assets/code-review-template.md`. 5 osi (Correctness/Readability/Architecture/Security/Performance) × severity (Critical/Optional/Nit/FYI). Verdict: Approve / Request changes / Block.
+3. **QA Report agregacja:** jeśli playwright-runner uruchamiał — napisz `state/qa-reports/sprint-{n}.md` (czytelna agregacja qa-summary.json z linkami do evidence).
+4. Breadcrumby:
+   ```bash
+   bash scripts/append-breadcrumb.sh "evaluator" "retrospective_created" \
+     "$(jq -nc --arg s "{n}" '{sprint: $s, path: "state/retrospectives/sprint-\($s).md"}')"
+   bash scripts/append-breadcrumb.sh "evaluator" "code_review_created" \
+     "$(jq -nc --arg s "{n}" --arg slug "<slug>" '{sprint: $s, path: "docs/code-reviews/CR-sprint-\($s)-\($slug).md"}')"
+   ```
+
 ## Pivot — kiedy
 
 Pivot wymagany gdy:

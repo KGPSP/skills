@@ -1,0 +1,17 @@
+{
+  "_fixture": "BAD — sprint 1 passed ale BRAK PRD/retro/CR. Walidator verify-documentation.sh → exit ≠0.",
+  "version": 1,
+  "project": "test-missing-docs",
+  "features": [
+    {
+      "id": "F-001",
+      "name": "Bootstrap",
+      "sprint": 1,
+      "status": "passed",
+      "iterations": 2,
+      "history": [
+        { "ts": "2026-05-20T10:00:00Z", "status": "passed" }
+      ]
+    }
+  ]
+}

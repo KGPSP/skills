@@ -211,6 +211,71 @@ assert_exit "plan-shallow.md (brak 4 sekcji NOWE w v1.5 + 1 hipoteza/sprint) →
   bash -c "cd '$TMP' && BASE_DIR='$TMP' bash '$SCRIPTS/verify-plan-rigor.sh'"
 rm -rf "$TMP"
 
+# ============ DOCUMENTATION FIXTURES ============
+echo ""
+echo "[Group 8] verify-documentation.sh"
+
+setup_docs() {
+  local feature_list="$1"; local with_docs="$2"
+  local TMP=$(mktemp -d)
+  mkdir -p "$TMP"/state/{prd,retrospectives,sessions,qa-reports,contracts,evidence}
+  mkdir -p "$TMP"/docs/{adr,code-reviews,reports}
+  cp "$FIXTURES/$feature_list" "$TMP/state/feature_list.json"
+  echo '[]' > "$TMP/state/breadcrumbs.json"
+  echo "# TODO" > "$TMP/state/todo.md"
+
+  if [[ "$with_docs" == "1" ]]; then
+    # Pełne dokumenty dla sprint 1
+    cat > "$TMP/state/prd/sprint-1.md" <<'EOF'
+# PRD Sprint 1
+## User story
+Jako test
+## Problem statement
+Test
+## Personas
+Test
+## Functional requirements
+- FR-01
+## Non-functional requirements
+- NFR-01
+## Out of scope
+- nic
+## Success metrics
+- pass
+## Open questions
+- Q1
+EOF
+    cat > "$TMP/state/retrospectives/sprint-1.md" <<'EOF'
+# Retro Sprint 1
+What went well: OK
+EOF
+    cat > "$TMP/docs/code-reviews/CR-sprint-1-bootstrap.md" <<'EOF'
+# CR Sprint 1
+Verdict: Approve
+EOF
+  fi
+
+  echo "$TMP"
+}
+
+TMP=$(setup_docs "feature_list-with-docs.json" "1")
+assert_exit "sprint passed + ma PRD/retro/CR → exit 0" "0" \
+  bash -c "cd '$TMP' && BASE_DIR='$TMP' bash '$SCRIPTS/verify-documentation.sh' --all-passed"
+rm -rf "$TMP"
+
+TMP=$(setup_docs "feature_list-passed-no-docs.json" "0")
+assert_exit "sprint passed ale BRAK dokumentów → exit ≠0" "nonzero" \
+  bash -c "cd '$TMP' && BASE_DIR='$TMP' bash '$SCRIPTS/verify-documentation.sh' --all-passed"
+rm -rf "$TMP"
+
+# Test init-docs-structure
+TMP=$(mktemp -d)
+cd "$TMP"
+assert_exit "init-docs-structure.sh → exit 0 + tworzy katalogi" "0" \
+  bash -c "BASE_DIR='$TMP' bash '$SCRIPTS/init-docs-structure.sh'"
+[[ -d "$TMP/state/prd" && -d "$TMP/docs/adr" ]] && echo "  [PASS] Katalogi state/prd + docs/adr istnieją" || echo "  [FAIL] Katalogi nie powstały"
+cd / && rm -rf "$TMP"
+
 # ============ SUMMARY ============
 TOTAL=$((PASS + FAIL))
 echo ""

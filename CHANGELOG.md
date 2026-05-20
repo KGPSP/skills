@@ -2,6 +2,33 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-20] Documentation Protocol — agent-teams-builder v1.6.0 + playwright-test-suite v1.2.0
+
+### Added
+
+Pełen audit trail wszystkich dokumentów pracy zespołu agentów. **10 typów dokumentów** w dwóch warstwach:
+
+**Ephemeral (state/):**
+- PRD per sprint, TODO snapshot, retrospectives, sessions log, decision log, QA reports, final report
+
+**Committable (docs/):**
+- ADRs sekwencyjne (`ADR-{NNNN}-{slug}.md`)
+- Five-Axis Code Reviews per sprint passed
+- Final reports (kopia z state/)
+
+### Nowe komponenty
+
+- `references/documentation-protocol.md` — pełen protokół (10 typów × kto/kiedy/format)
+- 5 templates: PRD, ADR, retrospective, code review (Five-Axis), session log
+- 3 skrypty: `init-docs-structure.sh`, `verify-documentation.sh`, `append-session-log.sh`
+- Group 8 meta-tests (19/19 passed)
+
+### Why
+
+User chce **wiedzieć co dzieje**. Po v1.6: każda decyzja udokumentowana (ADR), każdy sprint ma retrospektywę + code review, ślad audytu kompletny. Po sesji `/goal` można prześledzić KAŻDĄ decyzję bez surowych breadcrumbs.
+
+---
+
 ## [2026-05-20] Planning Rigor (transfer z feature-planner-v3) — agent-teams-builder v1.5.0
 
 ### Added

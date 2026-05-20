@@ -46,17 +46,38 @@ size-limit: 500-lines-hard
 
 ## Konwencja zapisu stanu (filesystem persistence)
 
-Agent Teams **nie polegają na oknie kontekstowym** (context rot). Stan dzielony przez pliki:
+Agent Teams **nie polegają na oknie kontekstowym** (context rot). Stan dzielony przez pliki w **dwóch warstwach** (`state/` ephemeral + `docs/` committable — patrz `references/documentation-protocol.md`):
+
+### Warstwa ephemeral (state/, gitignored)
 
 | Plik | Format | Kto pisze | Kto czyta | Zasada |
 |---|---|---|---|---|
-| `state/plan.md` | Markdown | Planner | Wszyscy | Wstrzykiwany co N iteracji |
+| `state/plan.md` | Markdown | Planner | Wszyscy | 11 sekcji (planning-rigor) |
+| `state/prd/sprint-{n}.md` | Markdown | Planner | Wszyscy | 8 sekcji PRD, baza dla kontraktu |
 | `state/contracts/sprint-{n}.json` | **JSON** | Generator + Evaluator (negocjacja) | Wszyscy | **Dopisuj, nie nadpisuj** |
 | `state/feature_list.json` | **JSON** | Generator (status) | Wszyscy | **Dopisuj, nie nadpisuj** |
 | `state/breadcrumbs.json` | **JSON** | Każdy agent (log iteracji) | Wszyscy + human | Append-only, znacznik czasu |
 | `state/rubric/{phase}.md` | Markdown | Planner / Evaluator | Evaluator | Few-shot examples obowiązkowe |
+| `state/todo.md` | Markdown | Generator (snapshot per iteracja) | Wszyscy | Persistowany TodoWrite |
+| `state/retrospectives/sprint-{n}.md` | Markdown | Evaluator (po passed) | Wszyscy + human | 8 sekcji retro |
+| `state/qa-reports/sprint-{n}.md` | Markdown | playwright-runner (po fazie 5 QA) | Evaluator, human | Agregacja qa-summary.json |
+| `state/decision-log.md` | Markdown | Każdy agent (lekkie decyzje) | Wszyscy | Append-only |
+| `state/sessions/{YYYY-MM-DD}.md` | Markdown | Auto (skrypt) | Human | Auto-generated |
+| `state/final-report.md` | Markdown | Planner (po fazie 7) | Human | Executive summary |
+| `state/blockers.md` | Markdown | Każdy agent | Human | Eskalacje |
 
-**Zasada:** Markdown niszczy historię (model nadpisuje cały plik). JSON wymusza dopisywanie. Patrz `references/memory-filesystem.md`.
+### Warstwa committable (docs/, w gicie projektu)
+
+| Plik | Format | Kto pisze | Kiedy |
+|---|---|---|---|
+| `docs/adr/ADR-{NNNN}-{slug}.md` | Markdown | Generator (lub inny agent) | Per decyzja architektoniczna |
+| `docs/code-reviews/CR-sprint-{n}-{slug}.md` | Markdown | Evaluator (Five-Axis Review) | Per sprint passed |
+| `docs/reports/final-{slug}.md` | Markdown | Planner | Po fazie 7 (kopia z state/) |
+
+**Zasady:**
+- Markdown niszczy historię (model nadpisuje cały plik). JSON wymusza dopisywanie. Patrz `references/memory-filesystem.md`.
+- `state/` to ephemeral per-sesja, w `.gitignore`. `docs/` to trwała wiedza projektu, commitowana.
+- Pełen audit trail dokumentów: `references/documentation-protocol.md`. Walidator: `scripts/verify-documentation.sh`.
 
 ---
 
@@ -206,6 +227,11 @@ Tabela ripost. **Każda riposta = blokada, nie sugestia.** Format: "Odrzucono. {
 | „Wystarczy jedna hipoteza per sprint, ta jest oczywista" | Odrzucono. **Planning rigor.** Bez 3 alternatyw (Minimal/Idiomatic/Ambitious) brak rzeczywistego wyboru architektonicznego. Patrz `references/planning-rigor.md §1`. |
 | „Hyrum Impact zaktualizuję jak będzie potrzebne" | Odrzucono. **Hyrum wykrywa się PRZED implementacją**, nie po regresji. Sekcja wymagana w `state/plan.md` (lub jawne "no public API changes in tej sesji"). |
 | „Rollback plan to zmartwienie później" | Odrzucono. Sprint bez rollback strategy = sprint który nie może być cofnięty bez data loss. Każdy sprint ma 1-linijkową strategię. |
+| „PRD per sprint to overhead, kontrakt wystarczy" | Odrzucono. PRD to 8 krótkich sekcji (User story → FR → NFR → metrics). Kontrakt generuje się Z PRD. Bez PRD generator implementuje wg swojej interpretacji = pętla bez progresu. Patrz `references/documentation-protocol.md §3 Dokument 2`. |
+| „ADR napiszę później jak będzie czas" | Odrzucono. **Płot Chestertona.** ADR PISZESZ w momencie decyzji — wtedy znasz kontekst i alternatywy. Później = halucynacja własnej motywacji. Sekwencyjne ADR-NNNN w `docs/adr/`. |
+| „TODO jest w mojej głowie, persistencja niepotrzebna" | Odrzucono. Pivot LUB recovery sesji = TODO z głowy stracone. `state/todo.md` snapshot z TodoWrite raz na iterację. |
+| „Retrospective to ceremoniał, sprint przeszedł = done" | Odrzucono. **Calibration loop.** Bez retrospective uprząż dryfuje. To 5 punktów lessons learned, NIE 30 stron analizy. Patrz `assets/retrospective-template.md`. |
+| „Code review już zrobił Evaluator w werdykcie" | Odrzucono. Werdykt = pass/fail per kryterium. Code review = analiza JAK kod jest napisany (Five-Axis: Correctness/Readability/Architecture/Security/Performance). Dwie różne rzeczy. |
 
 Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + library currency + domenowymi wariantami: `references/anti-rationalization.md §5` + `references/library-currency-protocol.md §7`.
 
@@ -226,8 +252,9 @@ Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + library currency +
 - [ ] **CHANGELOG + tag** — wersja zaktualizowana, tag wystawiony.
 - [ ] **Library currency** — `scripts/verify-library-currency.sh {sprint-n}` exit 0. Każda nowa paczka w `package.json` ma breadcrumb `library_currency_checked` z `source ∈ {context7, deepwiki, webfetch, npm-jsdoc}`.
 - [ ] **Plan rigor (faza 1)** — `scripts/verify-plan-rigor.sh` exit 0. `state/plan.md` ma wszystkie 11 sekcji + 3 hipotezy per sprint (Minimal/Idiomatic/Ambitious) + Hyrum Impact + Rollback plan + Alternatives considered (min. 2).
+- [ ] **Documentation** — `scripts/verify-documentation.sh` exit 0. Każdy passed sprint ma PRD (8 sekcji) + retrospective + code review (Five-Axis). Architektoniczne decyzje mają ADR w `docs/adr/`. TODO snapshot aktualny. QA report jeśli playwright-runner uruchamiał.
 
-Pełna procedura zbierania dowodów: `references/dod-evidence-protocol.md`. Pełen protokół currency: `references/library-currency-protocol.md`. Pełen rygor planistyczny: `references/planning-rigor.md`.
+Pełna procedura zbierania dowodów: `references/dod-evidence-protocol.md`. Pełen protokół currency: `references/library-currency-protocol.md`. Pełen rygor planistyczny: `references/planning-rigor.md`. Pełen audit trail dokumentów: `references/documentation-protocol.md`.
 
 ---
 
@@ -249,6 +276,7 @@ Załaduj `references/{plik}.md` **tylko** gdy spełniony warunek:
 | Kalibracja skilla po 3+ realnych przebiegach | `traces-reading.md` |
 | Planner/Generator/Evaluator dodaje bibliotekę LUB nowy import | `library-currency-protocol.md` (context7 + fallback chain) |
 | Faza 1 (Planner pisze state/plan.md) — ZAWSZE | `planning-rigor.md` (3 hipotezy/sprint + Hyrum Impact + Rollback + Alternatives) |
+| Faza 1 (Planner) + Faza 4-end (Evaluator po sprincie) — ZAWSZE | `documentation-protocol.md` (PRD/ADR/retro/code-review/QA report) |
 
 **Reguła:** nie ładuj wszystkiego na raz. Token budget L2 ≤5000. Reszta progresywnie.
 

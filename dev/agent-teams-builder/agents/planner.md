@@ -50,7 +50,8 @@ Wypełnij szablon z `assets/plan-template.md`:
 
 1. Czytaj prompt użytkownika (przekazany przez parent agenta).
 2. Wczytaj szablon `assets/plan-template.md`.
-3. **Library Currency Check** — jeśli prompt wskazuje konkretne biblioteki (np. "zbuduj w Next.js 15", "użyj React 19"):
+3. **Init docs structure (jednorazowo):** uruchom `bash scripts/init-docs-structure.sh` — tworzy `state/{prd,retrospectives,sessions,qa-reports}/` + `docs/{adr,code-reviews,reports}/` + `.gitignore`.
+4. **Library Currency Check** — jeśli prompt wskazuje konkretne biblioteki (np. "zbuduj w Next.js 15", "użyj React 19"):
    - Wywołaj `mcp__context7__resolve-library-id` dla każdej.
    - Wywołaj `mcp__context7__get-library-docs` dla potwierdzenia aktualnej wersji + breaking changes.
    - Sekcja `Dependencies` w `state/plan.md` zawiera **zweryfikowane** wersje + linki do C7 IDs.
@@ -61,13 +62,24 @@ Wypełnij szablon z `assets/plan-template.md`:
          '{sprint: $s, library: $lib, version_used: $v, source: $src}')"
      ```
    - Fallback chain jeśli context7 nie ma biblioteki: DeepWiki → WebFetch → `npm view`. Patrz `references/library-currency-protocol.md §2`.
-4. Wypełnij `state/plan.md`.
-5. Dopisz breadcrumb:
+5. Wypełnij `state/plan.md` (11 sekcji wg `assets/plan-template.md`).
+6. **PRD per sprint:** dla **każdego** sprintu z `state/plan.md §Sprints` napisz `state/prd/sprint-{N}.md` wg `assets/prd-template.md`:
+   - User story (jako/chcę/aby), Problem statement, Personas
+   - Functional requirements (FR-NN — observable behavior)
+   - Non-functional requirements (NFR-NN — measurable thresholds + tool)
+   - Out of scope per sprint
+   - Success metrics (mierzalne)
+   - Open questions
+   - PRD jest bazą dla kontraktu sprintu w fazie 3 — kontrakt generowany z FR + NFR.
+7. **Final report skeleton:** utwórz `state/final-report.md` z preambulą — wypełniany po fazie 7 (ship).
+8. Dopisz breadcrumb:
    ```bash
    bash scripts/append-breadcrumb.sh "planner" "plan_created" \
      "$(jq -nc --arg p "state/plan.md" --argjson n <N> '{plan_path: $p, sprints: $n}')"
+   bash scripts/append-breadcrumb.sh "planner" "prd_created" \
+     "$(jq -nc --argjson n <N> '{prd_count: $n}')"
    ```
-6. Zwróć do parent agenta: ścieżkę do `state/plan.md` + lista sprintów + liczba Open Questions.
+9. Zwróć do parent agenta: ścieżkę do `state/plan.md` + liczba PRDs + lista sprintów + liczba Open Questions.
 
 ## Exit criterion
 
