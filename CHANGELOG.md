@@ -2,6 +2,26 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-21] planner-f v1.0.0 — planning-only wariant feature-planner-v3
+
+### Added
+
+- **`dev/planner-f/`** — skill planowania, analizy i dokumentacji feature'a **bez fazy implementacji**. Pochodny od `feature-planner-v3` (fazy 0–5 + ADR), odcina fazy wykonawcze.
+  - **SKILL.md** (256 linii, limit ≤500) — **7 faz + 1 bramka akceptacji** (Phase 6): env-detection → deep analysis (Hyrum+Chesterton) → impact radius → ≥3 hipotezy → recommendation → plan (AC matrix + DoD-spec + Thin Slices + Out-of-scope + Rollback) → ADR → handoff.
+  - **8 referencji** — `non-negotiables` i `anti-rationalization` przepisane w wersji planistycznej; `analysis-protocol`, `ac-protocol` (+ DAMP + piramida 80/15/5), `dod-evidence-protocol`, `incremental-implementation`, `adr-template`, `gotchas` zaadaptowane (numery faz przemapowane na model planner-f).
+  - **2 skrypty** — `api-impact-scan.sh` (Hyrum, z v3) + nowy `check-plan-complete.sh` (bramka kompletności pakietu) + 2 fixtures (gate exit 0 / exit 1).
+
+### Pryncypia (audit DOC)
+
+- **material_skill.md + since_skill.md**: 21/21 pryncypiów obecnych. AC↔Test (Beyoncé), DoD i raw-evidence egzekwowane jako **specyfikacja** (planner-f nie wykonuje); reguły czysto wykonawcze (TDD RED, build clean, Five-Axis, Prove-It) jawnie przekazane wykonawcy.
+
+### Pozycjonowanie
+
+- **planner-f** — wytwarza audytowalny pakiet planistyczny (analiza + plan + ADR), kończy na zatwierdzonym planie.
+- **feature-planner-v3** — od Phase 6 realizuje plan (implementacja + testy + review). Komplementarne: planner-f planuje, v3 buduje.
+
+---
+
 ## [2026-05-20] Documentation Protocol — agent-teams-builder v1.6.0 + playwright-test-suite v1.2.0
 
 ### Added
