@@ -1,3 +1,14 @@
+---
+name: workflow-3-hipotez
+type: reference
+parent: odpowiedzi-pytania
+loaded-when: "Phase 3 — pytanie niestandardowe / brak jednoznacznej rekomendacji: szczegółowa metodyka analizy 3 hipotez per obszar (kryteria oceny + przykłady decyzyjne)"
+sources:
+  - "DOC/since_skill.md §6 (Token budget / Progressive Disclosure — wydzielenie metodyki do pliku L3)"
+  - "DOC/material_skill.md §2 (Process over Prose — ustrukturyzowany workflow zamiast prozy)"
+note: "Treść merytoryczna = metodyka 3 hipotez interpretacyjnych dla pytań PZP; struktura referencji wynika z pryncypiów DOC."
+---
+
 # Metodyka analizy 3 hipotez per obszar pytania
 
 Szczegółowa metodyka analizy w modelu trzech hipotez, używana w Phase 3 skilla `odpowiedzi-pytania`. Dokument referencyjny — czytaj przy pytaniach niestandardowych.

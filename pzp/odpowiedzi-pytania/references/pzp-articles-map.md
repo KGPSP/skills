@@ -1,6 +1,17 @@
+---
+name: pzp-articles-map
+type: reference
+parent: odpowiedzi-pytania
+loaded-when: "Phase 3 — pytanie niestandardowe: pełna mapa obszar→artykuły Pzp (OPZ, równoważność, ś.d., wykluczenie, kryteria, umowa, wadium)"
+sources:
+  - "DOC/since_skill.md §6 (Token budget / Progressive Disclosure — wydzielenie pełnej mapy do pliku L3)"
+  - "DOC/material_skill.md §4 (Verification non-negotiable — podstawa prawna jako dowód)"
+note: "Treść merytoryczna = mapa artykułów ustawy Pzp per obszar pytania; struktura referencji wynika z pryncypiów DOC."
+---
+
 # Mapa kluczowych artykułów ustawy Pzp dla pytań wykonawców
 
-Pełna mapa artykułów ustawy z dnia 11 września 2019 r. — Prawo zamówień publicznych (Dz.U. 2024 poz. 1320 ze zm.) używana przy odpowiedziach na pytania w postępowaniu. Numery linii odnoszą się do `/Users/sq13pl/Documents/GH/Legitymacje_OSP/OBSIDIAN/PROJEKTY/PZP/PRAWO/D20192019Lj.md`.
+Pełna mapa artykułów ustawy z dnia 11 września 2019 r. — Prawo zamówień publicznych (Dz.U. 2024 poz. 1320 ze zm.) używana przy odpowiedziach na pytania w postępowaniu. Numery linii odnoszą się do tekstu jednolitego `D20192019Lj.md` w katalogu bazy normatywnej `{prawo_dir}`.
 
 ## DZIAŁ I — Przepisy ogólne (art. 1–98)
 
