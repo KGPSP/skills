@@ -2,6 +2,20 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-22] legal/sejm-eli-api v1.0.0 — komunikacja z Sejm ELI API
+
+### Added
+
+- **`legal/sejm-eli-api/`** — nowy skill: warstwa retrieval/grounding dla urzędowego źródła prawa RP przez `api.sejm.gov.pl/eli`. SKILL.md (187 linii) z procedurą 6-fazową + exit criteria, Anti-Rationalization (7 wymówek), DoD, frontmatterem kanonicznym (`trigger`, `do-not-trigger-for`, `sources`, `version`, `size-limit`).
+- `references/endpoints.md` — katalog endpointów zweryfikowany `curl`-em 2026-05-22 (`/acts`, `/acts/{pub}/{year}[/{pos}]`, `…/text.html|text.pdf|struct|references`, `/acts/search` z paginacją).
+- `references/obsidian-import.md` — format notatki + opcje importera.
+- `scripts/eli-fetch.sh` (POSIX, `set -eu`) + `scripts/import-eli-act.py` (vault z `--vault`/`OBSIDIAN_VAULT`, bez ścieżek absolutnych). Oba przetestowane na żywym API (meta/search/import + guardy).
+- Pozycjonowanie: warstwa pozyskania metadanych; interpretacja → `legal/opinie-prawne`.
+
+### Changed
+
+- **`legal-tools`** (plugin) → `v1.1.0`: dodano `sejm-eli-api` (2 skille). Zaktualizowano `marketplace.json`, `legal/.claude-plugin/plugin.json`, README (tabela legal + tabela marketplace).
+
 ## [2026-05-22] Plugin marketplace — repo jako źródło instalowalne w Claude Code
 
 ### Added

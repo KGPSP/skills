@@ -27,6 +27,7 @@ skills/
 | Skill | Zastosowanie |
 |-------|--------------|
 | [`opinie-prawne`](legal/opinie-prawne/) | Sporządzanie opinii prawnych w polskim porządku prawnym (effort max, deep research po isap.sejm.gov.pl, eli.gov.pl, orzecznictwo SN/NSA/TK). |
+| [`sejm-eli-api`](legal/sejm-eli-api/) | Komunikacja z urzędowym źródłem prawa RP przez Sejm ELI API (`api.sejm.gov.pl/eli`): metadane, status, daty, relacje, spis treści i treść HTML/PDF aktów Dz.U./M.P., wyszukiwanie po tytule, import do Obsidian. Warstwa retrieval/grounding dla `opinie-prawne`. |
 
 ### `dev/` — Narzędzia developerskie
 
@@ -55,7 +56,7 @@ Repo jest **marketplace pluginów Claude Code** (`kgpsp-skills`). Skille są pog
 | Plugin | Skille | Co zawiera |
 |--------|--------|------------|
 | `pzp-tools` | 4 | analyzing-pzp-offers, drafting-pzp-letters, odpowiedzi-pytania, weryfikacja-umow-pzp |
-| `legal-tools` | 1 | opinie-prawne |
+| `legal-tools` | 2 | opinie-prawne, sejm-eli-api |
 | `dev-tools` | 6 | agent-teams-builder, feature-planner (v2), feature-planner-v3, feature-planner-codex, planner-f, playwright-test-suite |
 
 **1. Dodaj marketplace** (jednorazowo):

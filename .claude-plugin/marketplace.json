@@ -16,7 +16,7 @@
     {
       "name": "legal-tools",
       "source": "./legal",
-      "description": "Opinie prawne — skill do przygotowywania opinii prawnych z cytowaniem źródeł."
+      "description": "Narzędzia prawne: opinie prawne z cytowaniem źródeł (opinie-prawne) oraz komunikacja z urzędowym źródłem prawa RP przez Sejm ELI API — metadane/status/treść aktów Dz.U./M.P. (sejm-eli-api). 2 skille."
     },
     {
       "name": "dev-tools",
