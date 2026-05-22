@@ -1,3 +1,14 @@
+---
+name: legal-basis-catalog
+type: reference
+parent: drafting-pzp-letters
+loaded-when: "Phase 2–3 — kwalifikacja prawna i projekt treści: literalne brzmienie przepisu, terminy, orzecznictwo KIO, typowe błędy per typ pisma"
+sources:
+  - "DOC/since_skill.md §6 (Token budget / Progressive Disclosure — wydzielenie ciężkiego katalogu do pliku L3)"
+  - "DOC/material_skill.md §4 (Verification non-negotiable — cytat literalny jako dowód)"
+note: "Treść merytoryczna = katalog podstaw prawnych Pzp per typ pisma; struktura referencji wynika z pryncypiów DOC."
+---
+
 # Legal Basis Catalog — katalog podstaw prawnych dla pism proceduralnych PZP
 
 This is the **heavy reference** used during Phase 2 of the `drafting-pzp-letters` skill. Każde pismo proceduralne ma tu wpis z: literalnym brzmieniem przepisu, typowym terminem, orzecznictwem KIO i listą błędów, które najczęściej prowadzą do odwołania.
