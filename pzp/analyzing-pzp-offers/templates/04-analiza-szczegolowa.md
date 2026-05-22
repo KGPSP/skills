@@ -16,7 +16,7 @@ tags:
 # Analiza szczegółowa — Oferta <<wykonawca>>
 
 > [!info] Struktura
-> Dokument prowadzi weryfikację **punkt po punkcie** zgodnie z sekcjami A–G z `verification-prompt.md`. Dla każdej sekcji: podsumowanie, lista ustaleń, lista znalezisk z referencjami do [[03-braki-i-niezgodnosci-<<slug-wykonawcy>>]].
+> Dokument prowadzi weryfikację **punkt po punkcie** zgodnie z sekcjami A–G z `references/verification-prompt.md`. Dla każdej sekcji: podsumowanie, lista ustaleń, lista znalezisk z referencjami do [[03-braki-i-niezgodnosci-<<slug-wykonawcy>>]].
 
 ## A. Weryfikacja formalna oferty
 

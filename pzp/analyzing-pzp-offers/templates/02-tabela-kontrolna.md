@@ -19,7 +19,7 @@ tags:
 > - **Źródło wymagania:** zawsze `[DOC: plik] [Rozdz. N] [ust. N] [pkt N] [lit. l] [str. N]`
 > - **Kategoria:** `wraz` / `na wezwanie` / `fakultatywny`
 > - **Prawidłowy:** ✅ tak / ⚠️ z zastrzeżeniami / ❌ nie / ⬜ nie dotyczy
-> - **Kategoria F:** F1–F6 wg `verification-prompt.md`
+> - **Kategoria F:** F1–F6 wg `references/verification-prompt.md`
 > - Przy każdym „⚠️" lub „❌" — callout w [[03-braki-i-niezgodnosci-<<slug-wykonawcy>>]]
 
 ## A. Wymagania formalne oferty

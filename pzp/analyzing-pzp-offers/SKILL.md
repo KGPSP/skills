@@ -1,7 +1,31 @@
 ---
 name: analyzing-pzp-offers
-version: v1.0.0
+version: v1.1.0
 description: Use when verifying offers in Polish public procurement (Prawo Zamówień Publicznych, PZP) procedures. Triggers include weryfikacja oferty PZP, badanie zgodności oferty z SWZ/OPZ, analiza kompletności oferty, ocena oferty wykonawcy, and whenever the user supplies a folder with ogłoszenie/SWZ/OPZ and a folder with oferta wykonawcy. Applies to przetarg nieograniczony, tryb podstawowy, negocjacje, zamówienia sektorowe oraz analizy przedprzetargowe wymagające cytowania źródeł.
+trigger:
+  - "sprawdź ofertę"
+  - "zweryfikuj zgodność z SWZ"
+  - "przeanalizuj ofertę wykonawcy"
+  - "porównaj oferty"
+  - "oceń kompletność oferty"
+  - "weryfikacja oferty PZP"
+  - "badanie zgodności oferty z SWZ/OPZ"
+  - "wskaż braki / ryzyka odrzucenia oferty"
+do-not-trigger-for:
+  - "postępowania zagraniczne nieobjęte polską ustawą PZP"
+  - "wczesna faza planowania zamówienia (przed publikacją SWZ) — brak dokumentacji"
+  - "zapytania ofertowe podprogowe poza PZP"
+  - "sam przegląd techniczny produktu bez kontekstu postępowania"
+  - "streść / przetłumacz SWZ bez weryfikacji oferty"
+  - "redagowanie pism proceduralnych (wezwania, odrzucenia) — użyj drafting-pzp-letters"
+  - "weryfikacja projektu umowy — użyj weryfikacja-umow-pzp"
+model: claude-opus-4-7
+allowed-tools: ['Bash', 'Read', 'Write', 'Glob', 'Grep', 'TodoWrite']
+sources:
+  - DOC/material_skill.md
+  - DOC/since_skill.md
+  - DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md
+size-limit: 500-lines-hard
 ---
 
 # Analyzing PZP Offers (Weryfikacja oferty w postępowaniu PZP)
@@ -34,6 +58,9 @@ Systematic verification workflow of a public procurement offer (oferta) against 
 - Wczesna faza planowania zamówienia (przed publikacją SWZ) — brak dokumentacji do weryfikacji
 - Zapytania ofertowe podprogowe poza PZP
 - Sam przegląd techniczny produktu bez kontekstu postępowania
+- Streszczanie lub tłumaczenie SWZ bez weryfikacji oferty
+- Redagowanie pism proceduralnych (wezwania, odrzucenia) — użyj `drafting-pzp-letters`
+- Weryfikacja projektu umowy — użyj `weryfikacja-umow-pzp`
 
 ## Required Inputs — ZAWSZE dopytaj, jeśli brakuje
 
@@ -73,6 +100,8 @@ flowchart TD
    - Jeśli **NIE istnieje odpowiadający plik** → **STOP. Zapytaj usera:** czy (a) brak pliku = błąd kompletacji materiału u usera (trzeba dosłać), czy (b) wykonawca faktycznie nie złożył dokumentu (złożono tylko podpis bez treści — oferta wadliwa). NIE zakładaj odpowiedzi.
 6. Utwórz `<output_dir>` jeśli nie istnieje
 
+**Exit:** struktura obu folderów wypisana (`ls -la`); ZIP/podpisy zewnętrzne rozstrzygnięte z userem; `<output_dir>` istnieje. **Utwórz listę `TodoWrite` z fazami 0–5** i aktualizuj status po każdej.
+
 ### Phase 1: Indeksacja plików (ZAWSZE pierwsza — nigdy nie pomijać)
 
 **Cel:** dla każdego pliku w obu folderach utworzyć nazwę + opis zawartości + rolę w postępowaniu.
@@ -85,6 +114,8 @@ flowchart TD
 - **Każdy plik musi mieć co najmniej 2-3 zdania opisu** z konkretami: daty, kwoty, strony, podmioty, numery, oznaczenia
 
 **Red flag — STOP:** jeśli chcesz skipnąć indeksację bo „wiesz co w tym jest" — to sygnał, że zaczynasz domniemywać. Wróć i odczytaj pliki.
+
+**Exit:** `index-ogloszenie.md` + `index-<wykonawca>.md` istnieją, KAŻDY plik wejściowy opisany ≥2–3 zdaniami z konkretami (daty/kwoty/strony).
 
 ### Phase 2: Ekstrakcja wymagań z dokumentacji postępowania
 
@@ -107,9 +138,11 @@ Każde wymaganie opisz: `{nazwa, źródło (dokument+rozdział+punkt+strona), ka
 
 **Kluczowe:** wszystkie modyfikacje/odpowiedzi są nadrzędne wobec pierwotnego brzmienia SWZ w zakresie objętym zmianą. Zawsze pracuj na aktualnym brzmieniu.
 
+**Exit:** katalog wymagań z kategoryzacją (wraz z ofertą / na wezwanie / fakultatywne), każde z źródłem (dokument+rozdział+punkt+strona) i brzmieniem po modyfikacjach.
+
 ### Phase 3: Analiza oferty
 
-Stosuj prompt weryfikacyjny z `verification-prompt.md` (sekcje A–G):
+Stosuj prompt weryfikacyjny z `references/verification-prompt.md` (sekcje A–G):
 - **A.** Weryfikacja formalna oferty
 - **B.** Kompletność dokumentów składanych wraz z ofertą
 - **C.** Dokumenty składane na wezwanie (osobne traktowanie)
@@ -125,6 +158,8 @@ Dla każdego wymagania z katalogu Phase 2 sprawdź:
 4. Cytuj fragment (max 3 zdania) lub wskaż punkt.
 
 **Język:** obiektywny, bez „wydaje się", bez „prawdopodobnie". Jeśli nie można potwierdzić — napisz wprost „nie można potwierdzić na podstawie przekazanych dokumentów".
+
+**Exit:** każde wymaganie z Phase 2 rozstrzygnięte (złożono? gdzie? czy potwierdza?) z cytatem lub wskazaniem punktu; sekcje A–G pokryte.
 
 ### Phase 4: Generowanie raportu i serii dokumentów
 
@@ -154,6 +189,8 @@ Wszystkie pliki w **Obsidian Flavored Markdown**:
 
 Szczegółowe templaty: patrz katalog `templates/`.
 
+**Exit:** komplet dokumentów wg „Deliverables Checklist" (Definition of Done skilla); 0 placeholderów `<<...>>`, wszystkie quality gates ✅.
+
 ### Phase 5: Analiza porównawcza (gdy > 1 wykonawca)
 
 Tworzy `07-analiza-porownawcza.md`:
@@ -161,6 +198,8 @@ Tworzy `07-analiza-porownawcza.md`:
 - Tabela wykonawca × braki formalne × ryzyka
 - Ranking wstępny (przed wezwaniami) + ranking warunkowy (po uzupełnieniach)
 - Wskazanie oferty najkorzystniejszej z ryzykami jej wyboru
+
+**Exit:** `07-analiza-porownawcza.md` z rankingiem wstępnym + warunkowym i jawnymi ryzykami wyboru.
 
 ## Citation Format (OBLIGATORYJNY)
 
@@ -249,7 +288,7 @@ tags:
 9. **Rozbieżność cena brutto/netto/VAT**: sprawdź arytmetykę; omyłka rachunkowa (art. 223 ust. 2 pkt 2 Pzp) ≠ podstawa odrzucenia. Ale: **błędy w obliczeniu ceny lub kosztu (art. 226 ust. 1 pkt 10 Pzp)** niemożliwe do poprawienia w trybie omyłki = odrzucenie.
 10. **Termin związania ofertą (TZO) — art. 220 Pzp**: 90 dni standardowo, 120 dni dla zamówień na roboty budowlane > 20 mln EUR lub dostawy/usługi > 10 mln EUR. Brak zgody na przedłużenie = art. 226 ust. 1 pkt 12 Pzp.
 11. **Cyberbezpieczeństwo ICT (dla zamówień HPC, AI, infrastruktury, chmury, oprogramowania) — art. 226 ust. 1 pkt 17 i 19 Pzp**: sprawdź (a) czy oferowane rozwiązanie nie jest objęte rekomendacją art. 33 ust. 4 ustawy KSC (Dz.U. 2026 poz. 20 i 252), (b) czy dostawca nie jest uznany za dostawcę wysokiego ryzyka (art. 67b ust. 15 ustawy KSC), (c) czy wykonawca nie pochodzi z państwa trzeciego bez umowy międzynarodowej UE (pkt 5a).
-12. **Wykluczenie + self-cleaning (art. 108–111 Pzp)**: **Przed rekomendacją wykluczenia ZAWSZE sprawdź, czy wykonawca w JEDZ/oświadczeniu przedstawił self-cleaning**. Self-cleaning dotyczy TYLKO art. 108 ust. 1 pkt 1, 2, 5 i art. 109 ust. 1 pkt 2-5, 7-10. Okresy wykluczenia (art. 111 Pzp): 5 / 3 / 2 / 1 rok / okres postępowania — szczegóły w `verification-prompt.md`.
+12. **Wykluczenie + self-cleaning (art. 108–111 Pzp)**: **Przed rekomendacją wykluczenia ZAWSZE sprawdź, czy wykonawca w JEDZ/oświadczeniu przedstawił self-cleaning**. Self-cleaning dotyczy TYLKO art. 108 ust. 1 pkt 1, 2, 5 i art. 109 ust. 1 pkt 2-5, 7-10. Okresy wykluczenia (art. 111 Pzp): 5 / 3 / 2 / 1 rok / okres postępowania — szczegóły w `references/verification-prompt.md`.
 13. **Uzupełnianie środków dowodowych — kiedy NIE MOŻNA:**
     - Przedmiotowe ś.d.: nie stosujemy art. 107 ust. 2 gdy: (a) zamawiający nie przewidział uzupełnienia w ogłoszeniu/dok. zam., (b) ś.d. służy potwierdzeniu zgodności z **kryteriami oceny ofert** (art. 107 ust. 3), (c) oferta i tak podlega odrzuceniu.
     - Podmiotowe ś.d./JEDZ: uzupełnienie wg art. 128 ust. 1, ale NIE MOŻE służyć potwierdzeniu **kryteriów selekcji** (art. 128 ust. 3).
@@ -282,16 +321,25 @@ tags:
 | Pomijanie ZIP/XAdES | Zawsze zapytać o rozpakowanie archiwów |
 | Brak klasyfikacji ryzyk (F1–F6) | Każde znalezisko ma kategorię + podstawę prawną |
 
-## Red Flags — STOP and restart
+## Anti-Rationalization — blokady na drogi-na-skróty
 
-- „Znam SWZ, nie muszę indeksować" — NIE. Indeksuj zawsze.
-- „Opis oferty jest taki jak wymaga SWZ" — NIE. Cytuj wymóg i ofertę osobno.
-- „To chyba wystarczy" — NIE. Wszystkie punkty A–G mają być przeanalizowane.
-- „Jeden plik raportu starczy" — NIE. Seria dokumentów jest obowiązkowa.
-- „Pominę archiwum ZIP" — NIE. Zapytaj usera o rozpakowanie.
-- „Wykonawca pewnie to uzupełni" — NIE. Weryfikujesz stan faktyczny oferty, nie przyszłe działania.
+Riposta = **blokada, nie sugestia**. Każda wymówka ma twardą konsekwencję.
 
-## Deliverables Checklist — przed zakończeniem
+| Wymówka | Riposta (blokada) |
+|---------|-------------------|
+| „Znam SWZ, indeksacja zbędna" | Odrzucono. Pominięcie indeksu = brak audit trail = **nieważna analiza**. Wróć do Phase 1. |
+| „Opis oferty zgodny z SWZ — wystarczy" | Odrzucono. Cytuj **osobno** wymóg (SWZ) i stan faktyczny (oferta). Bez dwóch cytatów = domniemanie. |
+| „To chyba wystarczy" | Odrzucono. Wszystkie sekcje A–G muszą być przeanalizowane — brak pominięć. |
+| „Jeden plik raportu starczy" | Odrzucono. Seria dokumentów (min. 8 per wykonawca) jest obligatoryjna. |
+| „Pominę archiwum ZIP / podpis XAdES" | Odrzucono. Zawartość ZIP jest integralną częścią oferty. STOP, zapytaj usera o rozpakowanie. |
+| „Wykonawca pewnie to uzupełni" | Odrzucono. Weryfikujesz **stan faktyczny** oferty, nie przyszłe działania. Brak ≠ uzupełnione. |
+| „Brak dokumentu = brak/wada" | Odrzucono. Najpierw kategoryzuj: „wraz z ofertą" vs „na wezwanie" (art. 126 Pzp). Inaczej fałszywy alarm. |
+| „Wykluczę — przesłanka spełniona" | Odrzucono. Najpierw sprawdź **self-cleaning** (art. 110 Pzp). Pominięcie = błąd materialny. |
+| „Cytat z pamięci ustawy wystarczy" | Odrzucono. Sygnatury Dz.U. weryfikuj wg metryki w nagłówku (tekst jednolity 2024 poz. 1320 + nowelizacje). |
+
+## Deliverables Checklist (Definition of Done) — przed zakończeniem
+
+> Skill nie deklaruje „gotowe" bez kompletu poniższych artefaktów. To dowodowa DoD — brak któregokolwiek = analiza niezakończona.
 
 > Dla K wykonawców: **1 indeks ogłoszenia + K × (1 indeks oferty + 7 dokumentów analitycznych) + (1 porównawczy, gdy K ≥ 2)**. Np. 2 wykonawców → 1 + 2×8 + 1 = **18 plików**.
 
@@ -316,7 +364,7 @@ tags:
 - [ ] Frontmatter YAML kompletny: sygnatura, wykonawca, data, tagi, status, typ_dokumentu
 - [ ] Każde znalezisko ma: callout + cytat wymogu + cytat stanu faktycznego + kategoria F + podstawa prawna + sugerowane działanie
 - [ ] Wikilinks między dokumentami spójne (np. `[[02-tabela-kontrolna-galaxy]]` ↔ `[[06-cytaty-i-zrodla-galaxy]]`); wszystkie cele istnieją
-- [ ] Rekomendacja końcowa w jednej z 5 form (patrz `verification-prompt.md` sekcja V)
+- [ ] Rekomendacja końcowa w jednej z 5 form (patrz `references/verification-prompt.md` sekcja V)
 - [ ] Brak placeholderów `<<...>>` w gotowych dokumentach — wszystkie wypełnione lub usunięte sekcje nieistotne
 
 ### Liczba plików per scenariusz
@@ -433,19 +481,16 @@ Dokumenty PDF/DOCX muszą być odczytane **tekstowo**, aby przytoczyć cytaty.
 - **ZIP** (tajemnica przedsiębiorstwa): zapytaj usera o rozpakowanie; NIE próbuj automatycznego rozpakowania bez zgody — może zawierać informacje poufne. Po rozpakowaniu traktuj jak zwykły katalog
 - **XAdES/sig/p7s**: nie zawiera tekstu użytecznego dla analizy — oznacz w indeksie jako „podpis zewnętrzny dla `<plik>`"
 
-## Supporting Files
+## Supporting Files — reguły ładowania (Progressive Disclosure)
 
-- `verification-prompt.md` — pełny prompt weryfikacyjny (sekcje A–G, format odpowiedzi I–V, zasady cytowania, podstawy prawne). Reference during Phase 3.
-- `templates/index-ogloszenie.md` — szablon indeksu ogłoszenia
-- `templates/index-oferta.md` — szablon indeksu oferty
-- `templates/00-podsumowanie-wykonawcze.md` — executive summary
-- `templates/01-raport-glowny.md` — pełny raport
-- `templates/02-tabela-kontrolna.md` — macierz wymagań
-- `templates/03-braki-i-niezgodnosci.md` — znaleziska
-- `templates/04-analiza-szczegolowa.md` — analiza per A–G
-- `templates/05-ocena-ryzyka.md` — klasyfikacja ryzyk
-- `templates/06-cytaty-i-zrodla.md` — register cytatów
-- `templates/07-analiza-porownawcza.md` — porównanie ofert
+Ładuj plik **tylko gdy spełniony warunek** — nie wczytuj wszystkiego naraz.
+
+| Plik | Załaduj gdy |
+|------|-------------|
+| `references/verification-prompt.md` | **Phase 3** — heavy reference: prompt weryfikacyjny (sekcje A–G, format I–V, zasady cytowania, podstawy prawne, okresy wykluczenia art. 111). |
+| `templates/index-ogloszenie.md`, `templates/index-oferta.md` | **Phase 1** — generujesz indeksy. |
+| `templates/00-…` … `templates/06-…` | **Phase 4** — generujesz dany dokument analityczny (ładuj pojedynczo wg potrzeby). |
+| `templates/07-analiza-porownawcza.md` | **Phase 5** — tylko gdy K ≥ 2 wykonawców. |
 
 ## The Iron Law
 
