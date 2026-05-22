@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "kgpsp-skills",
+  "owner": {
+    "name": "Komenda Główna PSP",
+    "email": "claude@kg.straz.gov.pl"
+  },
+  "description": "Katalog skilli Claude Code KG PSP: Prawo Zamówień Publicznych (PZP), opinie prawne oraz narzędzia developerskie dla agentów AI.",
+  "version": "1.0.0",
+  "plugins": [
+    {
+      "name": "pzp-tools",
+      "source": "./pzp",
+      "description": "Prawo Zamówień Publicznych: analiza ofert, pisma proceduralne, odpowiedzi na pytania wykonawców, weryfikacja projektów umów. 4 skille generujące pliki robocze .md/.docx."
+    },
+    {
+      "name": "legal-tools",
+      "source": "./legal",
+      "description": "Opinie prawne — skill do przygotowywania opinii prawnych z cytowaniem źródeł."
+    },
+    {
+      "name": "dev-tools",
+      "source": "./dev",
+      "description": "Narzędzia developerskie dla agentów AI: planowanie feature'a (feature-planner v2/v3/codex, planner-f), orkiestracja zespołów sub-agentów (agent-teams-builder) i QA E2E (playwright-test-suite)."
+    }
+  ]
+}

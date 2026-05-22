@@ -48,9 +48,44 @@ Workflowy planowania/implementacji feature'a + orkiestracja zespołów agentów 
 | [`agent-teams-builder`](dev/agent-teams-builder/) | **v1.6.0** | Orkiestracja zespołu sub-agentów (Planner + Generator + Evaluator + specjaliści) wg wzorca Generator-Ewaluator. 7-fazowa procedura, twarde rubryki, mechanizm pivota (Plan-Validate-Execute), tryb `/goal`. **Planning Rigor** (3 hipotezy/sprint, 11 sekcji planu, Hyrum Impact), **context7 MCP** (library currency — eliminacja halucynacji API), **Documentation Protocol** (pełen audit trail: PRD/ADR/retro/Five-Axis CR/QA — 10 typów dokumentów). Meta-testy walidatorów **19/19**. Dla zadań „zbuduj aplikację od zera", projektów >2h. |
 | [`playwright-test-suite`](dev/playwright-test-suite/) | **v1.2.0** | QA end-to-end aplikacji webowej: 5-fazowa procedura (smoke → UI → DevTools → a11y → visual) przez Playwright CLI + `@axe-core/playwright` + pixel-diff. Dedykowany sub-agent `playwright-runner`, **context7 MCP** (currency check przed nowym importem), QA Report (`state/qa-reports/`) zgodny z Documentation Protocol agent-teams-builder. Standalone QA lub Evaluator-Runtime w pętli Generator-Ewaluator. |
 
+## Instalacja (Claude Code plugin marketplace)
+
+Repo jest **marketplace pluginów Claude Code** (`kgpsp-skills`). Skille są pogrupowane w 3 pluginy wg domen — instalujesz tylko to, czego potrzebujesz.
+
+| Plugin | Skille | Co zawiera |
+|--------|--------|------------|
+| `pzp-tools` | 4 | analyzing-pzp-offers, drafting-pzp-letters, odpowiedzi-pytania, weryfikacja-umow-pzp |
+| `legal-tools` | 1 | opinie-prawne |
+| `dev-tools` | 6 | agent-teams-builder, feature-planner (v2), feature-planner-v3, feature-planner-codex, planner-f, playwright-test-suite |
+
+**1. Dodaj marketplace** (jednorazowo):
+
+```
+/plugin marketplace add KGPSP/skills
+```
+
+**2. Zainstaluj wybrany plugin:**
+
+```
+/plugin install pzp-tools@kgpsp-skills
+/plugin install legal-tools@kgpsp-skills
+/plugin install dev-tools@kgpsp-skills
+```
+
+Po instalacji skille są dostępne z prefiksem pluginu, np. `pzp-tools:analyzing-pzp-offers`, `dev-tools:feature-planner-v3`.
+
+**Aktualizacja / usunięcie:**
+
+```
+/plugin marketplace update kgpsp-skills      # pobierz najnowszą wersję manifestu
+/plugin marketplace remove kgpsp-skills       # usuń marketplace
+```
+
+> **Test lokalny** (bez GitHub, np. praca na sklonowanym repo): zamiast `KGPSP/skills` podaj ścieżkę do katalogu — `/plugin marketplace add /ścieżka/do/skills`. Walidacja manifestu przed publikacją: `claude plugin validate .`.
+
 ## Użycie
 
-Skille są przeznaczone do pracy w **Claude Code** (CLI / IDE). Po sklonowaniu repo wskaż katalog jako źródło skilli — Claude Code automatycznie odczyta frontmatter `name` / `description` z każdego `SKILL.md`.
+Skille są przeznaczone do pracy w **Claude Code** (CLI / IDE). Najwygodniej zainstalować je przez marketplace (sekcja **Instalacja** powyżej). Alternatywnie po sklonowaniu repo możesz wskazać katalog jako lokalne źródło skilli — Claude Code automatycznie odczyta frontmatter `name` / `description` z każdego `SKILL.md`.
 
 Trigger skilla z poziomu czatu:
 

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin.json",
+  "name": "dev-tools",
+  "description": "Narzędzia developerskie dla agentów AI: planowanie feature'a, orkiestracja zespołów sub-agentów, QA E2E.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Komenda Główna PSP",
+    "email": "claude@kg.straz.gov.pl"
+  },
+  "homepage": "https://github.com/KGPSP/skills",
+  "repository": "https://github.com/KGPSP/skills",
+  "keywords": ["feature-planning", "agent-teams", "qa", "playwright", "codex"],
+  "skills": [
+    "./agent-teams-builder",
+    "./feature-planner",
+    "./feature-planner-v3",
+    "./feature-planner-codex",
+    "./planner-f",
+    "./playwright-test-suite"
+  ]
+}

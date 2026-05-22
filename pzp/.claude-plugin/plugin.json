@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin.json",
+  "name": "pzp-tools",
+  "description": "Prawo Zamówień Publicznych (PZP) — komplet skilli operacyjnych KG PSP.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Komenda Główna PSP",
+    "email": "claude@kg.straz.gov.pl"
+  },
+  "homepage": "https://github.com/KGPSP/skills",
+  "repository": "https://github.com/KGPSP/skills",
+  "keywords": ["pzp", "zamowienia-publiczne", "swz", "opz", "legal"],
+  "skills": [
+    "./analyzing-pzp-offers",
+    "./drafting-pzp-letters",
+    "./odpowiedzi-pytania",
+    "./weryfikacja-umow-pzp"
+  ]
+}
