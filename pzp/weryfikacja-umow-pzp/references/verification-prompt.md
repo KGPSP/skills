@@ -1,3 +1,14 @@
+---
+name: verification-prompt
+type: reference
+parent: weryfikacja-umow-pzp
+loaded-when: "Phase 3–6 — pełny prompt analityczny (sekcje I–V, zasady pracy, format odpowiedzi, zasady cytowania, podstawy prawne)"
+sources:
+  - "DOC/since_skill.md §6 (Token budget / Progressive Disclosure — wydzielenie ciężkiego promptu do pliku L3)"
+  - "DOC/material_skill.md §4 (Verification non-negotiable — cytat jako dowód)"
+note: "Treść merytoryczna = ekspercki prompt weryfikacji umów PZP; struktura referencji wynika z pryncypiów DOC."
+---
+
 # Verification Prompt — pełny prompt analityczny dla weryfikacji umów PZP
 
 This is the **heavy reference** used during Phase 3–6 of the `weryfikacja-umow-pzp` skill. Treat it as the operational brief for the contract verification engine.
@@ -363,7 +374,7 @@ Plik: `07-wnioski-koncowe-<slug>.md`. **Pięć pytań — jednoznaczne odpowiedz
 
 | Zasada | Wartość |
 |--------|---------|
-| Forma odpowiedzi | 9+ plików w Obsidian MD |
+| Forma odpowiedzi | 11 plików w Obsidian MD |
 | Kluczowy produkt | `05-proponowane-poprawki-<slug>.md` z cytatami oryg. + cytatami propozycji |
 | Cytowanie umowy | `§ N ust. M pkt K lit. L umowy` |
 | Cytowanie dokumentów | `[DOC: plik] [Rozdz. N] [str. M]` |

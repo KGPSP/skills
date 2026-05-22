@@ -1,3 +1,14 @@
+---
+name: verification-prompt
+type: reference
+parent: analyzing-pzp-offers
+loaded-when: "Phase 3 — analiza oferty (sekcje A–G, format I–V, zasady cytowania, podstawy prawne)"
+sources:
+  - "DOC/since_skill.md §6 (Token budget / Progressive Disclosure — wydzielenie ciężkiego promptu do osobnego pliku L3)"
+  - "DOC/material_skill.md §4 (Verification non-negotiable — cytat jako dowód)"
+note: "Treść merytoryczna = ekspercki prompt weryfikacji ofert PZP; struktura referencji wynika z pryncypiów DOC."
+---
+
 # Verification Prompt — pełny prompt analityczny PZP
 
 This is the **heavy reference** used during Phase 3 of the `analyzing-pzp-offers` skill. Treat it as the operational brief for the analysis engine.

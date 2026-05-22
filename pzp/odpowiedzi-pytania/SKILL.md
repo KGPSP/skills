@@ -1,7 +1,28 @@
 ---
 name: odpowiedzi-pytania
-version: v1.0.0
-description: Use when preparing odpowiedzi Zamawiającego na pytania wykonawców (wyjaśnienia treści SWZ, modyfikacje SWZ/OPZ/umowy) w postępowaniu o udzielenie zamówienia publicznego prowadzonym w reżimie ustawy Pzp. Triggers include "odpowiedzi na pytania", "wyjaśnienia treści SWZ", "pytania wykonawców", "modyfikacja SWZ", "zmiana OPZ na podstawie pytań", "art. 135 Pzp", "art. 284 Pzp", gdy user wskazuje folder postępowania zawierający SWZ + pytania wykonawców (RTF/DOCX/PDF/MD) i chce kompletu plików roboczych do publikacji. Produkuje 7 plików w `odpowiedzi_<RRRR-MM-DD>/`: indeks dokumentów, rejestr pytań, analiza w modelu 3 hipotez, finalne odpowiedzi do publikacji, wykaz zmian dokumentacji, raport ryzyk, wersja do akceptacji kierownika zamawiającego.
+version: v1.1.0
+description: Use when preparing odpowiedzi Zamawiającego na pytania wykonawców (wyjaśnienia treści SWZ, modyfikacje SWZ/OPZ/umowy) w postępowaniu o udzielenie zamówienia publicznego prowadzonym w reżimie ustawy Pzp. Triggers include "odpowiedzi na pytania", "wyjaśnienia treści SWZ", "pytania wykonawców", "modyfikacja SWZ", "zmiana OPZ na podstawie pytań", "art. 135 Pzp", "art. 284 Pzp", gdy user wskazuje folder postępowania zawierający SWZ + pytania wykonawców (RTF/DOCX/PDF/MD) i chce kompletu plików roboczych do publikacji. Produkuje 7 plików w `odpowiedzi_<RRRR-MM-DD>/` — indeks dokumentów, rejestr pytań, analiza w modelu 3 hipotez, finalne odpowiedzi do publikacji, wykaz zmian dokumentacji, raport ryzyk, wersja do akceptacji kierownika zamawiającego.
+trigger:
+  - "odpowiedzi na pytania"
+  - "wyjaśnienia treści SWZ"
+  - "pytania wykonawców"
+  - "modyfikacja SWZ"
+  - "zmiana OPZ na podstawie pytań"
+  - "art. 135 Pzp"
+  - "art. 284 Pzp"
+do-not-trigger-for:
+  - "brak SWZ — najpierw przygotuj SWZ"
+  - "pytanie nie od wykonawcy w trybie art. 135/284 (zapytanie obywatelskie, kontrola UZP, udostępnienie protokołu)"
+  - "postępowania zagraniczne poza polskim Pzp"
+  - "weryfikacja oferty wykonawcy — użyj analyzing-pzp-offers"
+  - "pisma do wykonawcy (wezwania, odrzucenia) — użyj drafting-pzp-letters"
+model: claude-opus-4-7
+allowed-tools: ['Bash', 'Read', 'Write', 'Glob', 'Grep', 'TodoWrite']
+sources:
+  - DOC/material_skill.md
+  - DOC/since_skill.md
+  - DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md
+size-limit: 500-lines-hard
 ---
 
 # Odpowiedzi na pytania wykonawców (Pzp)
@@ -33,8 +54,10 @@ Systematyczny workflow przygotowania **projektu odpowiedzi Zamawiającego** na p
 
 - User nie ma jeszcze SWZ — najpierw uruchom skill `feature-planner` lub przygotuj SWZ ręcznie.
 - Pytanie nie pochodzi od wykonawcy w trybie art. 135 / art. 284 Pzp (np. zapytanie obywatelskie, pytanie kontrolne UZP, prośba o udostępnienie protokołu) — to wymaga osobnego trybu odpowiedzi.
-- Odpowiedź wymagałaby istotnej zmiany charakteru zamówienia — eskalacja do **decyzji Zamawiającego** (komisja przetargowa + kierownik), nie automatyczna odpowiedź.
+- Odpowiedź wymagałaby istotnej zmiany charakteru zamówienia — eskalacja do **decyzji Zamawiającego** (komisja przetargowa + kierownik), nie automatyczna odpowiedź. (Wykrywane w trakcie — Phase 4.5 STOP-gate; dlatego nie jest to negative trigger pre-aktywacyjny.)
 - Postępowania zagraniczne poza polskim Pzp.
+- Weryfikacja oferty wykonawcy — użyj `analyzing-pzp-offers`.
+- Pisma do wykonawcy (wezwania, odrzucenia) — użyj `drafting-pzp-letters`.
 
 ## Required Inputs — ZAWSZE dopytaj, jeśli brakuje
 
@@ -64,6 +87,20 @@ flowchart TD
     P6 --> P7["Phase 7: Kontrola jakości"]
     P7 --> Done(["7 plików w odpowiedzi_<data>/"])
 ```
+
+**Exit criteria per faza** (mierzalny artefakt — nie przechodź dalej bez niego):
+
+| Faza | Exit |
+| --- | --- |
+| 0 | SWZ + pytania potwierdzone (STOP, jeśli brak pytań); `<output_dir>` utworzony; metryka postępowania ustalona. **Utwórz `TodoWrite` z fazami 0–7.** |
+| 1 | `00_indeks_dokumentow.md` z tabelą wszystkich dokumentów + oznaczeniem „zawiera Q&A". |
+| 2 | `01_rejestr_pytan.md` — każde pytanie z obszarem (słownik) i statusem; pytania złożone rozbite na sub-pytania. |
+| 3 | `02_analiza_hipotez.md` — 3 hipotezy per (sub-)pytanie z oceną skutków. |
+| 4 | Rekomendowane stanowisko per pytanie + status eskalacji. |
+| 4.5 | Wszystkie eskalacje rozstrzygnięte decyzją usera **albo** oznaczone „[w opracowaniu]" (Iron Law — bez zgadywania). |
+| 5 | `03_odpowiedzi_dla_wykonawcow.md` — finalne odpowiedzi (formuła Zamawiającego, cytat pytania w całości, bez ujawnienia wykonawcy). |
+| 6 | `04_zmiany_dokumentacji.md` — per zmiana: brzmienie stare/nowe + wpływ na termin/ogłoszenie + podstawa prawna. |
+| 7 | Checklista jakości ✅ (Definition of Done); `05_raport_ryzyk.md` + `06_wersja_do_akceptacji.md` wytworzone; 0 placeholderów `<<…>>`. |
 
 ### Phase 0 — Walidacja wejścia
 
@@ -280,7 +317,7 @@ W `04_zmiany_dokumentacji.md` per każda odpowiedź skutkująca zmianą dokument
 
 ### Phase 7 — Kontrola jakości i wytworzenie pozostałych plików
 
-**Lista kontrolna przed zapisaniem:**
+**Definition of Done — lista kontrolna przed zapisaniem** (skill nie deklaruje „gotowe" bez wszystkich ✅):
 
 - [ ] Każda odpowiedź zaczyna się od formuły Zamawiającego.
 - [ ] Każde pytanie zostało przytoczone w całości (cytat blokowy `>`).
@@ -335,23 +372,14 @@ W finalnej odpowiedzi do wykonawców (`03_odpowiedzi_dla_wykonawcow.md`) **nie u
 
 ## Mapowanie pytań na artykuły Pzp
 
-> [!info] Pełna mapa kluczowych artykułów ustawy Pzp dla każdego obszaru pytania — `references/pzp-articles-map.md`. Skróconą tabelę masz poniżej.
+**Załaduj `references/pzp-articles-map.md`** dla pełnej mapy obszar→artykuły (OPZ, równoważność, ś.d., wykluczenie, kryteria, umowa, wadium). Rdzeń terminowy (najczęstszy) poniżej:
 
-| Obszar pytania | Kluczowe artykuły Pzp | Uwaga |
+| Obszar | Kluczowe artykuły | Uwaga |
 | --- | --- | --- |
 | Wyjaśnienia treści SWZ — termin | art. 135 / art. 284 | sprawdź czy ≥/< progi unijne |
 | Zmiana SWZ | art. 137 / art. 286 | sprawdź wpływ na ogłoszenie |
-| Opis przedmiotu zamówienia | art. 99 | szczególnie ust. 4–6 (równoważność, znaki towarowe) |
-| Równoważność / normy | art. 101 / art. 102 | obligatoryjne dopuszczenie równoważnych, jeśli OPZ powołuje znak towarowy / normę |
-| Przedmiotowe środki dowodowe | art. 104–107 | art. 107 ust. 2 (uzupełnienie) i ust. 3 (kryteria oceny — bez uzupełniania) |
-| Podmiotowe środki dowodowe | art. 124–128 | art. 128 ust. 1 (uzupełnienie min. 5 dni) i ust. 3 (selekcja — bez uzupełniania) |
-| Podstawy wykluczenia | art. 108–111 + sankcje | self-cleaning art. 110 — tylko niektóre przesłanki |
-| Warunki udziału | art. 112–117 | proporcjonalność |
-| Kryteria oceny ofert | art. 239–253 | nie zmieniać po wszczęciu, chyba że art. 137 |
-| Termin składania ofert | art. 132 / art. 283 / **art. 135 ust. 3** / **art. 137 ust. 6** / **art. 284 ust. 3** / **art. 286 ust. 3** | przedłużenie obligatoryjne, gdy zmiana SWZ istotna albo Zamawiający spóźnił się z wyjaśnieniami |
-| Termin związania ofertą | art. 220 | art. 220 ust. 3 — przedłużenie min. 3 dni |
-| Umowa — klauzule | art. 431–456 | klauzule obligatoryjne (art. 433, 436, 439) |
-| Wadium | art. 97–98 | termin wniesienia, formy, zwrot |
+| Termin składania ofert | **art. 135 ust. 3** / **art. 137 ust. 6** / **art. 284 ust. 3** / **art. 286 ust. 3** | przedłużenie obligatoryjne (zmiana SWZ istotna albo spóźnienie z wyjaśnieniami) |
+| Równoważność / OPZ | art. 99 ust. 4–6 / art. 101–102 | obligatoryjne dopuszczenie równoważnych przy znaku towarowym / normie |
 
 ## Krytyczne reguły — BEZWZGLĘDNE
 
@@ -409,81 +437,44 @@ W finalnej odpowiedzi do wykonawców (`03_odpowiedzi_dla_wykonawcow.md`) **nie u
 | Sprzeczność z poprzednią turą Q&A bez sprostowania | Zawsze sprawdź wcześniejsze odpowiedzi. Sprostowanie ma własną formułę. |
 | Brak adnotacji o decyzji wymagającej zatwierdzenia | Status `wymaga decyzji Zamawiającego` w `01_rejestr_pytan.md` + lista decyzji w `06_wersja_do_akceptacji.md`. |
 
-## Red Flags — STOP and restart
+## Anti-Rationalization — blokady na drogi-na-skróty
 
-- „To pytanie wpłynęło po terminie z art. 135 ust. 2 — pomijam" → NIE. Nawet jeśli Zamawiający nie ma obowiązku, sprawdź z perspektywy zasady równego traktowania (art. 16 pkt 1) — często warto odpowiedzieć.
-- „Dopuszczę rozwiązanie X tylko temu wykonawcy" → NIE. Każda odpowiedź pozytywna obowiązuje wszystkich.
-- „Wystarczy odpowiedzieć w mailu" → NIE. Pisemność postępowania (art. 20) i równe traktowanie wymagają publikacji na platformie zakupowej.
-- „Skopiuję odpowiedź z innego postępowania" → NIE. Każde postępowanie ma własną SWZ; analogie dopuszczalne tylko jako inspiracja, nie jako gotowa treść.
-- „Pominę zmianę OPZ — i tak wszyscy zrozumieją" → NIE. Bez pisemnej zmiany OPZ wykonawcy mają prawo opierać się na pierwotnym brzmieniu.
-- „Zamiast ujednolicić sprzeczność z wcześniejszą turą — udam, że jej nie ma" → NIE. Sprostowanie z formułą „Zamawiający dokonuje sprostowania wyjaśnień z dnia […]".
-- „Dopuszczę produkt Y, bo jeden z wykonawców go zaproponował" — bez sprawdzenia, czy spełnia parametry — NIE. Albo dopuszczasz wszystkie spełniające kryteria równoważności (z katalogiem), albo nie dopuszczasz wcale.
-- „Pytanie dotyczy parametru SLA — odpowiem ad hoc" → NIE. SLA, integracja, cyberbezpieczeństwo to obszary z `wymaga konsultacji technicznej` — eskalacja.
+Riposta = **blokada, nie sugestia**.
+
+| Wymówka | Riposta (blokada) |
+| --- | --- |
+| „Pytanie po terminie z art. 135 ust. 2 — pomijam" | Odrzucono. Sprawdź z perspektywy równego traktowania (art. 16 pkt 1) — brak obowiązku ≠ zakaz; często należy odpowiedzieć. |
+| „Dopuszczę rozwiązanie X tylko temu wykonawcy" | Odrzucono. Każda odpowiedź pozytywna obowiązuje **wszystkich** (art. 16 pkt 1). |
+| „Wystarczy odpowiedzieć w mailu" | Odrzucono. Pisemność postępowania (art. 20) + równe traktowanie = publikacja na platformie zakupowej. |
+| „Skopiuję odpowiedź z innego postępowania" | Odrzucono. Każde postępowanie ma własną SWZ; analogia = inspiracja, nie gotowa treść. |
+| „Pominę zmianę OPZ — wszyscy zrozumieją" | Odrzucono. Bez pisemnej zmiany OPZ wykonawcy opierają się na pierwotnym brzmieniu. |
+| „Sprzeczność z wcześniejszą turą — udam, że jej nie ma" | Odrzucono. Sprostowanie z formułą „Zamawiający dokonuje sprostowania wyjaśnień z dnia […]". |
+| „Dopuszczę produkt Y, bo wykonawca go zaproponował" | Odrzucono. Albo dopuszczasz wszystkie spełniające kryteria równoważności (z katalogiem), albo żadnego. |
+| „Parametr SLA — odpowiem ad hoc" | Odrzucono. SLA, integracja, cyberbezpieczeństwo = `wymaga konsultacji technicznej` → eskalacja (Phase 4.5). |
+| „Wypełnię brakującą decyzję własną rekomendacją" | Odrzucono. Iron Law Phase 4.5 — bez decyzji pytanie zostaje „[w opracowaniu]", nie zgadujesz za Zamawiającego. |
 
 ## Naming Conventions
 
-**Folder wynikowy:** `<folder_pzp>/odpowiedzi_<RRRR-MM-DD>/`
-
-**Pliki w folderze:**
-
-```
-odpowiedzi_2026-04-27/
-├── 00_indeks_dokumentow.md
-├── 01_rejestr_pytan.md
-├── 02_analiza_hipotez.md
-├── 03_odpowiedzi_dla_wykonawcow.md
-├── 04_zmiany_dokumentacji.md
-├── 05_raport_ryzyk.md
-└── 06_wersja_do_akceptacji.md
-```
+**Folder wynikowy:** `<folder_pzp>/odpowiedzi_<RRRR-MM-DD>/` — pliki `00_…`–`06_…` jak w sekcji „Format wyniku" (numeracja `_` zachowana zgodnie z istniejącą konwencją plików roboczych).
 
 **Numeracja pytań:** `Q01`, `Q02` itd. (z prefiksem `Q` aby uniknąć konfliktu z punktami SWZ). Jeśli pytania pochodzą z wielu plików — kontynuuj numerację (`Q01–Q05` z `pytania-1.docx`, `Q06–Q09` z `pytania-2.docx`).
 
-**Tagi w plikach roboczych (frontmatter):**
+**Frontmatter plików roboczych** — wzorzec w każdym `templates/0N_*.md`. Pola obligatoryjne: `sygnatura_postepowania`, `postepowanie`, `zamawiajacy`, `data_wyjasnien`, `typ_dokumentu` (indeks-dokumentow | rejestr-pytan | analiza-hipotez | odpowiedzi-publikacja | zmiany-dokumentacji | raport-ryzyk | akceptacja), `status`, `autor`, `prog_unijny` (tak|nie), `podstawa_prawna_terminu`, `tags` (`pzp/wyjasnienia`, `pzp/sygnatura/<slug>`).
 
-```yaml
----
-sygnatura_postepowania: BL-V.2371.3.2026
-postepowanie: "[krótka nazwa, np. B10: HPC/AI dla SOiA]"
-zamawiajacy: Komenda Główna Państwowej Straży Pożarnej
-data_wyjasnien: 2026-04-27
-typ_dokumentu: [indeks-dokumentow|rejestr-pytan|analiza-hipotez|odpowiedzi-publikacja|zmiany-dokumentacji|raport-ryzyk|akceptacja]
-status: draft
-autor: claude@kg.straz.gov.pl
-prog_unijny: tak  # tak | nie
-podstawa_prawna_terminu:
-  - "art. 135 ustawy z dnia 11 września 2019 r. — Prawo zamówień publicznych (Dz.U. 2024 poz. 1320 ze zm.)"
-tags:
-  - pzp/wyjasnienia
-  - pzp/sygnatura/BL-V-2371-3-2026
----
-```
+## Supporting Files — reguły ładowania (Progressive Disclosure)
 
-## Supporting Files
+Reguła aktywacji L3: **imperatyw, nie decyzja modelu.**
 
-- `references/prawo-index.md` — mapa dokumentów źródłowych z folderu PRAWO (ustawa, regulamin KG PSP, szablony umów, wzory wniosków, zasady redakcji) z opisem czego dotyczą i kiedy używać. **Czytaj zawsze przed Phase 1.**
-- `references/pzp-articles-map.md` — pełna mapa kluczowych artykułów ustawy Pzp dla pytań Q&A. **Czytaj przy Phase 3 dla pytań niestandardowych.**
-- `references/style-guide.md` — formuły wprowadzające + lista zwrotów zakazanych + przykłady poprawnych i błędnych odpowiedzi. **Czytaj przed Phase 5.**
-- `references/workflow-3-hipotez.md` — szczegółowa metodyka analizy 3 hipotez per obszar pytania. **Czytaj przy pytaniach niestandardowych w Phase 3.**
-- `templates/00_indeks_dokumentow.md` — szablon.
-- `templates/01_rejestr_pytan.md` — szablon.
-- `templates/02_analiza_hipotez.md` — szablon.
-- `templates/03_odpowiedzi_dla_wykonawcow.md` — szablon.
-- `templates/04_zmiany_dokumentacji.md` — szablon.
-- `templates/05_raport_ryzyk.md` — szablon.
-- `templates/06_wersja_do_akceptacji.md` — szablon.
+| Warunek | Instrukcja |
+| --- | --- |
+| Przed **Phase 1** (indeksacja) | Załaduj `references/prawo-index.md` (mapa dokumentów źródłowych PRAWO: ustawa, regulamin KG PSP, szablony umów, zasady redakcji). |
+| **Phase 3** — pytanie niestandardowe / brak jednoznacznej rekomendacji | Załaduj `references/workflow-3-hipotez.md` (metodyka 3 hipotez per obszar) i `references/pzp-articles-map.md` (pełna mapa artykułów). |
+| Przed **Phase 5** (projekt odpowiedzi) | Załaduj `references/style-guide.md` (formuły, zwroty zakazane, przykłady). |
+| **Phase 1, 3, 5, 7** — generujesz plik wynikowy | Skopiuj odpowiedni `templates/0N_*.md` (00–06) i wypełniaj pola. |
 
 ## Output (na zakończenie pracy)
 
-Na końcu — krótkie podsumowanie do user-a:
-
-- liczba przeanalizowanych dokumentów,
-- liczba zidentyfikowanych pytań (per plik źródłowy),
-- liczba przygotowanych odpowiedzi w podziale: pozytywne / negatywne / kompromisowe / podtrzymanie zapisów,
-- liczba odpowiedzi wymagających zmiany dokumentacji,
-- lista utworzonych plików (00–06),
-- lista kwestii wymagających decyzji Zamawiającego (z `06_wersja_do_akceptacji.md`),
-- rekomendacja co do przedłużenia terminu składania ofert (TAK/NIE + nowa data, jeśli TAK).
+Krótkie podsumowanie do user-a: liczba dokumentów i pytań (per plik źródłowy); rozkład odpowiedzi (pozytywne / negatywne / kompromisowe / podtrzymanie); liczba zmian dokumentacji; lista plików 00–06; lista decyzji Zamawiającego (z `06_wersja_do_akceptacji.md`); rekomendacja przedłużenia terminu składania ofert (TAK/NIE + nowa data).
 
 ## The Iron Law
 

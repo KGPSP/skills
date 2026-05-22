@@ -2,6 +2,81 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-22] weryfikacja-umow-pzp v1.1.0 — domknięcie zgodności z DOC
+
+### Fixed
+
+- **`pzp/weryfikacja-umow-pzp/`** — najpoważniejsze naruszenie z całej domeny PZP: **SKILL.md 703 → 480 linii** (twardy limit ≤500). Ciężkie bloki wyniesione do `references/` (`sed`, bajt-w-bajt): `legal-basis-catalog.md` (art. 431–465 + k.c./RODO/KSC/pr.aut.), `edge-cases.md` (18 + Common Mistakes), `format-obsidian.md`, `kg-psp-integration.md`.
+- **Ścieżka absolutna `/Users/mklosinski/…`** → `{prawo_dir}`.
+
+### Changed
+
+- **Frontmatter kanoniczny:** `trigger:`, `do-not-trigger-for:` (§7), `model:`, `allowed-tools:` (bez `Edit`), `sources:` (→ DOC), `size-limit:`.
+- **Filar 1** — skonsolidowana tabela **exit criteria** faza→artefakt + `TodoWrite`.
+- **Filar 2** — Red Flags → tabela **Anti-Rationalization** (9 wymówek).
+- **Filar 3** — Deliverables Checklist oznaczona jako **Definition of Done**.
+- **Filar 4** — `verification-prompt.md` → `references/` (`git mv`, §1/§10); Supporting Files → tabela **reguł ładowania L3 imperatywnych** (§5); **frontmatter referencji** w 5 plikach `references/` (§10).
+- Bez zmian merytorycznych (katalog art. 431–465, 18 edge cases, P1–P7/R1–R4, Iron Law — przeniesione 1:1 do `references/`). SKILL.md 480 linii (≤500).
+
+## [2026-05-22] odpowiedzi-pytania v1.1.0 — domknięcie zgodności z DOC
+
+### Fixed
+
+- **`pzp/odpowiedzi-pytania/`** — trzy bugi przy okazji audytu DOC:
+  - latent bug YAML: `description` miał `… \`odpowiedzi_<RRRR-MM-DD>/\`: indeks…` (dwukropek+spacja → rozsypywał frontmatter po dodaniu pól). Zamienione na `—`.
+  - ścieżki absolutne `/Users/sq13pl/…` w referencjach (`prawo-index.md`, `pzp-articles-map.md`) → `{prawo_dir}` (§4).
+  - over-exclusion w `do-not-trigger-for` („istotna zmiana charakteru" — wykrywane w Phase 4.5, nie pre-aktywacyjnie) usunięte; body „When NOT to Use" zsynchronizowane.
+
+### Changed
+
+- **Frontmatter kanoniczny:** `trigger:`, `do-not-trigger-for:` (§7), `model:`, `allowed-tools:` (`Bash`/`Read`/`Write`/`Glob`/`Grep`/`TodoWrite`, bez `Edit`), `sources:` (→ DOC), `size-limit:`.
+- **Filar 1** — skonsolidowana tabela **exit criteria** faza→artefakt + nakaz `TodoWrite`.
+- **Filar 2** — Red Flags → kanoniczna tabela **Anti-Rationalization** (9 wymówek).
+- **Filar 3** — Phase 7 oznaczona jako **Definition of Done**.
+- **Filar 4** — Supporting Files → tabela **reguł ładowania L3 imperatywnych** (§5); **frontmatter referencji** w 4 plikach `references/` (§10) — struktura `references/` była poprawna od początku.
+- SKILL.md 483 linie (≤500; miejsce na frontmatter odzyskane kompresją duplikatów — pełna mapa artykułów w `references/pzp-articles-map.md`). Bez zmian merytorycznych (Phase 4.5 STOP-gate, reguły terminowe art. 135/137/284/286, 11 reguł bezwzględnych, Iron Law).
+
+## [2026-05-21] drafting-pzp-letters v1.1.0 — domknięcie zgodności z DOC
+
+### Fixed
+
+- **`pzp/drafting-pzp-letters/`** — dwa bugi przy okazji audytu DOC:
+  - **Ścieżka absolutna** w Phase 4 (`/Users/mklosinski/…/wzor_pismo_przewodnie.docx`, cudze konto) → parametr `<template_docx>` w Required Inputs.
+  - **Niepoprawny YAML** `description` (`Triggers include:` → `Triggers include —`); frontmatter teraz parsuje się czysto.
+  - Exec-bit `scripts/render_docx.py` `100644` → `100755`.
+
+### Changed
+
+- **Frontmatter kanoniczny:** `trigger:`, `do-not-trigger-for:` (§7), `model:`, `allowed-tools:` (`Bash`/`Read`/`Write`/`Glob`/`Grep`/`TodoWrite`, bez `Edit` na kodzie), `sources:` (→ DOC), `size-limit:`.
+- **Filar 1** — exit criteria po fazach 0–5 + nakaz `TodoWrite`.
+- **Filar 2** — Red Flags → kanoniczna tabela **Anti-Rationalization** (`Wymówka | Riposta`, 10 wymówek).
+- **Filar 3** — dodana **Definition of Done** (checklista pakietu pism).
+- **Filar 4** — heavy references przeniesione do **`references/`** (`git mv`, §1/§10); Supporting Files → tabela **reguł ładowania L3 imperatywnych** (§5) + jawne ładowanie w Phase 2; **frontmatter referencji** w obu plikach (§10).
+- Bez zmian merytorycznych (tabela decyzyjna F→pismo, reguły grupowania/eskalacji, self-cleaning, Iron Law). SKILL.md 398 linii (≤500).
+
+## [2026-05-21] analyzing-pzp-offers v1.1.0 — domknięcie zgodności z DOC
+
+### Changed
+
+- **`pzp/analyzing-pzp-offers/`** — audyt względem `DOC/` i naprawa formalnych niezgodności (bez zmian merytorycznych: 18 edge cases, podstawy prawne Pzp/KSC, Iron Law nietknięte).
+  - **Frontmatter kanoniczny:** dodane `trigger:`, **`do-not-trigger-for:`** (§7, z „When NOT to Use"), `model:`, `allowed-tools:` (`Bash`/`Read`/`Write`/`Glob`/`Grep`/`TodoWrite`, bez `Edit` na kodzie), `sources:` (→ DOC), `size-limit:`.
+  - **Filar 1** — **exit criteria** po fazach 0–5 + nakaz `TodoWrite`.
+  - **Filar 2** — Red Flags → kanoniczna tabela **Anti-Rationalization** (`Wymówka | Riposta`, 9 wymówek domenowych).
+  - **Filar 3** — „Deliverables Checklist" oznaczona jako **Definition of Done**.
+  - **Filar 4** — Supporting Files → tabela **reguł ładowania L3**; heavy reference przeniesiony do **`references/`** (`git mv`, §1/§10): `references/verification-prompt.md` (odwołania w SKILL.md + templatach zaktualizowane); **frontmatter referencji** (`type: reference`, `parent`, `sources:` → §DOC).
+  - Body „When NOT to Use" zsynchronizowane z `do-not-trigger-for`. SKILL.md 499 linii (limit ≤500, margines 1 linia → konsolidacja „Common Mistakes" zaplanowana na v1.2.0).
+
+## [2026-05-21] opinie-prawne v1.1.0 — domknięcie zgodności z DOC
+
+### Changed
+
+- **`legal/opinie-prawne/`** — audyt względem `DOC/` i naprawa formalnych niezgodności (bez zmian merytorycznych w metodzie prawnej).
+  - **Frontmatter kanoniczny:** dodane `trigger:`, **`do-not-trigger-for:`** (brakujące Negative Triggers — §7), `model:`, `allowed-tools:` (research+analiza, bez `Edit`/`Bash` na kodzie), `sources:` (→ DOC), `size-limit: 500-lines-hard`.
+  - **Filar 2** — kanoniczna tabela **Anti-Rationalization** (`Wymówka | Riposta`, 8 wymówek domenowych) obok istniejących Red flags i Zakazów.
+  - **Filar 1** — **exit criteria** po każdym z 9 kroków metody + checklista **Definition of Done** (8 pozycji).
+  - **Filar 4** — jawne **reguły ładowania L3** (tabela „załaduj gdy") + **frontmatter referencji** (`type: reference`, `parent`, `sources:` → sekcje DOC z numerem §) w obu plikach `references/` (§10).
+  - SKILL.md 464 linie (limit ≤500).
+
 ## [2026-05-21] planner-f v1.0.0 — planning-only wariant feature-planner-v3
 
 ### Added

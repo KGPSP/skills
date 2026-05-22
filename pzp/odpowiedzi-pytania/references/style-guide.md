@@ -1,3 +1,14 @@
+---
+name: style-guide
+type: reference
+parent: odpowiedzi-pytania
+loaded-when: "Przed Phase 5 (projekt odpowiedzi) — formuły wprowadzające Zamawiającego, zwroty zakazane, przykłady poprawnych i błędnych odpowiedzi"
+sources:
+  - "DOC/since_skill.md §6 (Token budget / Progressive Disclosure — wydzielenie style guide do pliku L3)"
+  - "DOC/material_skill.md §2 (Process over Prose — deterministyczne formuły zamiast uznaniowego stylu)"
+note: "Treść merytoryczna = wzorce stylu odpowiedzi Zamawiającego (benchmark KG PSP); struktura referencji wynika z pryncypiów DOC."
+---
+
 # Style guide — formuły, zwroty zakazane, przykłady
 
 Styl odpowiedzi Zamawiającego w postępowaniu o udzielenie zamówienia publicznego: krótko, jednoznacznie, normatywnie, urzędowo, spójnie terminologicznie z SWZ/OPZ/umową, bez komentarzy doradczych.

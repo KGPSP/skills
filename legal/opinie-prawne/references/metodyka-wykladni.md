@@ -1,3 +1,14 @@
+---
+name: metodyka-wykladni
+type: reference
+parent: opinie-prawne
+loaded-when: "Krok 4–5 — wykładnia niejednoznaczna, kolizja norm lub potrzeba skali pewności"
+sources:
+  - "DOC/since_skill.md §6 (Token budget / Progressive Disclosure — wydzielenie protokołu do references/)"
+  - "DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md §5 (reguła aktywacji L3)"
+note: "Treść merytoryczna = doktryna prawnicza (metody wykładni, reguły kolizyjne); struktura referencji wynika z pryncypiów DOC."
+---
+
 # Metodyka wykładni prawa — referencja
 
 ## 1. Wykładnia językowa (gramatyczna)

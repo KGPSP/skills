@@ -1,7 +1,30 @@
 ---
 name: drafting-pzp-letters
-version: v1.0.0
-description: Use when preparing pisma proceduralne (wezwania do uzupełnienia/wyjaśnień, informacje o odrzuceniu oferty, informacje o wykluczeniu wykonawcy, zawiadomienia o poprawie omyłki, wybór/unieważnienie) w postępowaniach o udzielenie zamówienia publicznego (PZP) na podstawie analizy oferty wygenerowanej skillem analyzing-pzp-offers. Triggers include: "przygotuj wezwanie", "napisz pismo do wykonawcy", "informacja o odrzuceniu", "wezwanie do uzupełnienia", "odrzuć ofertę", "wykluczenie wykonawcy", "poprawa omyłki", gdy user wskazuje folder z raportem analizy (03-braki-i-niezgodnosci-*.md, 05-ocena-ryzyka-*.md) lub wprost opisane znaleziska F1-F6. Produkuje pisma w formatach .md (do review) + .docx (osadzone w szablonie EZD KG PSP wzor_pismo_przewodnie.docx), z dokładną podstawą prawną i cytatami źródeł.
+version: v1.1.0
+description: Use when preparing pisma proceduralne (wezwania do uzupełnienia/wyjaśnień, informacje o odrzuceniu oferty, informacje o wykluczeniu wykonawcy, zawiadomienia o poprawie omyłki, wybór/unieważnienie) w postępowaniach o udzielenie zamówienia publicznego (PZP) na podstawie analizy oferty wygenerowanej skillem analyzing-pzp-offers. Triggers include — "przygotuj wezwanie", "napisz pismo do wykonawcy", "informacja o odrzuceniu", "wezwanie do uzupełnienia", "odrzuć ofertę", "wykluczenie wykonawcy", "poprawa omyłki", gdy user wskazuje folder z raportem analizy (03-braki-i-niezgodnosci-*.md, 05-ocena-ryzyka-*.md) lub wprost opisane znaleziska F1-F6. Produkuje pisma w formatach .md (do review) + .docx (osadzone w szablonie EZD KG PSP wzor_pismo_przewodnie.docx), z dokładną podstawą prawną i cytatami źródeł.
+trigger:
+  - "przygotuj wezwanie"
+  - "napisz pismo do wykonawcy"
+  - "informacja o odrzuceniu oferty"
+  - "wezwanie do uzupełnienia"
+  - "odrzuć ofertę"
+  - "wykluczenie wykonawcy"
+  - "poprawa omyłki"
+  - "zawiadomienie o wyborze / unieważnieniu postępowania"
+do-not-trigger-for:
+  - "brak analizy oferty — uruchom najpierw analyzing-pzp-offers"
+  - "postępowania zagraniczne poza polskim PZP"
+  - "pisma nienormatywne (korespondencja bieżąca, zapytania pozaproceduralne)"
+  - "pismo, dla którego materiał nie daje podstaw prawnych — zamiast pisać pro forma, wypisz brak podstaw"
+  - "weryfikacja oferty / badanie zgodności — to robi analyzing-pzp-offers"
+  - "weryfikacja projektu umowy — użyj weryfikacja-umow-pzp"
+model: claude-opus-4-7
+allowed-tools: ['Bash', 'Read', 'Write', 'Glob', 'Grep', 'TodoWrite']
+sources:
+  - DOC/material_skill.md
+  - DOC/since_skill.md
+  - DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md
+size-limit: 500-lines-hard
 ---
 
 # Drafting PZP Letters (projekt pism proceduralnych PZP)
@@ -41,6 +64,7 @@ Systematyczny workflow opracowywania pism proceduralnych kierowanych do wykonawc
 3. **`<letter_date>`** — (opcjonalne, default: dzisiejsza data z kontekstu `currentDate`) — data pisma.
 4. **`<signatory>`** — (opcjonalne, default: z auto-memory użytkownika; dla KG PSP: `Michał Kłosiński, Dyrektor Biura Informatyki i Łączności KG PSP, mł. bryg. mgr inż.`) — osoba podpisująca pismo. **Obligatoryjna adnotacja w metryce** jeśli użyto wartości domyślnej.
 5. **`<announcement_dir>`** — (opcjonalne) — folder z oryginalną dokumentacją postępowania, do weryfikacji cytatów oferty/SWZ. Bez niego skill korzysta wyłącznie z cytatów już skatalogowanych w `06-cytaty-i-zrodla-<slug>.md` (jeśli dostępne).
+6. **`<template_docx>`** — ścieżka do szablonu EZD KG PSP `wzor_pismo_przewodnie.docx` używanego w Phase 4 (render). **Nie zakładaj ścieżki na sztywno** — zapytaj usera o lokalizację szablonu (zwykle w vault Obsidian: `…/PROJEKTY/PZP/wzor_pismo_przewodnie.docx`) lub przyjmij wartość z memory/kontekstu usera. Jeśli nieznana — STOP przed Phase 4 i dopytaj.
 
 Jeżeli user nie podał żadnej ścieżki — wypisz drzewostan katalogów nadrzędnych i zapytaj o konkretny folder. NIE zgaduj.
 
@@ -65,6 +89,8 @@ flowchart TD
 4. Utwórz `<output_dir>` (`mkdir -p`) jeśli nie istnieje.
 5. Jeśli nie podano `<signatory>` — użyj wartości z memory użytkownika (dla KG PSP: Michał Kłosiński, DBIŁ, mł. bryg. mgr inż.). Zaznacz ten fakt na liście adnotacji do `00-metryka-pism-<slug>.md`.
 
+**Exit:** `03-braki-*.md` potwierdzony (STOP, jeśli brak); metryka postępowania wyciągnięta z frontmatter; `<output_dir>` i `<template_docx>` ustalone. **Utwórz listę `TodoWrite` z fazami 0–5** i aktualizuj po każdej.
+
 ### Phase 1 — Ekstrakcja znalezisk
 
 Z `03-braki-i-niezgodnosci-<slug>.md` wyciągnij, dla każdego callouta:
@@ -79,7 +105,11 @@ Z `05-ocena-ryzyka-<slug>.md` wyciągnij: macierz prawdopodobieństw scenariuszy
 
 **Red flag:** Jeśli kuszą cię uproszczenia („wiem co w tym jest") — NIE. Przeczytaj `03-braki-*.md` punkt po punkcie. Skill korzysta wyłącznie z literalnej treści callout-ów.
 
+**Exit:** lista znalezisk z kompletem 6 pól (kod, kategoria F, cytat wymogu, cytat stanu faktycznego, podstawa prawna, sugerowane działanie); sekwencja prawna z `05-ocena-ryzyka-*.md` odczytana.
+
 ### Phase 2 — Kwalifikacja prawna i grupowanie
+
+**Załaduj teraz `references/letter-types.md` i `references/legal-basis-catalog.md`** — bez nich nie kwalifikuj (tabela decyzyjna, reguły grupowania, literalne podstawy prawne i orzecznictwo KIO są tam, nie w SKILL.md).
 
 Zastosuj tabelę decyzyjną:
 
@@ -115,6 +145,8 @@ Zastosuj tabelę decyzyjną:
 - **F2p (przedmiotowe ś.d.) → przed W02 sprawdź, czy SWZ przewiduje uzupełnianie (art. 107 ust. 2 Pzp).** Jeśli SWZ milczy — odrzucenie (O01, art. 226 ust. 1 pkt 5) zamiast W02. Wyjątek art. 107 ust. 3: jeśli ś.d. służy kryteriom oceny — zawsze odrzucenie, nigdy uzupełnienie.
 - **F2 (podmiotowe ś.d. / JEDZ) → przed W01 sprawdź, czy uzupełnienie nie służy potwierdzeniu kryteriów selekcji (art. 128 ust. 3 Pzp).** Jeśli tak — W01 niedopuszczalne; zamiast tego odrzucenie z art. 226 ust. 1 pkt 2 lit. c lub analogiczne.
 
+**Exit:** każde znalezisko zmapowane na typ pisma + template + podstawę prawną + termin; znaleziska zgrupowane wg reguł MANDATORY (jedna podstawa = jedno pismo); eskalacje (F4→W03, F5w→self-cleaning, F2p→art. 107 ust. 2) rozstrzygnięte.
+
 ### Phase 3 — Projekt treści `.md` pisma
 
 Dla każdego zgrupowanego zbioru znalezisk:
@@ -136,16 +168,20 @@ Dla każdego zgrupowanego zbioru znalezisk:
 4. **Output:** plik `.md` w `<output_dir>/<KOD>-<typ>-<slug-wykonawcy>.md` (np. `W03-wyjasnienia-tresci-oferty-wasko.md`).
 5. **Cytaty:** każde zdanie normatywne MUSI mieć źródło. Zero „wydaje się", „prawdopodobnie", „można przypuszczać".
 
+**Exit:** plik `.md` per pismo z kompletną strukturą (wstęp normatywny → stan faktyczny z cytatami → żądanie → termin → pouczenie → podpis); 0 placeholderów `<<…>>`; jedna podstawa prawna na pismo.
+
 ### Phase 4 — Render `.docx`
 
 Uruchom `scripts/render_docx.py` dla każdego `.md`:
 
 ```bash
 python3 <skill_dir>/scripts/render_docx.py \
-  --template /Users/mklosinski/Documents/GitHub/Legitymacje_OSP/OBSIDIAN/PROJEKTY/PZP/wzor_pismo_przewodnie.docx \
+  --template <template_docx> \
   --input <output_dir>/W03-wyjasnienia-tresci-oferty-wasko.md \
   --output <output_dir>/W03-wyjasnienia-tresci-oferty-wasko.docx
 ```
+
+`<template_docx>` — ścieżka do szablonu EZD podana przez usera (Required Inputs pkt 6). Nigdy nie wpisuj ścieżki absolutnej cudzego konta na sztywno.
 
 Skrypt:
 - Kopiuje szablon.
@@ -156,6 +192,8 @@ Skrypt:
 - NIGDY nie modyfikuje szablonu bazowego.
 
 Szczegóły: `scripts/README-render.md`.
+
+**Exit:** `.docx` wygenerowany per pismo na szablonie EZD; zakładki/placeholdery podmienione; szablon bazowy nietknięty.
 
 ### Phase 5 — Metryka pism
 
@@ -202,6 +240,8 @@ tags:
 - [[05-ocena-ryzyka-wasko]]
 - [[01-raport-glowny-wasko]]
 ```
+
+**Exit:** `00-metryka-pism-<slug>.md` z zestawieniem wszystkich pism, sekwencją wysyłki i adnotacją o signatory; zob. „Definition of Done".
 
 ## Citation Format (OBLIGATORYJNY)
 
@@ -310,26 +350,46 @@ tags:
 | Placeholder `<<...>>` w gotowym pliku | Wszystkie wypełnione LUB sekcja usunięta jako „nie dotyczy" |
 | Brak ostrzeżenia o signatory domyślnym | Obligatoryjny callout `[!warning]` w metryce |
 
-## Red Flags — STOP and restart
+## Anti-Rationalization — blokady na drogi-na-skróty
 
-- „Napiszę jedno pismo ze wszystkim" — NIE. Rozdziel wg podstawy prawnej.
-- „Zintegruję wyjaśnienia + uzupełnienia w jednym piśmie (ekonomika procesowa)" — **NIE. To najczęstsza rationalizacja, która narusza art. 223 ust. 1 w relacji do art. 128 ust. 1 Pzp.** „Ekonomika procesowa" nie uzasadnia mieszania instytucji prawnych — to różne tryby, różne terminy (wezwanie do wyjaśnień wyznaczany przez zamawiającego; uzupełnienie min. 5 dni), różne skutki (wyjaśnienia nie zmieniają treści oferty; uzupełnienie zastępuje / dopełnia dokumenty). Osobne pisma.
-- „F4 = odrzucenie, od razu O01" — NIE. Najpierw W03 (wyjaśnienia).
-- „JEDZ jest negatywny, wykluczam" — NIE. Sprawdź self-cleaning.
-- „SWZ pewnie przewiduje uzupełnianie przedmiotowych ś.d." — NIE. Zweryfikuj literalnie.
-- „Termin 3 dni wystarczy" (dla art. 128 ust. 1) — NIE. Min. 5 dni.
-- „Cytaty się domyślą" — NIE. Każde zdanie normatywne z lokalizacją.
-- „Pominę cytowanie podstawy prawnej, wykonawca ją zna" — NIE. Pismo jest samodzielną czynnością proceduralną.
-- „Wstawię wzmiankę o wadium / RNC / wyborze do wezwania W03" — NIE. Każdy z tych trybów jest samodzielny (art. 224, art. 253) i musi być w odrębnym piśmie.
+Riposta = **blokada, nie sugestia**. Każda wymówka ma twardą konsekwencję.
 
-## Supporting Files
+| Wymówka | Riposta (blokada) |
+|---------|-------------------|
+| „Napiszę jedno pismo ze wszystkim" | Odrzucono. Rozdziel wg podstawy prawnej — jedno pismo = jedna instytucja. |
+| „Zintegruję wyjaśnienia + uzupełnienia (ekonomika procesowa)" | Odrzucono. **Najczęstsza rationalizacja — narusza art. 223 ust. 1 w relacji do art. 128 ust. 1 Pzp.** Różne tryby, różne terminy (wyjaśnienia wyznacza zamawiający; uzupełnienie min. 5 dni), różne skutki (wyjaśnienia nie zmieniają treści oferty; uzupełnienie dopełnia dokumenty). Osobne pisma. |
+| „F4 = odrzucenie, od razu O01" | Odrzucono. Najpierw W03 (wyjaśnienia); O01 dopiero po ocenie odpowiedzi. |
+| „JEDZ negatywny — wykluczam" | Odrzucono. Sprawdź self-cleaning (art. 110 Pzp) dla przesłanek nim objętych. Brak sprawdzenia = podstawa odwołania do KIO. |
+| „SWZ pewnie przewiduje uzupełnianie przedmiotowych ś.d." | Odrzucono. Zweryfikuj literalnie (art. 107 ust. 2). Milczenie SWZ → odrzucenie, nie W02. |
+| „Termin 3 dni wystarczy (art. 128 ust. 1)" | Odrzucono. Min. 5 dni — termin ustawowy, nie uznaniowy. |
+| „Cytaty się domyślą" | Odrzucono. Każde zdanie normatywne z lokalizacją `[DOC: plik] [str.]`. |
+| „Pominę podstawę prawną — wykonawca ją zna" | Odrzucono. Pismo jest **samodzielną czynnością proceduralną** — podstawa prawna obligatoryjna. |
+| „Wzmianka o wadium / RNC / wyborze w wezwaniu W03" | Odrzucono. Każdy tryb (art. 224, art. 253) jest samodzielny — odrębne pismo. |
+| „Materiał słaby, ale napiszę pismo pro forma" | Odrzucono. „Brak podstaw do wezwania / odrzucenia" + uzasadnienie. Zero pism pro forma. |
 
-- `legal-basis-catalog.md` — katalog podstaw prawnych per typ pisma (heavy reference).
-- `letter-types.md` — tabela decyzyjna F→typ+template + reguły grupowania + przykłady.
-- `templates/_frontmatter-base.md` — wspólny frontmatter YAML.
-- `templates/W01`…`W11`, `Z01`…`Z05`, `O01`, `O02` — 18 templatów pism (9 kompletnych + 9 szkieletów).
-- `scripts/render_docx.py` — render `.md` → `.docx` na szablonie EZD.
-- `scripts/README-render.md` — dokumentacja skryptu.
+## Definition of Done — pakiet pism
+
+Skill nie deklaruje „gotowe" bez kompletu poniższych. To dowodowa DoD — brak któregokolwiek = pakiet niezakończony.
+
+- [ ] **Każde znalezisko** z `03-braki-*.md` rozstrzygnięte: pismo albo jawne „brak podstaw" z uzasadnieniem (0 pominięć, 0 pism pro forma).
+- [ ] **Jedna podstawa prawna na pismo** — żadnego mieszania trybów (art. 223 ust. 1 ≠ art. 128 ust. 1 ≠ art. 107 ust. 2 ≠ art. 224).
+- [ ] **Każde pismo:** `.md` (review) + `.docx` (EZD) wygenerowane; szablon bazowy nietknięty.
+- [ ] **Frontmatter YAML** kompletny per pismo (sygnatura, wykonawca, kod, podstawa prawna, termin, signatory, poziom pewności); 0 placeholderów `<<…>>`.
+- [ ] **Każde zdanie normatywne** ma cytat z lokalizacją `[DOC: plik] [str.]`.
+- [ ] **Eskalacje sprawdzone:** F4→W03 przed O01; F5w→self-cleaning (art. 110); F2p→art. 107 ust. 2/3; F2→art. 128 ust. 3.
+- [ ] **`00-metryka-pism-<slug>.md`** z zestawieniem, sekwencją wysyłki i adnotacją o signatory domyślnym (`[!warning]`).
+- [ ] **Termin ustawowy** w każdym wezwaniu (min. 5 / 10 / 3 dni wg podstawy), nie „niezwłocznie".
+
+## Supporting Files — reguły ładowania (Progressive Disclosure)
+
+Reguła aktywacji L3: **imperatyw, nie decyzja modelu.** Załaduj plik dokładnie wtedy, gdy zachodzi warunek.
+
+| Warunek | Instrukcja |
+|---------|-----------|
+| Wchodzisz w **Phase 2** (kwalifikacja) | Załaduj `references/letter-types.md` i `references/legal-basis-catalog.md`. |
+| Jesteś w **Phase 3** i potrzebujesz literalnego brzmienia przepisu / terminu / orzecznictwa KIO | Załaduj `references/legal-basis-catalog.md` (jeśli jeszcze nie wczytany). |
+| Jesteś w **Phase 3** i kopiujesz konkretne pismo | Załaduj `templates/_frontmatter-base.md` + właściwy `templates/{W,Z,O}*.md` (po jednym wg potrzeby). |
+| Wchodzisz w **Phase 4** (render) | Załaduj `scripts/render_docx.py` i `scripts/README-render.md`. |
 
 ## The Iron Law
 

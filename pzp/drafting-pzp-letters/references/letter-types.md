@@ -1,3 +1,14 @@
+---
+name: letter-types
+type: reference
+parent: drafting-pzp-letters
+loaded-when: "Phase 2 — kwalifikacja: tabela decyzyjna F→typ+template, reguły grupowania, przykłady"
+sources:
+  - "DOC/since_skill.md §6 (Token budget / Progressive Disclosure — wydzielenie tabeli decyzyjnej do pliku L3)"
+  - "DOC/material_skill.md §2 (Process over Prose — deterministyczna tabela decyzyjna zamiast prozy)"
+note: "Treść merytoryczna = mapowanie kategorii F na typy pism PZP; struktura referencji wynika z pryncypiów DOC."
+---
+
 # Letter Types — katalog typów pism i tabela decyzyjna
 
 Tabela decyzyjna „mam znalezisko z kategorią Fx + kontekst → użyj template Wyy/Zyy/Oyy". Używana w Phase 2 skilla.

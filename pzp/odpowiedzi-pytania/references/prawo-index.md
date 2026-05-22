@@ -1,6 +1,17 @@
+---
+name: prawo-index
+type: reference
+parent: odpowiedzi-pytania
+loaded-when: "Przed Phase 1 (indeksacja) — mapa dokumentów źródłowych PRAWO: ustawa, regulamin KG PSP, szablony umów, zasady redakcji"
+sources:
+  - "DOC/since_skill.md §6 (Token budget / Progressive Disclosure — wydzielenie mapy źródeł do pliku L3)"
+  - "DOC/material_skill.md §6 (Grounding in Real Expertise — runbook/źródła zamiast halucynacji)"
+note: "Treść merytoryczna = katalog dokumentów źródłowych PRAWO; struktura referencji wynika z pryncypiów DOC."
+---
+
 # Indeks dokumentów źródłowych PRAWO
 
-Mapa **bazy wiedzy normatywnej** używanej przez skill `odpowiedzi-pytania` przy ocenie pytań wykonawców. Wszystkie pliki w `/Users/sq13pl/Documents/GH/Legitymacje_OSP/OBSIDIAN/PROJEKTY/PZP/PRAWO/`.
+Mapa **bazy wiedzy normatywnej** używanej przez skill `odpowiedzi-pytania` przy ocenie pytań wykonawców. Wszystkie pliki w katalogu bazy normatywnej `{prawo_dir}` (ścieżka wskazana przez usera; w vault KG PSP zwykle `…/PROJEKTY/PZP/PRAWO/`).
 
 Jeśli pracujesz z innego komputera lub repo — sprawdź najpierw, czy ten katalog istnieje. Jeśli nie — eskaluj do user-a po lokalizację bazy.
 
