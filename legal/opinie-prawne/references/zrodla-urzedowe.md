@@ -1,3 +1,14 @@
+---
+name: zrodla-urzedowe
+type: reference
+parent: opinie-prawne
+loaded-when: "Faza deep research (R1–R6) — potrzeba dokładnych URL-i, formatów ELI lub operatorów wyszukiwania"
+sources:
+  - "DOC/since_skill.md §6 (Token budget / Progressive Disclosure — wydzielenie katalogu źródeł do references/)"
+  - "DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md §5 (reguła aktywacji L3)"
+note: "Treść merytoryczna = katalog oficjalnych publikatorów i baz orzecznictwa RP; struktura referencji wynika z pryncypiów DOC."
+---
+
 # Oficjalne źródła prawa polskiego — rozszerzony katalog
 
 ## I. Publikatory urzędowe

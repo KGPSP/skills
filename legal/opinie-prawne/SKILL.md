@@ -1,7 +1,33 @@
 ---
 name: opinie-prawne
-version: v1.0.0
+version: v1.1.0
 description: Use when sporządzanie opinii prawnej w polskim porządku prawnym — analiza zagadnienia prawnego, wykładnia przepisu, ocena dopuszczalności działania, odpowiedź na pytanie prawne, memorandum dla zarządu / dyrektora / komendanta. Triggers include "sporządź opinię prawną", "opinia prawna", "analiza prawna", "wykładnia art./§", "czy zgodne z prawem", "czy dopuszczalne", "opinia do pytania prawnego", "memorandum", "analiza przepisu", "interpretacja ustawy", whenever user asks for Polish-law legal analysis of a specific norm, situation, or doubt. Applies to prawo konstytucyjne, administracyjne, cywilne, karne, pracy, finansów publicznych, zamówień publicznych, IT/cyber, RODO — oraz każdej innej gałęzi prawa polskiego. Effort max, ultrathink required, deep research via WebSearch/WebFetch across oficjalne źródła (isap.sejm.gov.pl, eli.gov.pl, dziennikustaw.gov.pl, orzeczenia SN/NSA/TK).
+trigger:
+  - "sporządź opinię prawną"
+  - "opinia prawna"
+  - "analiza prawna"
+  - "wykładnia art./§"
+  - "czy zgodne z prawem"
+  - "czy dopuszczalne"
+  - "opinia do pytania prawnego"
+  - "memorandum prawne"
+  - "memorandum dla zarządu / dyrektora / komendanta"
+  - "interpretacja ustawy / przepisu"
+do-not-trigger-for:
+  - "wytłumacz po ludzku co mówi ten przepis (bez analizy prawnej)"
+  - "streść ten wyrok / ustawę"
+  - "popraw literówkę / formatowanie w piśmie prawnym"
+  - "przetłumacz fragment aktu prawnego"
+  - "sporządzanie pism procesowych (pozew, odwołanie, skarga) — to nie opinia"
+  - "dokumenty PZP (SWZ, wezwania, odrzucenia) — użyj skilli z pzp/"
+  - "porada na szybko bez deep research i bez ≥3 hipotez"
+model: claude-opus-4-7
+allowed-tools: ['Read', 'Write', 'WebSearch', 'WebFetch', 'Glob', 'Grep', 'TodoWrite', 'Agent']
+sources:
+  - DOC/material_skill.md
+  - DOC/since_skill.md
+  - DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md
+size-limit: 500-lines-hard
 ---
 
 # Opinie prawne — polski porządek prawny
@@ -158,10 +184,14 @@ Dla skomplikowanych opinii (kolizja norm, rozbieżne orzecznictwo, wielowątkowo
 - **fakty o znaczeniu prawnym** — hipoteza normy + podpadanie pod znamię,
 - **braki informacyjne** — wyraźnie nazwane.
 
+**Exit:** rozdzielone listy faktów (pewne / niepewne / prawne / braki) + jawnie nazwana **data istotna** dla stanu prawnego.
+
 ### Krok 2. Sformułuj pytanie prawne
 
 - **jedno zdanie główne** — precyzyjne, zawierające kwalifikację prawną,
 - **pytania pomocnicze** — jeśli problem jest złożony.
+
+**Exit:** jedno zdanie pytania głównego z kwalifikacją prawną (+ pytania pomocnicze, jeśli złożone).
 
 ### Krok 3. Zidentyfikuj podstawy prawne
 
@@ -175,6 +205,8 @@ Lista w hierarchii:
 - przepisy proceduralne,
 - przepisy sankcyjne / finansowe (jeśli mają znaczenie).
 
+**Exit:** lista jednostek redakcyjnych w hierarchii, każda z numerem Dz.U. — przepisy przejściowe ujęte (nie pominięte).
+
 ### Krok 4. Dokonaj wykładni
 
 Zawsze wszystkie cztery:
@@ -182,6 +214,8 @@ Zawsze wszystkie cztery:
 - **systemowa** (pozycja przepisu w akcie, relacja do innych norm),
 - **funkcjonalna / celowościowa** (ratio legis, cel społeczny),
 - **historyczna** — gdy ma znaczenie (zmiany brzmienia, intencja ustawodawcy).
+
+**Exit:** wynik każdej z 4 metod wykładni opisany; rozbieżność wyników między metodami nazwana wprost.
 
 ### Krok 5. Zbadaj relacje między normami
 
@@ -191,6 +225,8 @@ Zawsze wszystkie cztery:
 - relacja kompetencji do obowiązku,
 - norma bezwzględnie obowiązująca (ius cogens) vs. dyspozytywna.
 
+**Exit:** rozstrzygnięte kolizje (która reguła kolizyjna i dlaczego); w razie kolizji nierozstrzygalnej — oznaczona jako otwarta. W razie wątpliwości załaduj `references/metodyka-wykladni.md`.
+
 ### Krok 6. Zbadaj orzecznictwo
 
 - **uchwały** SN / NSA w składach rozszerzonych (najwyższa moc wykładnicza),
@@ -198,6 +234,8 @@ Zawsze wszystkie cztery:
 - **postanowienia** w kwestiach proceduralnych,
 - odróżniaj **dominującą linię orzeczniczą** od **jednostkowych rozstrzygnięć**,
 - **wyraźnie zaznaczaj rozbieżności** — nie ukrywaj ich.
+
+**Exit:** lista orzeczeń z sygnaturami, każde zweryfikowane WebFetch (R4); dominująca linia odróżniona od rozstrzygnięć jednostkowych.
 
 ### Krok 7. Postaw minimum 3 hipotezy
 
@@ -210,11 +248,15 @@ Dla **każdej** hipotezy:
 - **poziom ryzyka** (niski / średni / wysoki),
 - **praktyczne skutki** przyjęcia tej hipotezy.
 
+**Exit:** ≥ 3 hipotezy, każda z kompletem 7 pól (teza / podstawy / za / przeciw / orzecznictwo / ryzyko / skutki).
+
 ### Krok 8. Wybierz rozwiązanie najbardziej prawdopodobne
 
 - wskaż, która hipoteza ma **najsilniejsze oparcie** w przepisach i orzecznictwie,
 - wyjaśnij, **dlaczego pozostałe są słabsze**,
 - zaznacz poziom pewności wniosku: **pewny** / **umiarkowanie pewny** / **sporny**.
+
+**Exit:** wskazana hipoteza wiodąca + uzasadnienie odrzucenia pozostałych + jawny poziom pewności (skala z `references/metodyka-wykladni.md` §9).
 
 ### Krok 9. Wskaż drogę dalszego postępowania
 
@@ -223,6 +265,8 @@ Dla **każdej** hipotezy:
 - jakie ryzyka ograniczyć,
 - jakie argumenty zachować do ewentualnego sporu,
 - czy potrzebna jest dodatkowa opinia (specjalistyczna / procesowa / finansowa).
+
+**Exit:** rekomendacja główna + ostrożnościowa + lista dokumentów/dowodów do zgromadzenia.
 
 ---
 
@@ -257,6 +301,36 @@ Dla **każdej** hipotezy:
 5. **Nie dawaj odpowiedzi kategorycznej**, jeśli materiał prowadzi tylko do wniosku prawdopodobnego lub warunkowego — zaznacz poziom pewności.
 6. **Nie ograniczaj się** do jednej interpretacji — zawsze ≥ 3 hipotezy.
 7. **Nie pomijaj** deep research — nawet jeśli „znasz" odpowiedź z wiedzy parametrycznej.
+
+---
+
+## Anti-Rationalization — blokady na drogi-na-skróty
+
+Riposta = **blokada, nie sugestia**. Każda wymówka ma twardą konsekwencję.
+
+| Wymówka | Riposta (blokada) |
+|---------|-------------------|
+| „Znam ten przepis z pamięci, research zbędny" | Odrzucono. Prawo jest nowelizowane na bieżąco — wiedza parametryczna jest nieaktualna. Wykonaj R1–R6 albo opinia nie istnieje. |
+| „Sprawa oczywista, wystarczy jedna interpretacja" | Odrzucono. „Oczywistość" to halucynacja pewności. Minimum 3 hipotezy (A/B/C) — bez wyjątków. |
+| „Zacytuję przepis z pamięci, brzmienie się nie zmieniło" | Odrzucono. Każdy cytat literalnie zweryfikowany przeciw ELI/Dz.U. (R2). Parafraza ≠ cytat. |
+| „Sygnatura wygląda znajomo, nie sprawdzam" | Odrzucono. Niezweryfikowana sygnatura = zmyślona sygnatura. WebFetch tekstu orzeczenia (R4). |
+| „Przepisy przejściowe pewnie nieistotne" | Odrzucono. Data zdarzenia vs. wejście nowelizacji rozstrzyga stan prawny. Sprawdź zawsze. |
+| „ISAP wystarczy jako źródło" | Odrzucono. ISAP to narzędzie pomocnicze, nie publikator. Źródłem obowiązywania jest Dz.U./ELI (art. 88 Konstytucji). |
+| „Dam jednoznaczną odpowiedź, brzmi pewniej" | Odrzucono. Przy rozbieżnym orzecznictwie kategoryczność wprowadza w błąd. Oznacz poziom pewności (pewny/umiarkowany/sporny). |
+| „Doktryna/blog kancelarii to dobra podstawa" | Odrzucono. Doktryna wspiera argument, nie zastępuje przepisu ani orzecznictwa. Anonimowe omówienia — zakaz. |
+
+---
+
+## Definition of Done — opinia
+
+- [ ] **Deep research wykonany** — cykl R1–R6 przebyty (ślad: zapytania WebSearch + WebFetch).
+- [ ] **Każdy cytat przepisu zweryfikowany** literalnie przeciw ELI/Dz.U. (znak po znaku).
+- [ ] **Każda sygnatura zweryfikowana** WebFetch tekstu orzeczenia (data, skład, aktualność).
+- [ ] **≥ 3 hipotezy** z kompletem 7 pól + tabela oceny porównawczej.
+- [ ] **Poziom pewności** wniosku jawnie oznaczony.
+- [ ] **Przepisy przejściowe** sprawdzone (data istotna vs. nowelizacje).
+- [ ] **Struktura 9 sekcji** zgodna z formatem obligatoryjnym + lista źródeł z linkami.
+- [ ] **Zastrzeżenia** — braki w stanie faktycznym i rozbieżności orzecznicze nazwane wprost.
 
 ---
 
@@ -380,8 +454,12 @@ Za każdym razem, gdy otrzymasz pytanie prawne:
 
 ---
 
-## Pliki pomocnicze
+## Pliki pomocnicze — reguły ładowania (Progressive Disclosure)
 
-- [templates/szablon-opinii.md](templates/szablon-opinii.md) — gotowy szablon opinii do wypełnienia
-- [references/zrodla-urzedowe.md](references/zrodla-urzedowe.md) — rozszerzona lista oficjalnych źródeł z zapytaniami
-- [references/metodyka-wykladni.md](references/metodyka-wykladni.md) — szczegóły metod wykładni i reguł kolizyjnych
+Ładuj referencję **tylko gdy spełniony warunek** — nie wczytuj wszystkiego naraz.
+
+| Plik | Załaduj gdy |
+|------|-------------|
+| [templates/szablon-opinii.md](templates/szablon-opinii.md) | Krok 9 / generujesz finalny artefakt opinii — użyj jako szkieletu do wypełnienia. |
+| [references/zrodla-urzedowe.md](references/zrodla-urzedowe.md) | Faza deep research (R1–R6) i potrzebujesz dokładnych URL-i, formatów ELI lub operatorów wyszukiwania. |
+| [references/metodyka-wykladni.md](references/metodyka-wykladni.md) | Krok 4–5 — wykładnia niejednoznaczna, kolizja norm, spór o regułę kolizyjną lub potrzeba skali pewności (§9). |
