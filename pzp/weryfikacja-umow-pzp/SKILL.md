@@ -1,7 +1,29 @@
 ---
 name: weryfikacja-umow-pzp
-version: v1.0.0
+version: v1.1.0
 description: Use when verifying draft contracts (projekt umowy / wzór umowy / PPU — projektowane postanowienia umowy) in Polish public procurement (PZP) before signing. Triggers include weryfikacja projektu umowy PZP, analiza wzoru umowy, audyt umowy przed podpisaniem, sprawdzenie PPU, korelacja umowy z SWZ/OPZ/ofertą, ocena postanowień umownych w reżimie zamówień publicznych, and whenever the user supplies a projekt umowy + folder z dokumentacją postępowania (SWZ, OPZ, oferta, pisma z odpowiedziami, harmonogram, załączniki). Produces a detailed report with explicit original-quote + proposed-new-wording pairs for each recommended correction.
+trigger:
+  - "sprawdź projekt umowy"
+  - "zweryfikuj wzór umowy"
+  - "przeanalizuj PPU"
+  - "czy umowa zgodna z SWZ"
+  - "audyt umowy przed podpisaniem"
+  - "kontrola umowy w reżimie PZP"
+  - "lista poprawek do umowy z cytatami"
+do-not-trigger-for:
+  - "umowy poza reżimem PZP (cywilnoprawne, wewnętrzne, darowizny, porozumienia)"
+  - "umowy już zawarte — analiza aneksu/zmiany (art. 454–455)/odstąpienia (art. 456) ma odrębne podejście"
+  - "analiza samego SWZ/OPZ bez projektu umowy"
+  - "generowanie pism do wykonawcy — użyj drafting-pzp-letters"
+  - "wstępny szkic umowy przed publikacją SWZ (redakcja konstrukcyjna, nie weryfikacja)"
+  - "weryfikacja oferty wykonawcy — użyj analyzing-pzp-offers"
+model: claude-opus-4-7
+allowed-tools: ['Bash', 'Read', 'Write', 'Glob', 'Grep', 'TodoWrite']
+sources:
+  - DOC/material_skill.md
+  - DOC/since_skill.md
+  - DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md
+size-limit: 500-lines-hard
 ---
 
 # Weryfikacja projektu umowy w reżimie PZP (kontrola przed podpisaniem)
@@ -15,41 +37,8 @@ Systematyczny workflow pogłębionej analizy projektu umowy (lub projektowanych 
 **This is a technique skill.** Stosuj fazy kolejno — nie wolno pominąć Phase 1 (indeksacja). Bez audit trail analiza nie ma wartości przy kontroli / sporze / odwołaniu do KIO.
 
 > [!important] Aktualna podstawa prawna (stan na 2026-04-22)
-> - **Ustawa Pzp:** ustawa z dnia 11 września 2019 r. — Prawo zamówień publicznych; **tekst jednolity: Dz.U. 2024 poz. 1320** z nowelizacjami: 2025 r. poz. 620, 769, 794, 1165, 1173, **1235**; 2026 r. poz. 252.
-> - **Autorytatywny tekst ustawy w repo KG PSP:** [[D20192019Lj]] (11 516 linii, 632 artykuły) — wszystkie cytaty art. Pzp w raportach MUSZĄ być weryfikowane literalnie przeciwko temu plikowi.
-> - **Nowelizacja 12.07.2026 r.** (Dz.U. 2025 poz. 1235) — certyfikacja wykonawców (art. 128a, 124 ust. 2-4, 273 ust. 2). Dla postępowań wszczętych przed 12.07.2026 — przepisy dotychczasowe.
-> - **Postanowienia umowne — kluczowe artykuły Pzp:** art. 431–465 Pzp (dział VII — umowa w sprawie zamówienia publicznego). **Poniżej opisy skrótowe — zawsze przed cytowaniem w raporcie zweryfikuj literalnie w [[D20192019Lj]]**:
->   - **art. 432** — forma umowy (pisemna pod rygorem nieważności, chyba że odrębne przepisy stanowią inaczej),
->   - **art. 433** — katalog klauzul niedopuszczalnych w „Projektowanych postanowieniach umowy" — **pkt 1** odpowiedzialność wykonawcy za opóźnienie „chyba że jest to uzasadnione okolicznościami lub zakresem zamówienia"; **pkt 2** naliczanie kar umownych za zachowanie wykonawcy niezwiązane bezpośrednio lub pośrednio z przedmiotem umowy / jej prawidłowym wykonaniem; **pkt 3** odpowiedzialność wykonawcy za okoliczności, za które wyłączną odpowiedzialność ponosi zamawiający; **pkt 4** możliwość ograniczenia zakresu zamówienia przez zamawiającego bez wskazania minimalnej wartości/wielkości świadczenia stron,
->   - **art. 434** — umowę zawiera się na czas oznaczony; dłuższy niż 4 lata tylko dla świadczeń powtarzających się / ciągłych przy uzasadnieniu (oszczędności / zdolności płatnicze / nakłady i okres spłaty),
->   - **art. 435** — wyjątki dopuszczające czas nieoznaczony: dostawy wody, gazu, ciepła z sieci, licencji na oprogramowanie, usługi przesyłowe/dystrybucyjne energii/gazu,
->   - **art. 436** — **obligatoryjne postanowienia umowy (4 pkt, nie 7)**: pkt 1 planowany termin zakończenia usługi/dostawy/RB; pkt 2 warunki zapłaty wynagrodzenia; pkt 3 **łączna maksymalna wysokość kar umownych, których mogą dochodzić strony**; pkt 4 dla umów > 12 m-cy: a) kary umowne wykonawcy z tytułu braku / nieterminowej zapłaty wynagrodzenia podwykonawcom z art. 439 ust. 5, b) tzw. „mała klauzula waloryzacyjna" dla zmiany VAT / płacy minimalnej / ZUS / PPK,
->   - **art. 437** — **obligatoryjne postanowienia umowy O ROBOTY BUDOWLANE dotyczące podwykonawstwa** (7 pkt: obowiązek przedkładania projektu umowy o podwykonawstwo, termin zgłaszania zastrzeżeń/sprzeciwu, zasady zapłaty wynagrodzenia, terminy zapłaty podwykonawcom, kary umowne — weryfikacja: `grep "### Art. 437" D20192019Lj.md`),
->   - **art. 438** — **obowiązki związane z zatrudnieniem na umowę o pracę** (dla RB/usług z art. 95 ust. 1) — sposób dokumentowania zatrudnienia + sankcje,
->   - **art. 439** — **obligatoryjna waloryzacja wynagrodzenia** w umowach > 6 miesięcy (roboty budowlane / dostawy / usługi): klauzula musi określać poziom zmiany uprawniający do waloryzacji, sposób ustalania (wskaźnik GUS lub inny), sposób określenia wpływu, okresy i **maksymalną wartość zmiany wynagrodzenia**,
->   - **art. 442** — zaliczki na poczet wykonania zamówienia (fakultatywne; jeżeli > 20% wynagrodzenia — obowiązek żądania zabezpieczenia zaliczki),
->   - **art. 443** — **dla umów > 12 m-cy: obowiązkowa wypłata wynagrodzenia w częściach lub zaliczki**; ostatnia część ≤ 50% wynagrodzenia; zaliczka ≥ 5% wynagrodzenia,
->   - **art. 447** — dla zamówień na **roboty budowlane o terminie > 12 m-cy** dodatkowe zasady: warunkiem zapłaty kolejnych części / zaliczek jest przedstawienie dowodów zapłaty podwykonawcom,
->   - **art. 448** — ogłoszenie w BZP o wykonaniu umowy w terminie 30 dni,
->   - **art. 449** — definicja zabezpieczenia NWU, moment wnoszenia (przed zawarciem umowy, chyba że ustawa / SWZ stanowi inaczej),
->   - **art. 450** — **formy zabezpieczenia NWU**: pieniądz / poręczenia bankowe lub SKOK / gwarancje bankowe / gwarancje ubezpieczeniowe / poręczenia PARP (ust. 1); za zgodą zamawiającego także weksle z poręczeniem wekslowym, zastaw na papierach wartościowych SP/JST, zastaw rejestrowy (ust. 2),
->   - **art. 452 ust. 2** — **cap wysokości zabezpieczenia: ≤ 5%** ceny całkowitej z oferty (wyjątkowo ≤ 10% z uzasadnieniem w SWZ — ust. 3); dla umów > 1 rok możliwość potrąceń z należności (ust. 4-7),
->   - **art. 453** — **zasady zwrotu zabezpieczenia**: 70% w terminie 30 dni od wykonania zamówienia i uznania za należycie wykonane (ust. 1); ≤ 30% pozostawione na rękojmię/gwarancję (ust. 2); zwrot kwoty z ust. 2 nie później niż w 15. dniu po upływie rękojmi/gwarancji (ust. 3),
->   - **art. 454** — **definicja zmiany istotnej** (4 przesłanki: zmiana warunków wpływająca na wynik postępowania, naruszenie równowagi ekonomicznej, znaczne rozszerzenie/zmniejszenie zakresu, zastąpienie wykonawcy poza art. 455 ust. 1 pkt 2),
->   - **art. 455** — **katalog dopuszczalnych zmian umowy** bez nowego postępowania: ust. 1 pkt 1 (przewidziane w SWZ jasne klauzule), pkt 2 (zastąpienie wykonawcy — sukcesja / przejęcie zobowiązań), pkt 3 (dodatkowe dostawy/usługi/roboty, wzrost ceny ≤ 50%), pkt 4 (okoliczności nieprzewidzialne, wzrost ≤ 50%); ust. 2 (zmiany łącznej wartości < progów UE oraz < 10% dostawy/usługi lub < 15% RB),
->   - **art. 456** — **odstąpienie przez zamawiającego**: ust. 1 pkt 1 istotna zmiana okoliczności powodująca, że wykonanie umowy nie leży w interesie publicznym (termin 30 dni); ust. 1 pkt 2 lit. a-c — (a) zmiana umowy z naruszeniem art. 454/455, (b) wykonawca w chwili zawarcia podlegał wykluczeniu z art. 108, (c) TSUE stwierdził naruszenie prawa UE przez RP. **UWAGA:** „upadłość/likwidacja wykonawcy" NIE jest ustawową przesłanką odstąpienia z art. 456 — może być tylko przesłanką odstąpienia umownego,
->   - **art. 457** — **nieważność umowy** (naruszenia przy udzieleniu zamówienia: brak ogłoszenia, naruszenie art. 264/308/421/577, zawarcie przed terminem z art. 216 ust. 2, itp.),
->   - **art. 462** — ogólne zasady podwykonawstwa (wykonawca może powierzyć część; zamawiający może żądać wskazania części i nazw),
->   - **art. 463** — zakaz kształtowania umów o podwykonawstwo mniej korzystnie dla podwykonawcy niż umowa z wykonawcą (kary umowne, wypłata wynagrodzenia),
->   - **art. 464** — **tryb przedkładania projektów umów o podwykonawstwo** (dla RB); termin zapłaty ≤ 30 dni; sprzeciwy zamawiającego,
->   - **art. 465** — **bezpośrednia zapłata wynagrodzenia podwykonawcy** przez zamawiającego (w przypadku uchylenia się wykonawcy od zapłaty, dla umów na RB). Solidarna odpowiedzialność inwestora/generalnego wykonawcy wynika z art. 647¹ § 5 k.c. (nie z art. 465 Pzp).
-> - **K.c. w zakresie nieuregulowanym Pzp** (art. 8 ust. 1 Pzp): art. 353¹ (swoboda umów), art. 58 (nieważność czynności), art. 471 i n. (odpowiedzialność kontraktowa), art. 483–485 (kary umowne — w tym art. 484 § 1: kara umowna wyłącza żądanie odszkodowania ponad karę, chyba że strony inaczej postanowiły; § 2: miarkowanie), art. 498–499 (potrącenie), art. 556–576 (rękojmia za wady przy sprzedaży), art. 577–582 (gwarancja jakości), art. 647–658 (umowa o roboty budowlane — w tym art. 647¹ § 5: solidarna odpowiedzialność), art. 734–751 (zlecenie i umowy podobne).
-> - **RODO:** rozp. 2016/679 + ustawa z 10.05.2018 r. o ochronie danych osobowych (tekst jednolity: Dz.U. 2019 poz. 1781) — dla każdej umowy z przetwarzaniem danych osobowych wymagana jest umowa powierzenia art. 28 RODO.
-> - **KSC:** ustawa o krajowym systemie cyberbezpieczeństwa (Dz.U. 2026 poz. 20 i 252) — dla zamówień ICT / infrastruktury — wymogi cyberbezpieczeństwa, dostawcy wysokiego ryzyka (art. 67b ustawy KSC).
-> - **Prawo autorskie:** ustawa z 04.02.1994 r. o prawie autorskim i prawach pokrewnych (tekst jednolity: Dz.U. 2025 poz. 24) — dla umów IT / projektowych: art. 41 (przeniesienie / licencja), art. 50 (pola eksploatacji), art. 64–65, art. 74 (programy komputerowe).
-> - **Ustawa z 08.03.2013 r. o przeciwdziałaniu nadmiernym opóźnieniom w transakcjach handlowych** (tekst jednolity: Dz.U. 2023 poz. 711) — art. 8 ust. 2 (termin 30+30 dni dla transakcji asymetrycznych).
-> - **Zasady redakcji cytatów:** [[zasady_redakcji]] — § 54-63 Zasad techniki prawodawczej (oznaczanie art. / ust. / pkt / lit. / tiret).
-> - Nie używać przedawnionych sygnatur (np. Dz.U. 2023 poz. 1605 dla Pzp; Dz.U. 2023 poz. 1790 dla ustawy o terminach zapłaty).
+> **Ustawa Pzp:** tekst jednolity **Dz.U. 2024 poz. 1320** ze zm. (nowele 2025 poz. 620/769/794/1165/1173/1235; 2026 poz. 252). Autorytatywny tekst w repo: [[D20192019Lj]] — **każdy cytat art. Pzp weryfikuj literalnie** przeciw temu plikowi.
+> **Pełny katalog podstaw prawnych umowy** (art. 431–465 Pzp, k.c., RODO, KSC, pr.aut., ustawa o terminach zapłaty) — **załaduj `references/legal-basis-catalog.md`** przed Phase 2.
 
 ## When to Use
 
@@ -95,6 +84,18 @@ flowchart TD
     P5 --> P6["Phase 6: Generowanie raportu A–F + addendów"]
     P6 --> Done(["Seria 11 dokumentów + rekomendacja"])
 ```
+
+**Exit criteria per faza** (mierzalny artefakt — nie przechodź dalej bez niego):
+
+| Faza | Exit |
+| --- | --- |
+| 0 | `<contract_path>` jednoznacznie potwierdzony (STOP przy wielu wersjach); dokumenty kluczowe w `<procurement_dir>` rozpoznane; `<output_dir>` utworzony. **Utwórz `TodoWrite` z fazami 0–6.** |
+| 1 | `index-umowa.md` (każdy § + załącznik) + `index-dokumentacja-postepowania.md` (każdy plik ≥2–3 zdania). |
+| 2 | Katalog wymagań kontraktowych z źródłem (dokument+rozdz.+str.) i brzmieniem po modyfikacjach. |
+| 3 | Każde znalezisko sklasyfikowane (P1–P7 + R1–R4) z cytatem i podstawą prawną zweryfikowaną przeciw [[D20192019Lj]]. |
+| 4 | `04-macierz-korelacji-<slug>.md` — zapis umowy ↔ dokument ↔ status (≥10 obszarów). |
+| 5 | `05-proponowane-poprawki-<slug>.md` — per P-XXX: cytat oryginału + pełne brzmienie proponowane + uzasadnienie (kluczowy produkt). |
+| 6 | Komplet 11 dokumentów (Definition of Done) + jednoznaczna rekomendacja w `07-wnioski-koncowe`; 0 placeholderów `<<…>>`. |
 
 ### Phase 0 — Walidacja wejścia
 
@@ -157,9 +158,9 @@ Każde wymaganie opisz: `{obszar, źródło (dokument + rozdział/punkt + strona
 
 **Kluczowe:** wszystkie modyfikacje SWZ / odpowiedzi na pytania wykonawców są **nadrzędne** wobec pierwotnej wersji SWZ/OPZ w zakresie objętym zmianą. Pracuj wyłącznie na aktualnym brzmieniu. Wersja PPU z załącznika do SWZ po modyfikacjach wiąże wersję projektu umowy przedkładaną do podpisu.
 
-### Phase 3 — Analiza umowy (sekcje I–V z verification-prompt.md)
+### Phase 3 — Analiza umowy (sekcje I–V z references/verification-prompt.md)
 
-Zastosuj pełny prompt analityczny z `verification-prompt.md`. Analiza przebiega w 5 sekcjach:
+Zastosuj pełny prompt analityczny z `references/verification-prompt.md`. Analiza przebiega w 5 sekcjach:
 
 - **I. Analiza formalna dokumentu** — tytuł, strony, reprezentacja, NIP/REGON, struktura (§/ust./pkt/lit.), numeracja, odesłania, definicje, terminologia, nazwy dokumentów powiązanych, nazwy załączników, kwoty, daty, jednostki.
 - **II. Analiza pod kątem Pzp** — zgodność z art. 431–465 Pzp, **klauzule niedopuszczalne w PPU (art. 433)**, czas trwania (art. 434 — co do zasady oznaczony; > 4 lat wymaga uzasadnienia świadczeniami ciągłymi/powtarzającymi się i konkretnymi warunkami), obligatoryjne postanowienia (art. 436 — 4 pkt), podwykonawstwo w RB (art. 437 — 7 pkt), zatrudnienie na umowę o pracę (art. 438 — dla art. 95 ust. 1), waloryzacja (art. 439), płatności częściowe dla umów > 12 m-cy (art. 443) i RB > 12 m-cy (art. 447), zabezpieczenie NWU (art. 449–453), **katalog zmian umowy (art. 454–455)**, odstąpienie (art. 456 — wyłącznie 4 przesłanki ustawowe), niepodleganie obejściu zasad konkurencyjności / przejrzystości / równego traktowania (art. 16 Pzp), proporcjonalność kar umownych (art. 484 § 2 k.c.), spójność z dokumentacją postępowania i ofertą.
@@ -306,193 +307,35 @@ Dla załączników do umowy: `Załącznik nr <N> do umowy — <nazwa> — pkt <M
 [DOC: <plik>] [Rozdz. <N>] [ust. <N>] [pkt <N>] [lit. <l>] [str. <N>]
 ```
 
-Przykład:
-
-```markdown
-> [!warning] P-012 — Niezgodność terminu realizacji z ofertą
-
-**Obecne brzmienie:** § 4 ust. 1 umowy
-> „Wykonawca zobowiązany jest wykonać przedmiot umowy w terminie do dnia 31 grudnia 2026 r."
-
-**Stan wymagany:** `[DOC: Oferta-WASKO.pdf] [str. 2]` — „Wykonawca deklaruje realizację zamówienia w terminie 10 miesięcy od daty zawarcia umowy"
-oraz `[DOC: SWZ.pdf] [Rozdz. IV] [pkt 3] [str. 14]` — „Termin realizacji: 10 miesięcy od daty zawarcia umowy"
-
-**Kategoria:** P7 (brak korelacji) + P5 (spójność wewnętrzna — umowa z 22.04.2026 r. + 10 miesięcy ≠ 31.12.2026 r.) | **Ryzyko:** R2
-
-**Proponowane brzmienie:**
-> „Wykonawca zobowiązany jest wykonać przedmiot umowy w terminie 10 (dziesięciu) miesięcy, liczonych od dnia zawarcia niniejszej umowy."
-
-**Uzasadnienie:**
-- **Prawne:** art. 436 pkt 2 Pzp — termin wykonania zamówienia jest obligatoryjnym elementem umowy; termin musi być zgodny z ofertą (art. 454 ust. 1 Pzp — zmiana terminu niezgodnie z katalogiem = istotna zmiana umowy).
-- **Dokumentacja postępowania:** oferta wykonawcy deklaruje 10 miesięcy; SWZ określa 10 miesięcy od daty zawarcia — przy dacie 22.04.2026 + 10 miesięcy = 22.02.2027, a nie 31.12.2026.
-- **Operacyjne:** sztywna data 31.12.2026 tworzy ryzyko roszczenia wykonawcy o skrócenie terminu; niezgodność naraża zamawiającego na zarzut istotnej zmiany umowy na etapie ewentualnej kontroli.
-```
+**Przykład złożenia cytatów** (pełna struktura bloku poprawki — zob. Phase 5 + `templates/05-proponowane-poprawki.md`): obecne brzmienie `§ 4 ust. 1 umowy` „…termin do dnia 31 grudnia 2026 r." vs `[DOC: Oferta.pdf] [str. 2]` + `[DOC: SWZ.pdf] [Rozdz. IV] [pkt 3] [str. 14]` „10 miesięcy od daty zawarcia" → kategoria **P7+P5 | R2**, podstawa art. 436 pkt 2 + art. 454 ust. 1 Pzp.
 
 ## Obsidian MD — wymagane formaty per dokument
 
-### Konwencja placeholder-ów w templatach
+**Załaduj `references/format-obsidian.md`** w Phase 6 — konwencja placeholderów `<<…>>`, frontmatter dokumentów, callouts per poziom ryzyka (R1 `[!danger]` → R2 `[!warning]` → R3 `[!info]` → R4 `[!note]`; `[!quote]` cytat, `[!success]` zgodność/propozycja).
 
-| Składnia | Znaczenie |
-|----------|-----------|
-| `<<nazwa_pola>>` | Placeholder do wypełnienia — wartość z dokumentów / kontekstu / usera |
-| `<<opcja1 \| opcja2 \| opcja3>>` | Lista wyborów — agent wybiera jedną opcję (pipe `\|` = OR) |
-| `<<...>>` | Dłuższy tekst do uzupełnienia |
+## Edge Cases + Common Mistakes
 
-**Zasada:** W gotowych dokumentach nie powinno pozostać ŻADNEGO placeholder-a `<<...>>`. Jeśli sekcja nie dotyczy przypadku — usuń ją całkowicie lub oznacz „nie dotyczy" z uzasadnieniem.
+**Załaduj `references/edge-cases.md`** w Phase 3 — 18 przypadków brzegowych (art. 433 klauzule abuzywne, art. 436/437 obligatoryjne postanowienia, art. 439 waloryzacja > 6 m-cy, art. 449–453 zabezpieczenie NWU, art. 454–456 zmiany/odstąpienie, art. 28 RODO, pr.aut. IT, KSC, sankcje międzynarodowe) + tabela Common Mistakes.
 
-### Frontmatter (każdy dokument)
+## Anti-Rationalization — blokady na drogi-na-skróty
 
-```yaml
----
-sygnatura: BL-V.2371.3.2026
-postepowanie: "System X dla KG PSP"
-zamawiajacy: Komenda Główna Państwowej Straży Pożarnej
-wykonawca: WASKO S.A.
-data_analizy: 2026-04-22
-autor_analizy: claude@kg.straz.gov.pl
-typ_dokumentu: raport-glowny
-status: draft
-tags:
-  - pzp/weryfikacja-umowy
-  - pzp/sygnatura/BL-V-2371-3-2026
-  - pzp/wykonawca/wasko
-  - pzp/poziom-ryzyka/R2
----
-```
+Riposta = **blokada, nie sugestia**.
 
-### Callouts według kategorii ryzyka
+| Wymówka | Riposta (blokada) |
+|---------|-------------------|
+| „Umowa krótka, pominę indeksowanie" | Odrzucono. Brak indeksu = brak audit trail = nieważna analiza. Zawsze Phase 1. |
+| „Znam strukturę umów PZP, nie czytam projektu" | Odrzucono. Domniemanie ≠ analiza. Czytaj literalnie. |
+| „Pewnie zgodne z SWZ" | Odrzucono. Cytuj obie strony i porównaj (macierz korelacji). |
+| „Modyfikacje SWZ pominę — pewnie bez wpływu" | Odrzucono. Chronologicznie WSZYSTKIE pisma; wersja po modyfikacjach wiąże. |
+| „Wystarczy lista poprawek ogólnie" | Odrzucono. Seria 11 dokumentów obligatoryjna. |
+| „Napiszę «dodać klauzulę waloryzacji»" | Odrzucono. Pełny tekst klauzuli gotowy do wklejenia — nie opis. |
+| „Brak załącznika = pewnie błąd techniczny" | Odrzucono. Zapytaj usera (R1/R2). Nie zakładaj „pewnie są u zamawiającego". |
+| „Rekomendacja: warto rozważyć" | Odrzucono. Jednoznacznie: konieczne / rekomendowane / do rozważenia + uzasadnienie. |
+| „Cytat sparafrazuję, sens zostaje" | Odrzucono. Cytat literalny z jednostką redakcyjną (§ N ust. M), weryfikowany przeciw [[D20192019Lj]]. |
 
-| Poziom | Callout | Zastosowanie |
-|--------|---------|--------------|
-| R1 Krytyczne | `> [!danger]` | Uniemożliwia podpisanie, nieważność, sprzeczność z ustawą |
-| R2 Istotne | `> [!warning]` | Silne ryzyko sporu / egzekucji, korekta wymagana |
-| R3 Umiarkowane | `> [!info]` | Ryzyko interpretacyjne, korekta zalecana |
-| R4 Drobne | `> [!note]` | Redakcyjne, do rozważenia |
-| Zgodność potwierdzona | `> [!success]` | OK |
-| Wymagana analiza prawna | `> [!abstract]` | Do pogłębionej oceny |
-| Cytat dosłowny | `> [!quote]` | Zawsze dla cytatów z projektu umowy i dokumentów postępowania |
-| Propozycja nowego brzmienia | `> [!success]` | Proponowane brzmienie poprawki |
+## Definition of Done (Deliverables Checklist) — przed zakończeniem
 
-## Edge Cases — ZAWSZE przestrzegać
-
-1. **Klauzule niedopuszczalne (art. 433 Pzp — 4 pkt)** — jeden z najczęstszych problemów projektów umów w PZP. Literalny tekst ustawy: „Projektowane postanowienia umowy nie mogą przewidywać". Sprawdź wprost czy nie ma:
-   - **pkt 1:** odpowiedzialności wykonawcy za opóźnienie — chyba że jest to uzasadnione okolicznościami lub zakresem zamówienia (uwaga: pkt 1 nie jest kategorycznym zakazem kar za opóźnienie — klauzula „chyba że uzasadnione" dopuszcza kary przy obiektywnym uzasadnieniu, np. roboty budowlane na czas),
-   - **pkt 2:** naliczania kar umownych za zachowanie wykonawcy niezwiązane bezpośrednio lub pośrednio z przedmiotem umowy lub jej prawidłowym wykonaniem,
-   - **pkt 3:** odpowiedzialności wykonawcy za okoliczności, za które wyłączną odpowiedzialność ponosi zamawiający,
-   - **pkt 4:** możliwości ograniczenia zakresu zamówienia przez zamawiającego bez wskazania minimalnej wartości lub wielkości świadczenia stron.
-   **Klauzula sprzeczna z art. 433 = wadliwość postanowienia (art. 58 § 1 k.c. w zw. z art. 8 ust. 1 Pzp).** To zwykle ryzyko R1 / R2 w zależności od rodzaju naruszenia.
-
-2. **Katalog zmian umowy (art. 455 Pzp)** — w każdym paragrafie o „zmianach umowy" projekt umowy musi odzwierciedlać katalog z art. 455. Niedopuszczalne jest:
-   - zapis typu „zmiany wymagają aneksu" bez wskazania podstaw (za mało),
-   - zapis rozszerzający katalog zmian poza art. 455 (sprzeczny z ustawą),
-   - zapis, który pozwala zmienić umowę sposób obchodzenia zasad konkurencyjności (art. 16 Pzp).
-   **Postanowienia mają wskazywać konkretne przesłanki** (art. 455 ust. 1 pkt 1–4 + ust. 2) i ograniczenia.
-
-3. **Waloryzacja (art. 439 Pzp)** — **obligatoryjna dla umów > 6 miesięcy** (usługi / roboty budowlane). Sprawdź:
-   - czy klauzula jest w umowie,
-   - czy wskazuje wskaźnik (np. GUS — wskaźnik cen i usług konsumpcyjnych / wskaźnik cen produkcji budowlano-montażowej),
-   - czy określa częstotliwość (minimum raz na 12 miesięcy),
-   - czy ma maksymalną wartość zmiany (cap),
-   - czy jest symetryczna (waloryzacja w górę i w dół).
-   **Brak waloryzacji w umowie > 6 miesięcy = wada formalna (art. 439 Pzp), ryzyko R1/R2.**
-
-4. **Zabezpieczenie NWU (art. 449–453 Pzp — rozdział 2)** — sprawdź:
-   - **wysokość — art. 452 ust. 2:** ≤ 5% ceny całkowitej podanej w ofercie (wyjątkowo ≤ 10% przy uzasadnieniu przedmiotem/ryzykiem w SWZ — ust. 3),
-   - **forma — art. 450 ust. 1:** pieniądz / poręczenia bankowe lub SKOK / gwarancje bankowe / gwarancje ubezpieczeniowe / poręczenia PARP; za zgodą zamawiającego (ust. 2): weksle z poręczeniem wekslowym, zastaw na papierach wartościowych SP/JST, zastaw rejestrowy,
-   - **moment wniesienia — art. 449 ust. 3:** przed zawarciem umowy (chyba że ustawa / SWZ stanowi inaczej),
-   - **zmiana formy — art. 451:** możliwa w trakcie realizacji z zachowaniem ciągłości i wysokości,
-   - **potrącenia z należności — art. 452 ust. 4-7:** dla umów > 1 rok możliwość tworzenia przez potrącenia; min. 30% w dniu zawarcia,
-   - **zasady zwrotu — art. 453:** 70% w terminie 30 dni od wykonania zamówienia i uznania za należycie wykonane (ust. 1); ≤ 30% pozostawione na rękojmię/gwarancję (ust. 2); zwrot tej kwoty nie później niż w 15. dniu po upływie okresu rękojmi/gwarancji (ust. 3).
-
-5. **Kary umowne (art. 483 k.c. + art. 433 Pzp)** — typowe błędy:
-   - kara naliczana za każdy dzień BEZ capu (= możliwa dysproporcja),
-   - kara za okoliczności niezawinione (np. siła wyższa, zmiana przepisów) = abuzywna,
-   - brak zasady odliczania kar od wynagrodzenia (operacyjne komplikacje),
-   - kumulacja kar bez górnego limitu zbiorczego (najczęstsza rekomendacja: cap 20-30% wynagrodzenia brutto),
-   - jednostronność (tylko wykonawca płaci kary, zamawiający nie — zwykle akceptowalne, ale warto mieć klauzulę o odsetkach za zwłokę w płatności art. 4 ustawy 8.03.2013 r. o przeciwdziałaniu nadmiernym opóźnieniom w transakcjach handlowych).
-
-6. **Podwykonawstwo (art. 462–465 Pzp — rozdział 5; obligatoryjne postanowienia umowy o roboty budowlane — art. 437)** — dla zamówień na roboty budowlane umowa musi zawierać (art. 437 ust. 1, 7 pkt):
-   - pkt 1: obowiązek przedkładania projektu umowy o podwykonawstwo (i jej zmian) oraz poświadczonej kopii zawartej umowy (dla RB),
-   - pkt 2: terminy zgłoszenia zastrzeżeń / sprzeciwu zamawiającego,
-   - pkt 3: obowiązek przedkładania kopii umów o podwykonawstwo dostaw/usług oraz ich zmian,
-   - pkt 4: zasady zapłaty wynagrodzenia uwarunkowane dowodami zapłaty podwykonawcom,
-   - pkt 5: terminy zapłaty podwykonawcom (maks. 30 dni — art. 464 ust. 2),
-   - pkt 6: zasady zawierania umów z dalszymi podwykonawcami,
-   - pkt 7: kary umowne (brak/nieterminowa zapłata, nieprzedłożenie projektu umowy, zmiany).
-   Bezpośrednia zapłata podwykonawcy przez zamawiającego — **art. 465 Pzp** (w razie uchylenia się wykonawcy od zapłaty). Solidarna odpowiedzialność inwestora/wykonawcy — **art. 647¹ § 5 k.c.** (nie wynika z art. 465 Pzp). Dla zamówień innych niż roboty budowlane — ogólne zasady z art. 462 Pzp (wskazanie części, wymiana podwykonawcy — ust. 6, skutki dla warunków udziału — ust. 7). **Brak obligatoryjnych elementów art. 437 w umowie na RB = wadliwość (R1).**
-
-7. **Powierzenie przetwarzania danych osobowych (art. 28 RODO)** — jeżeli przedmiot umowy wiąże się z przetwarzaniem danych osobowych (np. systemy IT, oprogramowanie, usługi analityczne, chmura):
-   - umowa powierzenia ma być **odrębnym załącznikiem do umowy** (albo pełną sekcją w umowie),
-   - musi zawierać wszystkie elementy z art. 28 ust. 3 RODO: przedmiot, czas, charakter i cel, rodzaj danych, kategorie osób, prawa i obowiązki administratora, subpowierzenie za zgodą, TOM (art. 32 RODO), wsparcie przy wnioskach osób, zwrot / usunięcie danych, audyty.
-   **Brak umowy powierzenia dla przetwarzania danych = naruszenie art. 28 RODO, ryzyko R1.**
-
-8. **Prawa autorskie (dla umów IT / projektowych / badawczych)** — sprawdź:
-   - czy jest przeniesienie / licencja (art. 41 pr.aut.),
-   - czy wskazano pola eksploatacji (art. 50 pr.aut.) — konkretnie, nie „wszystkie możliwe",
-   - dla oprogramowania: art. 74 pr.aut. (specjalne zasady dla programów komputerowych),
-   - moment przejścia praw (zwykle: odbiór + zapłata),
-   - prawo do wykonywania praw zależnych (utwory pochodne) i prawo zezwalania na wykonywanie praw zależnych,
-   - sublicensing — czy zamawiający może udzielać sublicencji jednostkom PSP / innym organom administracji.
-   **Jeśli umowa jest IT / projektowa, a prawa autorskie nieuregulowane = ryzyko R1.**
-
-9. **Cyberbezpieczeństwo (KSC)** — dla zamówień ICT (systemy, oprogramowanie, chmura, sieć):
-   - art. 33 ust. 4 ustawy KSC — rekomendacje CSIRT MON / NASK / Rządowy Zespół Reagowania,
-   - art. 67b ustawy KSC — **dostawcy wysokiego ryzyka** (w tym z państw trzecich bez umów z UE),
-   - wymogi TOM (techniczne i organizacyjne środki bezpieczeństwa),
-   - obowiązek zgłaszania incydentów,
-   - prawo do audytu zamawiającego (nie może być wyłączone w umowie).
-
-10. **Termin umowy (art. 434–435 Pzp)** — zasadniczo **maksymalnie 4 lata**. Wyjątki: umowy koncesyjne, umowy o roboty budowlane z obiektywnym uzasadnieniem dłuższego terminu, umowy na finansowanie. **Umowa > 4 lata bez uzasadnienia = R1**.
-
-11. **Częstotliwość płatności w umowach > 12 miesięcy** (art. 437 Pzp, dla robót budowlanych) — obligatoryjnie płatności częściowe (min. ≥ 2) albo zaliczki. **Brak płatności częściowych w umowie > 12 m-cy = wada formalna**.
-
-12. **Rozbieżność w nazwach własnych** — typowe: nazwa postępowania w umowie ≠ nazwa w ogłoszeniu, sygnatura w tytule umowy ≠ sygnatura faktyczna, NIP/REGON wykonawcy w umowie ≠ w ofercie. Redakcyjne, ale wpływa na tożsamość stron → R2/R3.
-
-13. **Dosłowny cytat vs streszczenie w macierzy korelacji** — w macierzy cytujesz zawsze literalnie obie strony (zapis umowy ↔ zapis dokumentu). Nie parafrazujesz. Jeśli cytat jest długi — skracaj, ale zaznacz skrócenie przez `[…]`.
-
-14. **Załączniki do umowy wymienione, ale nie dołączone** — jeżeli umowa wskazuje np. „Załącznik nr 5 — Harmonogram", ale w przekazanym materiale załącznika brak, zapytaj usera: czy user to pominął, czy w umowie jest błąd odesłania. **NIE zakładaj, że „pewnie są u zamawiającego"**. To ryzyko R1/R2 (w zależności od roli załącznika).
-
-15. **Odpowiedzi na pytania wykonawców zmieniające sens PPU** — częsta sytuacja, że po pytaniach wykonawców zmodyfikowano PPU (wzór umowy). Projekt umowy do podpisu musi odzwierciedlać wersję **po modyfikacjach**, a nie pierwotną. Sprawdź chronologicznie wszystkie pisma.
-
-16. **Wybór między formą pisemną a elektroniczną** (art. 432 Pzp) — dla postępowań elektronicznych umowa musi być w formie elektronicznej z kwalifikowanym podpisem. Forma pisemna obok elektronicznej — redundancja; wyłącznie pisemna w postępowaniu elektronicznym = wada formalna.
-
-17. **Klauzule dotyczące podpisu wykonawcy** — jeżeli umowa przewiduje wyłącznie formę pisemną, a wykonawcą jest podmiot zagraniczny — dodatkowe ryzyko operacyjne (nawet jeśli zgodne z ustawą). Rekomenduj elektroniczną.
-
-18. **Sankcje międzynarodowe (art. 5k rozp. 833/2014 + art. 7 ust. 1 ustawy antyrosyjskiej)** — umowa powinna zawierać klauzulę o:
-    - prawie odstąpienia w razie objęcia wykonawcy sankcjami,
-    - obowiązku wykonawcy powiadomienia zamawiającego o zmianie statusu sankcyjnego,
-    - zakazie powierzania sprawy podmiotom objętym sankcjami.
-
-## Common Mistakes
-
-| Błąd | Poprawka |
-|------|----------|
-| „Umowa jest zgodna z SWZ" bez cytatu | Dodaj `[DOC: SWZ.pdf] [Rozdz. X] [str. Y]` + literalny cytat |
-| Proponowane brzmienie w formie opisowej („należy dodać waloryzację") | Zawsze pełny tekst klauzuli gotowy do wklejenia |
-| Pomijanie modyfikacji SWZ / odpowiedzi na pytania | Zawsze chronologicznie przeanalizuj wszystkie pisma PRZED Phase 3 |
-| Analiza jako jeden plik | Seria 9+ plików obligatoryjna |
-| Brak kategoryzacji P1–P7 | Każde znalezisko ma kategorię + poziom ryzyka |
-| Ignorowanie art. 433 Pzp (klauzule abuzywne) | Osobna sekcja w analizie szczegółowej punkt „Kary umowne i odpowiedzialność" |
-| Pominięcie waloryzacji dla umów > 6 m-cy | Zawsze sprawdź art. 439 Pzp |
-| Plain MD bez callouts | Zawsze frontmatter + callouts + wikilinks |
-| Cytat parafrazowany zamiast literalnego | Kopiuj dosłownie, z interpunkcją |
-| Pominięcie załącznika z umowy „bo pewnie istnieje" | Zapytaj usera o fizyczną obecność |
-| Pominięcie RODO dla umów z przetwarzaniem danych | Zawsze art. 28 RODO — osobna weryfikacja |
-| „Trzeba poprawić X" bez propozycji konkretnej klauzuli | Każda poprawka ma pełny tekst nowego brzmienia |
-| Rekomendacja „do rozważenia" bez jednoznacznego wniosku | W F-sekcji odpowiedzi muszą być jednoznaczne (tak/nie + które poprawki bezwzględnie przed podpisem) |
-
-## Red Flags — STOP and restart
-
-- „Umowa krótka, pominę indeksowanie" — NIE. Zawsze indeks.
-- „Znam strukturę umów PZP, nie muszę czytać projektu" — NIE. Czytaj.
-- „Pewnie zgodne z SWZ" — NIE. Cytuj i porównuj.
-- „Modyfikacje SWZ pominę — pewnie nie mają wpływu" — NIE. Chronologicznie wszystkie.
-- „Wystarczy lista poprawek ogólnie" — NIE. Seria dokumentów obligatoryjna.
-- „Napiszę 'dodać klauzulę waloryzacji' — user sobie to napisze" — NIE. Cały tekst klauzuli.
-- „Brak załącznika pewnie błąd techniczny" — NIE. Zapytaj usera.
-- „Rekomendacja: warto rozważyć" — NIE. Jednoznacznie: konieczne/rekomendowane/do rozważenia (z uzasadnieniem).
-
-## Deliverables Checklist — przed zakończeniem
+Skill nie deklaruje „gotowe" bez kompletu poniższych — brak któregokolwiek = analiza niezakończona.
 
 ### Dokumenty obligatoryjne (seria 11 plików)
 
@@ -598,72 +441,9 @@ Identyczny jak w `analyzing-pzp-offers`:
 - Nagłówki sekcji w pełnym brzmieniu, bez anchor do komórek tabel
 - Block IDs `^P-XXX` przy każdej proponowanej poprawce do cross-referencji z macierzy i tabeli ustaleń
 
-## Integracja z kontekstem KG PSP (`PROJEKTY/PZP/PRAWO/`)
+## Integracja — KG PSP i inne skille
 
-Jeżeli skill jest uruchamiany na maszynie użytkownika z vault KG PSP (katalog `/Users/mklosinski/Documents/GitHub/Legitymacje_OSP/OBSIDIAN/PROJEKTY/PZP/PRAWO/`), wykorzystaj następujące zasoby:
-
-### Weryfikacja cytatów Pzp
-
-- **Plik:** [[D20192019Lj]] (`PROJEKTY/PZP/PRAWO/D20192019Lj.md`) — tekst jednolity ustawy Pzp, Dz.U. 2024 poz. 1320, 11 516 linii, 632 art.
-- **Zasada:** każdy cytat art. Pzp w raporcie musi być **literalny** — zweryfikuj przez `Grep` / `Read` w tym pliku przed umieszczeniem w raporcie.
-
-### Porównanie z wewnętrznymi szablonami KG PSP
-
-Standardowe projekty umów w KG PSP bazują na dwóch szablonach (zgodnie z [[index_pzp]]):
-
-- **[[szablon-1-umowa_dostawa]]** (`PROJEKTY/PZP/PRAWO/szablon-1-umowa_dostawa.md`) — wzór umowy dostawy,
-- **[[szablon-1-umowa_usluga]]** (`PROJEKTY/PZP/PRAWO/szablon-1-umowa_usluga.md`) — wzór umowy usługi.
-
-W Phase 2 (ekstrakcja wymagań) dodaj do `<output_dir>/wymagania-kontraktowe.md` osobną sekcję „Odstępstwa od szablonu KG PSP":
-
-1. Zidentyfikuj typ umowy (dostawa / usługa) wg przedmiotu zamówienia.
-2. Porównaj strukturę projektu umowy (wykaz §) z odpowiednim szablonem.
-3. Zanotuj: (a) paragrafy obecne w szablonie, brak w projekcie, (b) paragrafy w projekcie poza szablonem, (c) odstępstwa w treści kluczowych paragrafów.
-4. Odstępstwa wymagają uzasadnienia i oznacz je w `05-proponowane-poprawki` jako `P3` / `R2-R3` zależnie od istotności.
-
-**Uwaga:** same szablony KG PSP mogą zawierać pola z publikatorem Pzp do aktualizacji — jeśli szablon cytuje przedawniony publikator (np. `Dz.U. 2019 poz. 2019` bez wskazania tekstu jednolitego), **nie powielaj tego błędu w raporcie** — użyj aktualnego `Dz.U. 2024 poz. 1320 ze zm.`.
-
-### Wewnętrzny obieg parafowania (Regulamin KG PSP § 18)
-
-Zgodnie z § 18 [[regulamin_kg_psp]] projekt umowy **przed podpisaniem** musi zostać zaparafowany przez:
-
-1. **Kierownika komórki organizacyjnej właściwej dla przedmiotu zamówienia** (merytorycznie odpowiedzialnego za treść),
-2. **Biuro Prawne KG PSP** (zgodność z Pzp i k.c., ocena ryzyk prawnych),
-3. **Biuro Finansów KG PSP** (zgodność finansowa, sprawdzenie wynagrodzenia i płatności).
-
-W `07-wnioski-koncowe` (Pytanie 2 — Status wdrożenia) uwzględnij ten obieg jako 3-stopniową checklistę:
-
-```markdown
-### Status wdrożenia (obieg § 18 [[regulamin_kg_psp]])
-
-- [ ] Wszystkie R1 (N) wdrożone w projekcie umowy
-- [ ] Parafowanie: kierownik komórki organizacyjnej (<<imię nazwisko>>) — <<data>>
-- [ ] Parafowanie: Biuro Prawne KG PSP — <<data>>
-- [ ] Parafowanie: Biuro Finansów KG PSP — <<data>>
-- [ ] Zaakceptowane przez wykonawcę (jeśli wymaga uzgodnienia)
-```
-
-### Zasady redakcji — ZTP
-
-Cytowanie jednostek redakcyjnych zgodnie z [[zasady_redakcji]] (§ 54-63 Zasad techniki prawodawczej):
-
-- **Ustawy / rozporządzenia:** `art. N ust. M pkt K lit. L tiret M`
-- **Umowy i akty wewnętrzne:** `§ N ust. M pkt K lit. L` (paragraf zamiast artykułu — konwencja kodeksowa)
-
-## Integracja z istniejącymi skillami
-
-### Powiązanie z `analyzing-pzp-offers`
-
-- **Jeśli** user dostarczył `<analysis_dir>` z raportem wygenerowanym przez `analyzing-pzp-offers`:
-  - przeczytaj `03-braki-i-niezgodnosci-<slug>.md` — sprawdź czy są F3a/F3 znaleziska w ofercie, które mogą wpłynąć na treść umowy (poprawa omyłki rachunkowej w ofercie = zmiana ceny w umowie),
-  - przeczytaj `06-cytaty-i-zrodla-<slug>.md` — używaj skatalogowanych cytatów dla spójności cytowania,
-  - porównaj wnioski z analizy oferty z obecnym stanem projektu umowy — zapis w `04-macierz-korelacji` powinien pokrywać te same punkty, co analiza oferty.
-- **Jeśli** `<analysis_dir>` nie istnieje — skill działa samodzielnie, ale w `00-podsumowanie-wykonawcze` odnotuj „brak poprzedniej analizy oferty".
-
-### Powiązanie z `drafting-pzp-letters`
-
-- Po zakończeniu weryfikacji umowy, jeśli wykryto konieczność korekty po stronie wykonawcy (np. dostarczenie uzupełnionych załączników, zgoda na modyfikację klauzuli), **rekomenduj** uruchomienie `drafting-pzp-letters` z odpowiednim typem pisma.
-- Typowe sytuacje: wezwanie do zgody na waloryzację, wezwanie do uzgodnienia harmonogramu szczegółowego, zawiadomienie o poprawie omyłki pisarskiej w samej umowie.
+**Załaduj `references/kg-psp-integration.md`** gdy działasz w vault KG PSP — weryfikacja cytatów Pzp przeciw [[D20192019Lj]], porównanie z szablonami umów (dostawa/usługa), obieg parafowania (§18: kierownik komórki → Biuro Prawne → Biuro Finansów), zasady redakcji ZTP, powiązania z `analyzing-pzp-offers` (materiał z `<analysis_dir>`) i `drafting-pzp-letters` (rekomendacja pism po weryfikacji).
 
 ## Konwersja plików źródłowych
 
@@ -674,20 +454,18 @@ Cytowanie jednostek redakcyjnych zgodnie z [[zasady_redakcji]] (§ 54-63 Zasad t
 - **ZIP:** zapytaj usera o rozpakowanie; nie próbuj automatycznie.
 - **XAdES / .sig / .p7s:** oznacz w indeksie jako „podpis zewnętrzny do `<plik>`".
 
-## Supporting Files
+## Supporting Files — reguły ładowania (Progressive Disclosure)
 
-- `verification-prompt.md` — **heavy reference** — pełny prompt analityczny (sekcje I–V, zasady pracy, szczegółowy zakres, format odpowiedzi, zasady cytowania, podstawy prawne). Używaj PODCZAS Phase 3–6.
-- `templates/index-umowa.md` — rozkład projektu umowy
-- `templates/index-dokumentacja-postepowania.md` — indeks dokumentacji
-- `templates/00-podsumowanie-wykonawcze.md` — executive summary (A + F skrót)
-- `templates/01-raport-glowny.md` — pełny raport I–V
-- `templates/02-tabela-ustalen-krytycznych.md` — tabela B
-- `templates/03-analiza-szczegolowa.md` — 15 obszarów (C)
-- `templates/04-macierz-korelacji.md` — macierz D
-- `templates/05-proponowane-poprawki.md` — **kluczowy** template (E)
-- `templates/06-ocena-ryzyk.md` — ryzyka V
-- `templates/07-wnioski-koncowe.md` — odpowiedzi na 5 pytań (F)
-- `templates/08-cytaty-i-zrodla.md` — register
+Reguła aktywacji L3: **imperatyw, nie decyzja modelu.** Ładuj plik gdy zachodzi warunek.
+
+| Warunek | Instrukcja |
+|---------|-----------|
+| Przed **Phase 2** | Załaduj `references/legal-basis-catalog.md` (art. 431–465 Pzp, k.c., RODO, KSC, pr.aut.). |
+| **Phase 3** (analiza); prompt używany do **Phase 6** | Załaduj `references/verification-prompt.md` (sekcje I–V + format A–F raportu) **oraz** `references/edge-cases.md` (18 przypadków + Common Mistakes). |
+| **Phase 6** (raport) | Załaduj `references/format-obsidian.md` (frontmatter, callouts) i odpowiedni `templates/0N-*.md` / `templates/index-*.md` per generowany plik. |
+| Działasz w **vault KG PSP** | Załaduj `references/kg-psp-integration.md` (weryfikacja [[D20192019Lj]], szablony, parafowanie §18, ZTP, integracja skilli). |
+
+**Templaty (`templates/`):** `index-umowa`, `index-dokumentacja-postepowania`, `00-podsumowanie-wykonawcze` … `08-cytaty-i-zrodla` — po jednym wg generowanego dokumentu (Phase 6).
 
 ## The Iron Law
 
