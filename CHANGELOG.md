@@ -2,6 +2,42 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-25] dev — Test Discipline (3 skille: a-t-b v1.9.0 + v3 v3.2.0 + v2 v2.2.0)
+
+### Added
+
+- **`dev/agent-teams-builder/references/testing-map.md`** (v1.9.0) — mapa meta-testów walidatorów: 19 walidatorów × status (10/19 unit ✅, 3/19 integration ✅, 9 TODO) + 22/22 cases w runnerze + procedura Prove-It dla regresji. Status pokrycia surowo z `bash tests/run-meta-tests.sh`.
+- **`dev/feature-planner-v3/references/testing-map.md`** (v3.2.0) — mapa meta-testów skryptów v3 (0/7 obecnie pokryte, plan retrofitting). Rozróżnia 2 piętra: `testing-protocol.md` (testy aplikacji wytwarzanej) vs `testing-map.md` (meta-testy samego skilla). Wykryto martwe fixtures `complete-plan.md`/`incomplete-plan.md` w v3 — żaden skrypt v3 ich nie wywołuje.
+- **`dev/feature-planner/references/testing-map.md`** (v2.2.0) — Test Discipline dla v2 (prose-heavy, 0 walidatorów). Wymusza pryncypium retrofittingu: każda nowa funkcjonalność v2 = nowy walidator + fixture + assert_exit.
+- **SKILL.md w 3 skillach** — 1-3 wiersze Anti-Rationalization (specyficzne dla meta-testów: trywialny walidator/bug bez regresji/integration zbędny), 1 checkbox DoD (Beyoncé Rule dla samego skilla), 1 wpis w indeksie referencji z regułą ładowania.
+
+### Removed / Changed
+
+- (brak removalu — wszystkie istniejące fixtures/runnery zachowane; szczególnie `dev/agent-teams-builder/tests/run-meta-tests.sh` przechodzi nadal **22/22 passed** po edycjach SKILL.md)
+
+### Why
+
+User pytał czy 3 skille (a-t-b, v2, v3) mają testy unit/integration/regression. Stan na 2026-05-25: a-t-b ma 22/22 testów ale brak mapy → reszta nie była audytowalna. v3 ma 7 skryptów z 0 meta-testami + 2 martwe fixtures (artefakt po refaktorze z v3 do planner-f). v2 jest prose-heavy bez żadnej infrastruktury. Pytanie obnażyło lukę: brak **dokumentu mapującego funkcjonalność → typ testu**. User instrukcja: „jak coś wytwarzasz to tworzysz testy" + „skorzystaj z DOC". Implementacja: 3 × `testing-map.md` zakorzenione w DOC (`material_skill.md §4,§5` + `since_skill.md §5` + `INSTRUKCJA §9,§10`) + minimalne hooki w SKILL.md (Anti-Rat + DoD + reguła ładowania).
+
+### Test Coverage (surowy snapshot)
+
+```
+$ bash dev/agent-teams-builder/tests/run-meta-tests.sh | tail -3
+========================================
+  RESULT: 22/22 passed, 0 failed
+========================================
+```
+
+| Skill | Wersja | Unit | Integration | Regression | Runner |
+|---|---|---|---|---|---|
+| agent-teams-builder | v1.9.0 | 10/19 ✅ | 3/19 ✅ | 0 (brak historycznych bugów) | ✅ tests/run-meta-tests.sh (345 linii, 22/22 passed) |
+| feature-planner-v3 | v3.2.0 | 0/7 ❌ | 0 ❌ | 0 ❌ | ❌ TODO retrofit (priorytet #1 wg testing-map.md) |
+| feature-planner (v2) | v2.2.0 | 0 ❌ (brak scripts/) | 0 ❌ | 0 ❌ | ❌ Pryncypium retrofittingu: każda nowa funkcjonalność = nowy walidator |
+
+### Sources
+
+DOC (lokalne, gitignored): `DOC/material_skill.md §4 (DoD = dowód), §5 (Beyoncé Rule, DAMP, piramida 80/15/5)` + `DOC/since_skill.md §5 (TDD RED-GREEN-REFACTOR + Prove-It Pattern = test regresji)` + `DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md §9 (Checklist gotowości — Beyoncé), §10 (source: traceability w references/)`.
+
 ## [2026-05-25] dev/feature-planner-codex — usunięcie skilla
 
 ### Removed

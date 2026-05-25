@@ -1,6 +1,6 @@
 ---
 name: feature-planner-v2
-version: v2.1.0
+version: v2.2.0
 description: Structured feature workflow (Replit Agent style) with Agent Teams auto-routing, ralph-loop autonomous mode, /effort max, deep research (context7/Explore/defuddle/WebSearch/codex; ZERO Gemini). Use when user describes a feature/change/task and Claude Code should plan + implement end-to-end. Triggers "dodaj feature v2", "zaimplementuj", "zrób żeby", "implement", "build feature", "ralph", "ralph-loop", "iteruj aż zielono". Runs detect env → analysis → hypotheses → plan → APPROVAL → worktree (M+) → ralph decision → implement (6-Sequential / 6-Teams 2–5 / 6-Ralph autonomous) → 7 test scopes (unit/integration/system/acceptance/E2E-playwright-chromium-tier1234/regression/perf+security per S/M/L; opt 7.6 ralph test-fix) → live preview (M+ UI) → code review → ADR. Never skip approval gate or code review.
 ---
 
@@ -21,10 +21,11 @@ Full workflow: **analyze → hypothesize → plan → save → approve → imple
 
 Reference files (read when you reach each phase):
 - Phase 1 — Deep Analysis: `references/analysis-protocol.md`
-- Phase 7 — Testing: `references/testing-protocol.md`
+- Phase 7 — Testing (aplikacji wytwarzanej przez skill): `references/testing-protocol.md`
 - Phase 8.1 — Acceptance Criteria: `references/ac-protocol.md`
 - Phase 8 — Code Review: `references/code-review-protocol.md` (format-agnostic: AC schema, CR report, severity)
 - Phase 9 — ADR: `references/adr-template.md`
+- Test Discipline (meta-testy samego skilla, Beyoncé Rule + Prove-It dla regresji): `references/testing-map.md` — **v2 NIE ma `scripts/` ani `tests/`**, plik dokumentuje stan i wymusza retrofitting przy każdej nowej funkcjonalności (każda nowa faza/bramka = nowy skrypt walidatora + fixture + assert_exit w runnerze, wzorzec: `dev/agent-teams-builder/tests/`).
 
 ---
 

@@ -23,7 +23,7 @@ sources:
   - DOC/material_skill.md
   - DOC/since_skill.md
   - DOC/goal_mode.md
-version: v3.1.0
+version: v3.2.0
 extends: feature-planner-v2
 size-limit: 500-lines-hard
 ---
@@ -42,7 +42,7 @@ size-limit: 500-lines-hard
 
 ---
 
-## Anti-Rationalization quick-table (pełna: [anti-rationalization.md](references/anti-rationalization.md))
+## Anti-Rationalization quick-table (pełna: [anti-rationalization.md](references/anti-rationalization.md), meta-testy skryptów: [testing-map.md](references/testing-map.md))
 
 Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phase 7 — przejdź przez tę tabelę.
 
@@ -59,6 +59,8 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 | 9 | „Test pokrywa happy path" | Beyoncé Rule. Każdy edge case z AC-N → osobny test. |
 | 10 | „DRY-uję testy w helper" | DAMP over DRY. Test czytelny jak spec, bez magicznych helperów. |
 | 11 | „Goal-statement deryw kompletny, można pominąć Gate #1.5" | Gate #1.5 jest nienegocjowalny w /goal. Bez jawnej zgody → brak startu pętli. |
+| 12 | „Skrypt v3 (`check-pr-size`, `api-impact-scan` …) jest deterministyczny, meta-test zbędny" | Odrzucono. **Beyoncé Rule dla samego skilla.** Każdy `scripts/*.sh` ma fixture + `assert_exit` w `tests/run-meta-tests.sh` (runner do utworzenia — wzorzec a-t-b). Bez tego skrypt może milcząco regresować przy refaktorze. Patrz [testing-map.md](references/testing-map.md). |
+| 13 | „Bug w skrypcie v3 — fix, regresji nie dorabiam" | Odrzucono. **Prove-It Pattern dla skryptu** (analog Phase 6.5 ale dla samego walidatora). `tests/fixtures/regression-<short-desc>.<ext>` + failing `assert_exit` PRZED fixem. Patrz [testing-map.md](references/testing-map.md) §Procedura fix buga. |
 
 ---
 
@@ -321,6 +323,7 @@ Bramki Phase 7:
 - [ ] **AC coverage 1:1**: `sh {baseDir}/dev/feature-planner-v3/scripts/check-ac-coverage.sh --plan "$PLAN_FILE"` → 100%.
 - [ ] **DAMP checklist** per test file (patrz [testing-protocol.md](references/testing-protocol.md) sekcja DAMP).
 - [ ] **Trace runtime** dla ścieżki krytycznej.
+- [ ] **Meta-testy skryptów v3 (Beyoncé Rule dla samego skilla)** — jeśli ta sesja dodała/zmodyfikowała `scripts/*.sh`: fixture w `tests/fixtures/` + `assert_exit` w `tests/run-meta-tests.sh` (utwórz runner jeśli nie istnieje — wzorzec: `dev/agent-teams-builder/tests/`). Fix buga skryptu → `regression-*.<ext>` (analog Phase 6.5 dla walidatora). Mapa + procedura: [testing-map.md](references/testing-map.md). **Stan obecny: 0 / 7 skryptów ma meta-testy** — patrz testing-map.md §TODO retrofitting.
 
 > [!important] Brak któregokolwiek artefaktu = STOP. **„Wydaje się działać" to halucynacja**, nie status.
 
@@ -382,7 +385,8 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - [analysis-protocol.md](references/analysis-protocol.md) — Phase 1 (+ Hyrum + Chesterton).
 - [ac-protocol.md](references/ac-protocol.md) — AC + Beyoncé 1:1 mapping.
 - [code-review-protocol.md](references/code-review-protocol.md) — review (+ PR Sizing + Five-Axis redirect).
-- [testing-protocol.md](references/testing-protocol.md) — 7 scopes + DAMP + Prove-It + raw logs.
+- [testing-protocol.md](references/testing-protocol.md) — 7 scopes + DAMP + Prove-It + raw logs (testy aplikacji wytwarzanej przez skill).
+- [testing-map.md](references/testing-map.md) — mapa **meta-testów samego skilla** (unit/integration/regression per skrypt `scripts/*.sh`) + procedura RED-GREEN-REFACTOR + Prove-It Pattern dla regresji walidatora. Ładuj gdy: dodajesz/modyfikujesz skrypt LUB fix bug skryptu LUB audyt DoD przed bramką.
 
 ### Protokoły projektowe (warstwa B — since_skill.md)
 

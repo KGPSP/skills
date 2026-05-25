@@ -24,7 +24,7 @@ sources:
   - DOC/since_skill.md
   - DOC/agent-teams-generator-ewaluator.md
   - DOC/goal_mode.md
-version: v1.8.0
+version: v1.9.0
 size-limit: 500-lines-hard
 ---
 
@@ -274,8 +274,11 @@ Tabela ripost. **Każda riposta = blokada, nie sugestia.** Format: "Odrzucono. {
 | „Człowiek napisał 'spoko', traktuję jako zgodę" | Odrzucono. Tylko frazy z whitelisty (`approval-gates-protocol.md §4`). Niejednoznaczność = dopytaj. |
 | „Jestem w `/YOLO`, więc mogę zrobić `git push` / `DROP TABLE`" | Odrzucono. **`/YOLO` znosi bramki PRZEGLĄDU, nie zabezpieczenia destrukcyjne.** Brak push/publish/drop/rm-poza-feature także w YOLO. Operacje nieodwracalne zawsze wymagają człowieka. |
 | „W `/YOLO` pominę walidator, leci autonomicznie" | Odrzucono. YOLO auto-zatwierdza artefakt **po** przejściu `verify-*.sh`. Fail walidatora w YOLO = STOP + `blockers.md`, nie auto-pass. Autonomia ≠ udawanie zielonego. |
+| „Dodaję nowy walidator do `scripts/`, test runnerowy później" | Odrzucono. **Beyoncé Rule dla samego skilla.** Każdy `verify-*.sh` / `check-*.sh` musi mieć fixture GOOD + BAD + `assert_exit` w `tests/run-meta-tests.sh`. Bez tego walidator milcząco regresuje. Patrz `references/testing-map.md §Procedura`. |
+| „Bug walidatora — naprawiam, regresji nie dorabiam" | Odrzucono. **Prove-It Pattern (test regresji).** Każdy bug walidatora → `tests/fixtures/regression-<short-desc>.<ext>` + failing `assert_exit` PRZED fixem. Bez tego ten sam bug wróci. Patrz `references/testing-map.md §Procedura fix buga`. |
+| „Walidator nie czyta state/ ani breadcrumbs, integration test zbędny" | Sprawdź ponownie. Reaguje na gate? Pisze evidence? Wtedy ma cross-validator dependency → 15% piramidy 80/15/5 = integration scena w runnerze. Patrz `references/testing-map.md §Mapa`. |
 
-Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + library currency + domenowymi wariantami: `references/anti-rationalization.md §5` + `references/library-currency-protocol.md §7`.
+Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + library currency + domenowymi wariantami: `references/anti-rationalization.md §5` + `references/library-currency-protocol.md §7`. Mapa meta-testów (unit/integration/regression) per walidator + procedura dodawania: `references/testing-map.md`.
 
 ---
 
@@ -296,8 +299,9 @@ Pełna tabela z Google DNA (Hyrum/Chesterton/Beyoncé/DAMP) + library currency +
 - [ ] **Plan rigor (faza 1)** — `scripts/verify-plan-rigor.sh` exit 0. `state/plan.md` ma wszystkie 11 sekcji + 3 hipotezy per sprint (Minimal/Idiomatic/Ambitious) + Hyrum Impact + Rollback plan + Alternatives considered (min. 2).
 - [ ] **Documentation** — `scripts/verify-documentation.sh` exit 0. Każdy passed sprint ma PRD (8 sekcji) + retrospective + code review (Five-Axis). Architektoniczne decyzje mają ADR w `docs/adr/`. TODO snapshot aktualny. QA report jeśli playwright-runner uruchamiał.
 - [ ] **Approval gates** — `scripts/verify-approval-gates.sh` exit 0. Każda z 6 bramek (#1-#6) ma `gate_approved` w breadcrumbs z jawną zgodą człowieka, w prawidłowej kolejności (plan przed spawnem, sprint przed kolejnym). Brak wiszących `gate_pending`.
+- [ ] **Meta-testy walidatorów (Beyoncé Rule dla samego skilla)** — każda zmiana w `scripts/` ma odpowiadające `assert_exit` w `tests/run-meta-tests.sh` (unit). Walidator z cross-validator dependency: integration scena z `setup_*`. Bug walidatora: regression fixture `tests/fixtures/regression-*.<ext>`. Surowy output `bash tests/run-meta-tests.sh | tail -3` → `X/X passed` wklejony do PR description. Mapa: `references/testing-map.md`.
 
-Pełna procedura zbierania dowodów: `references/dod-evidence-protocol.md`. Pełen protokół currency: `references/library-currency-protocol.md`. Pełen rygor planistyczny: `references/planning-rigor.md`. Pełen audit trail dokumentów: `references/documentation-protocol.md`. Pełen protokół bramek akceptacji: `references/approval-gates-protocol.md`.
+Pełna procedura zbierania dowodów: `references/dod-evidence-protocol.md`. Pełen protokół currency: `references/library-currency-protocol.md`. Pełen rygor planistyczny: `references/planning-rigor.md`. Pełen audit trail dokumentów: `references/documentation-protocol.md`. Pełen protokół bramek akceptacji: `references/approval-gates-protocol.md`. Mapa meta-testów walidatorów (unit/integration/regression): `references/testing-map.md`.
 
 ---
 
@@ -321,6 +325,7 @@ Załaduj `references/{plik}.md` **tylko** gdy spełniony warunek:
 | Faza 1 (Planner pisze state/plan.md) — ZAWSZE | `planning-rigor.md` (3 hipotezy/sprint + Hyrum Impact + Rollback + Alternatives) |
 | Faza 1 (Planner) + Faza 4-end (Evaluator po sprincie) — ZAWSZE | `documentation-protocol.md` (PRD/ADR/retro/code-review/QA report) |
 | Start sesji (każdy tryb, włącznie z /goal) — ZAWSZE | `approval-gates-protocol.md` (6 bramek human-in-the-loop) |
+| Dodajesz/modyfikujesz walidator w `scripts/` LUB fix buga walidatora LUB Faza 6 (verify) audit DoD | `testing-map.md` (mapa unit/integration/regression per walidator + procedura RED-GREEN-REFACTOR + Prove-It dla regresji) |
 
 **Reguła:** nie ładuj wszystkiego na raz. Token budget L2 ≤5000. Reszta progresywnie.
 

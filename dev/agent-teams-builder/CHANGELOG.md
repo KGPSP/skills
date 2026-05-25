@@ -1,5 +1,32 @@
 # CHANGELOG — agent-teams-builder
 
+## [v1.9.0] — 2026-05-25 — Test Discipline (mapa unit/integration/regression dla samego skilla)
+
+### Added
+
+- **`references/testing-map.md`** — mapa meta-testów (**unit / integration / regression**) per walidator/skrypt **samego skilla** (NIE testy aplikacji wytwarzanej przez zespół — te zostają w `playwright-runner`). Zawiera:
+  - **Pryncypium** zakorzenione w DOC: Beyoncé Rule (`material_skill.md §5`), piramida 80/15/5 (`since_skill.md §5`), TDD RED-GREEN-REFACTOR, **Prove-It Pattern** (`since_skill.md §5`) = test regresji, DAMP over DRY.
+  - **Definicje** unit/integration/regression w kontekście meta-testów + konwencje nazewnictwa fixtures (`<komponent>-<scenariusz>.<ext>`, `regression-<short-desc>.<ext>`).
+  - **Mapę 19 walidatorów** → status pokrycia (10/19 unit ✅, 3/19 integration ✅, 9 TODO retrofit) + ścieżki do istniejących 15 fixtures + 22/22 assert_exit cases.
+  - **Procedurę dodawania walidatora** (8 kroków: spec → RED → impl → GREEN → integration → update mapy → CHANGELOG → exit criterion: `bash tests/run-meta-tests.sh | tail -3` → `X/X passed`).
+  - **Procedurę fix buga walidatora** (Prove-It dla regresji): regression fixture + failing assert_exit PRZED fixem.
+  - **6 wymówek Anti-Rationalization** specyficznych dla meta-testów (trywialny walidator, bug bez regresji, integration zbędny, etc.).
+- **3 wiersze Anti-Rationalization w SKILL.md** — wymówki specyficzne dla meta-testów walidatorów (każda z linkiem do `references/testing-map.md`).
+- **1 checkbox w DoD** — „Meta-testy walidatorów (Beyoncé Rule dla samego skilla)" wymagający `bash tests/run-meta-tests.sh | tail -3` → `X/X passed` w PR description.
+- **1 wiersz w Progresywne ładowanie referencji** — reguła ładowania `testing-map.md`: dodajesz/modyfikujesz walidator LUB fix bug LUB Faza 6 verify.
+
+### Why
+
+User feedback: „jak coś wytwarzasz to tworzysz testy". Przed v1.9.0 a-t-b miał już 22/22 testy walidatorów (najlepszy stan w `dev/`), ale brakowało dokumentu **mapującego funkcjonalność → typ testu** + procedury wymuszającej Beyoncé Rule przy każdej zmianie. Bez mapy: nowi walidatorzy mogą wchodzić bez testów, bug fixe bez fixtures regresji.
+
+### Sources
+
+- DOC/material_skill.md §4 (DoD = dowód), §5 (Beyoncé Rule, DAMP, piramida 80/15/5)
+- DOC/since_skill.md §5 (TDD RED-GREEN-REFACTOR + Prove-It Pattern = test regresji)
+- DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md §9 (Checklist gotowości — Beyoncé), §10 (`source:` traceability w references/)
+
+---
+
 ## [v1.8.0] — 2026-05-20 — Tryb /YOLO (autonomia bez bramek)
 
 ### Added
