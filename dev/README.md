@@ -4,14 +4,13 @@ Workflowy planowania/implementacji feature'a, orkiestracja zespołów sub-agent�
 
 ## Planowanie feature'a
 
-Cztery warianty pokrywają różne kombinacje **środowiska** (Claude Code vs Codex CLI), **rygoru** (wygodny vs senior-grade) oraz **zakresu** (planowanie+implementacja vs samo planowanie).
+Trzy warianty pokrywają różne kombinacje **rygoru** (wygodny vs senior-grade) oraz **zakresu** (planowanie+implementacja vs samo planowanie). Wszystkie pracują w Claude Code.
 
-| Skill | Wariant | Wersja | Środowisko | Rygor | Zakres | Wielkość |
-|---|---|---|---|---|---|---|
-| [`feature-planner`](feature-planner/) | **v2** | `v2.1.0` | Claude Code | wygodny | plan + implementacja | ~2200 linii SKILL.md |
-| [`feature-planner-v3`](feature-planner-v3/) | **v3** | `v3.1.0` | Claude Code | senior-grade | plan + implementacja | 344 linii SKILL.md + 12 refs + 5 scripts |
-| [`planner-f`](planner-f/) | **planning-only** | `v1.0.0` | Claude Code | senior-grade | **tylko plan + analiza + ADR** | 256 linii SKILL.md + 8 refs + 2 scripts |
-| [`feature-planner-codex`](feature-planner-codex/) | **codex** | `v1.0.0` | OpenAI Codex CLI | wygodny | plan + implementacja | krótszy, codex-native |
+| Skill | Wariant | Wersja | Rygor | Zakres | Wielkość |
+|---|---|---|---|---|---|
+| [`feature-planner`](feature-planner/) | **v2** | `v2.1.0` | wygodny | plan + implementacja | ~2200 linii SKILL.md |
+| [`feature-planner-v3`](feature-planner-v3/) | **v3** | `v3.1.0` | senior-grade | plan + implementacja | 344 linii SKILL.md + 12 refs + 5 scripts |
+| [`planner-f`](planner-f/) | **planning-only** | `v1.0.0` | senior-grade | **tylko plan + analiza + ADR** | 256 linii SKILL.md + 8 refs + 2 scripts |
 
 > **`planner-f` vs `feature-planner-v3`:** ten sam rygor analityczno-planistyczny (fazy 0–5 + ADR), ale planner-f **kończy na zatwierdzonym planie** — nie pisze kodu, nie pisze/uruchamia testów, nie commituje. Reguły wykonawcze (TDD RED, build clean, Five-Axis, Prove-It, PR sizing przy commitach) są **specyfikowane** w planie i przekazywane wykonawcy (handoff do v3 Phase 6+ lub `agent-teams-builder`). Używaj, gdy chcesz oddzielić „co/dlaczego budujemy" od „budujemy".
 
@@ -46,9 +45,6 @@ START
   │
   ├── Chcesz TYLKO plan/analizę/ADR (kod napisze ktoś inny / później)?
   │     └── YES → planner-f  (kończy na zatwierdzonym planie, handoff)
-  │
-  ├── Środowisko = Codex CLI (nie Claude Code)?
-  │     └── YES → feature-planner-codex
   │
   ├── Zadanie dotyka fragile zone (DB migration, auth core, infra, secrets)?
   │     └── YES → feature-planner-v3 (Plan-Validate-Execute reżim)
@@ -147,10 +143,6 @@ feature-planner-v3/
 "przygotuj plan", "przygotuj specyfikację", "zaprojektuj rozwiązanie",
 "plan bez implementacji", "napisz ADR", "/plan-f"
 ```
-
-### feature-planner-codex
-
-Aktywowany w środowisku Codex CLI — patrz `feature-planner-codex/SKILL.md`.
 
 ---
 

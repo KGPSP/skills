@@ -33,14 +33,13 @@ skills/
 
 Workflowy planowania/implementacji feature'a + orkiestracja zespołów agentów + QA end-to-end. Pełne porównanie i decyzja "który użyć kiedy" → [`dev/README.md`](dev/README.md).
 
-**Planowanie feature'a** — cztery warianty (wybór zależy od środowiska, rygoru i tego, czy skill ma też implementować):
+**Planowanie feature'a** — trzy warianty (wybór zależy od rygoru i tego, czy skill ma też implementować):
 
 | Skill | Wariant | Zastosowanie |
 |-------|---------|--------------|
 | [`feature-planner`](dev/feature-planner/) | **v2** (Claude Code) · `v2.1.0` | Replit Agent style z auto Agent Teams routing, ralph-loop autonomous, `/effort max`, 7 test scopes (unit/integration/system/acceptance/E2E/regression/perf+sec), worktree decision matrix. Domyślny wybór dla **typowych** zadań feature'owych. |
 | [`feature-planner-v3`](dev/feature-planner-v3/) | **v3** (senior-grade) · `v3.1.0` | v2 + deterministyczna uprząż inżynieryjna: 15-wpisowa Anti-Rationalization Table, twardy DoD z surowymi artefaktami, PR Sizing 100/300/1000, Hyrum's Law, Chesterton's Fence, Beyoncé Rule 1:1 AC↔Test, DAMP over DRY, Five-Axis Review, Plan-Validate-Execute, Thin Vertical Slices, Prove-It Pattern. Dla zadań **wysokiego rygoru** — fragile ops, audytowalna delegacja, compliance. |
 | [`planner-f`](dev/planner-f/) | **planning-only** · `v1.0.0` | Pochodny od v3, **odcięty od implementacji**: 7 faz + 1 bramka akceptacji. Produkuje audytowalny pakiet planistyczny (Analysis Report + Plan z AC/DoD-spec/Thin Slices + ADR) gotowy do **handoffu** skillowi wykonawczemu. Zachowuje Hyrum/Chesterton/Beyoncé/DAMP jako **specyfikację** (nie pisze ani nie uruchamia kodu). Gdy chcesz analizę i decyzje **przed** kodowaniem, albo wykonanie deleguje ktoś inny. |
-| [`feature-planner-codex`](dev/feature-planner-codex/) | **codex-native** · `v1.0.0` | Wariant bez Claude-Code-specific koncepcji (Agent Teams, slash commands). Do pracy w **OpenAI Codex CLI**. |
 
 **Orkiestracja i QA** — dla projektów wielosprintowych i testów aplikacji:
 
@@ -57,7 +56,7 @@ Repo jest **marketplace pluginów Claude Code** (`kgpsp-skills`). Skille są pog
 |--------|--------|------------|
 | `pzp-tools` | 4 | analyzing-pzp-offers, drafting-pzp-letters, odpowiedzi-pytania, weryfikacja-umow-pzp |
 | `legal-tools` | 2 | opinie-prawne, sejm-eli-api |
-| `dev-tools` | 6 | agent-teams-builder, feature-planner (v2), feature-planner-v3, feature-planner-codex, planner-f, playwright-test-suite |
+| `dev-tools` | 6 | agent-teams-builder, feature-planner (v2), feature-planner-v3, planner-f, playwright-test-suite, swarm-orchestrator |
 
 **1. Dodaj marketplace** (jednorazowo):
 
@@ -101,7 +100,6 @@ lub naturalnym językiem zgodnym z `description` w SKILL.md.
 - **„Dodaj endpoint", „zrób X", „zaimplementuj Y"** → `feature-planner` (v2).
 - **„senior-grade feature", „audytowalnie", „fragile op", „migration DB", „auth refactor"** → `feature-planner-v3`.
 - **„zaplanuj", „przeanalizuj i zaprojektuj", „przygotuj plan/ADR bez implementacji"** → `planner-f` (kończy na zatwierdzonym planie, handoff do wykonawcy).
-- **Praca w Codex CLI** (nie Claude Code) → `feature-planner-codex`.
 
 Pełna decyzja w [`dev/README.md`](dev/README.md).
 

@@ -2,6 +2,49 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-25] dev/feature-planner-codex — usunięcie skilla
+
+### Removed
+
+- **`dev/feature-planner-codex/`** — cały skill (8 plików: SKILL.md, CHANGELOG.md, agents/openai.yaml, references/{ac-protocol,adr-template,analysis-protocol,code-review-protocol,testing-protocol}.md). Wariant codex-native (OpenAI Codex CLI) wycofany — repo koncentruje się wyłącznie na Claude Code (3 warianty plannerów: feature-planner v2 · feature-planner-v3 · planner-f).
+
+### Changed
+
+- **`dev-tools`** (plugin) → `v1.2.0`: usunięto `feature-planner-codex` z `skills:` (6 skilli). `description` i `keywords` zaktualizowane (`codex` usunięte z keywords). [`dev/.claude-plugin/plugin.json`](dev/.claude-plugin/plugin.json).
+- **`marketplace.json`** (root) → `v1.2.0`: opis `dev-tools` zsynchronizowany z nową listą skilli.
+- **`README.md`** (root) — usunięty wiersz tabeli i bullet „Praca w Codex CLI"; tabela „Instalacja" zaktualizowana (`dev-tools` 6 skilli, z swarm-orchestrator zamiast feature-planner-codex); „cztery warianty" → „trzy warianty".
+- **`dev/README.md`** — usunięty wiersz tabeli planerów, gałąź decision tree „Środowisko = Codex CLI", sekcja trigger keywords „### feature-planner-codex"; „Cztery warianty" → „Trzy warianty".
+- **`AGENTS.md`** — usunięty wpis pozycjonowania `feature-planner-codex (Codex CLI)`.
+
+## [2026-05-24] dev/swarm-orchestrator v1.0.0 — multi-agent tmux orchestration z YOLO/goal
+
+### Added
+
+- **`dev/swarm-orchestrator/`** — nowy skill: orkiestracja 4 agentów Claude Code w tmux -CC panes (parent / planner / generator / evaluator) z 3 trybami (manual / hybrid default / yolo). Komponuje widzialność tmux z [`DOC/agents_swarm/`](DOC/agents_swarm/) (prototyp local-only), rygor 5 bramek + kontrakty + breadcrumbs z [`dev/agent-teams-builder/`](dev/agent-teams-builder/) i autonomię `/goal` z [`dev/feature-planner-v3/`](dev/feature-planner-v3/) (Phase 6-Goal route).
+- SKILL.md (268 linii, limit 500) z 8 fazami + 5 bramkami + Anti-Rat 8 wierszy + DoD 12 punktów + frontmatter kanoniczny (`trigger`, `do-not-trigger-for`, `model`, `allowed-tools`, `sources`, `version`, `size-limit`).
+- 10× `references/*.md`: modes-protocol, tmux-orchestration, goal-mode-integration, stop-conditions, approval-gates-protocol, pivot-protocol, recovery-protocol, anti-rationalization (pełna tabela 18 wymówek), hook-integration, prd-input-schema.
+- 26 skryptów `scripts/`: lib/ (paths/state/prompt/tmux) + swarm-* entry-points + walidatory/checki + **NOWE** `swarm-yolo.sh` (single-iteration driver z 7 STOP conditions + atomic commit guard + auto-pivot), `error-hash.sh` (md5 sygnatury błędu dla no-progress detection), `archive-run.sh` (tar.gz + delete po gate:5).
+- 4 agenty `agents/swarm-{parent,planner,generator,evaluator}.md` (1:1 z prototypu DOC/agents_swarm).
+- 10 promptów `prompts/`: 4 boot + 5 phase + **NOWY** phase-yolo-iterate.md (generator iteracja w YOLO).
+- Assets: plan-template.md, contract-template.json, breadcrumbs-schema.json.
+- Tests: 5 fixtures (good/bad PRD) + `run-meta-tests.sh` (47 checków: syntax/fixtures/structure/scripts-exec/error-hash). **47/47 passed.**
+
+### Decyzje produktowe (potwierdzone z user)
+
+- Backend domyślny: **tmux panes** (4 procesy `claude`); Task tool fallback gdy brak tmux.
+- Tryb domyślny: **hybrid** (5 bramek HITL + auto między).
+- YOLO: **single sprint** per invokacja, **atomic commits** bez `git push`, **auto-pivot** po 3× no-progress.
+- State retention: **auto-archive po sukcesie** (gate:5) → `.agents-swarm/archives/{RUN_ID}.tar.gz`; failed runs zostają do debugu.
+
+### Twarde zakazy YOLO (egzekwowane przez `swarm-yolo.sh`)
+
+- `git push`, `npm publish`, `gh pr create`, `gh release`, `DROP`, `rm` poza `paths_in_scope` — zawsze human gate.
+- Fragile zones (`migrations/`, `terraform/`, `k8s/`, `auth/`, `.github/workflows/`, `Dockerfile`, `prod*`) — exit 5 chyba że `--force-fragile` (logowane w breadcrumb `fragile_override`).
+
+### Changed
+
+- **`dev-tools`** (plugin) → `v1.1.0`: dodano `swarm-orchestrator` (7 skilli). Zaktualizowano `dev/.claude-plugin/plugin.json` (skills array, version, +4 keywords: tmux/swarm/yolo/goal-mode), `marketplace.json` description (root version 1.0.0 → 1.1.0).
+
 ## [2026-05-22] legal/sejm-eli-api v1.0.0 — komunikacja z Sejm ELI API
 
 ### Added
