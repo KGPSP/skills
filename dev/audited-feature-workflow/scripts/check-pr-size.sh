@@ -1,5 +1,5 @@
 #!/bin/sh
-# check-pr-size.sh — PR size gate for feature-planner-v3 (Phase 6 / Phase 8).
+# check-pr-size.sh — PR size gate for audited-feature-workflow (Phase 6 / Phase 8).
 # Counts insertions+deletions between BASE and HEAD. Exits with structured JSON.
 #
 # Usage:

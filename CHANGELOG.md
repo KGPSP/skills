@@ -2,6 +2,34 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-25] dev/feature-planner-v3 → dev/audited-feature-workflow — rename skilla (v3.3.0)
+
+### Changed
+
+- **`dev/feature-planner-v3/` → `dev/audited-feature-workflow/`** — pełny rename skilla (folder + frontmatter `name: feature-planner-v3` → `name: audited-feature-workflow`). `git mv` zachował historię plików.
+- **`dev-tools`** plugin → `v1.4.0`: zaktualizowana lista `skills:` + keywords (+`audited-workflow`).
+- **`marketplace.json`** root → `v1.4.0`: opis dev-tools odzwierciedla nową nazwę i pozycjonowanie (audit-trail-ready senior-grade vs replit-style wygodny).
+- **Cross-references zsynchronizowane** (>40 plików, ~53 total z folder rename): manifesty, READMEs (root + dev/), AGENTS.md, wszystkie 13× `parent:` w `references/`, 3× komentarze w `scripts/`, cross-refs w `replit-style-workflow`, `planner-f`, `agent-teams-builder`, `swarm-orchestrator`. Globalny `sed` zamienił wszystkie wystąpienia `feature-planner-v3` → `audited-feature-workflow` poza `.git/`.
+
+### Why
+
+Po wcześniejszym renamie `feature-planner` → `replit-style-workflow` (v2.3.0 ten sam dzień), sufix `-v3` stracił semantykę sekwencji. Nazwa nie wskazywała na unikalną wartość: pełen audit trail (6 HITL approval gates, raw evidence per AC, breadcrumbs, Five-Axis Review, /goal mode hard caps). `audited-feature-workflow` jasno pozycjonuje skill względem `replit-style-workflow` (wygodny rygor) — dla zadań wymagających audytowalności (compliance, regulated environment, fragile ops).
+
+### Co NIE zmienia się
+
+- **Funkcjonalność skilla** — pure rename refactor, zero zmian w SKILL.md content czy references.
+- **Trigger keywords** — `/goal`, `senior-grade feature`, `dodaj feature v3`, `ralph v3`, `implement v3` zachowane.
+- **22/22 testów `agent-teams-builder/tests/run-meta-tests.sh`** — regresja sprawdzona po wszystkich zmianach.
+- **Relacja `extends: replit-style-workflow`** — zachowana (audited rozszerza replit-style o senior-grade harness).
+
+### Migracja
+
+Wywoływanie przez trigger phrasy → bez zmian. Wywoływanie przez `name:` bezpośrednio → użyj `audited-feature-workflow` (nie `feature-planner-v3`).
+
+### Historia paths w CHANGELOG-ach
+
+Globalny `sed` zamienił wszystkie wystąpienia `feature-planner-v3` (włącznie ze ścieżkami w historycznych wpisach CHANGELOG-ów) → `audited-feature-workflow`. Konsekwencja: czytelnik CHANGELOG-a dziś nawiguje do current ścieżek; historia rename event jest zachowana w `git log` (commit + tag).
+
 ## [2026-05-25] dev/feature-planner → dev/replit-style-workflow — rename skilla (v2.3.0)
 
 ### Changed
@@ -10,8 +38,8 @@ Historia zmian na poziomie repozytorium. Per-skill detale → commit history pos
 - **`dev-tools`** plugin → `v1.3.0`: zaktualizowana lista `skills:` (`./feature-planner` → `./replit-style-workflow`), keywords (+`replit-style`).
 - **`marketplace.json`** root → `v1.3.0`: opis dev-tools odzwierciedla nową nazwę + pozycjonowanie.
 - **`README.md`** (root), **`dev/README.md`**, **`AGENTS.md`** — wszystkie wzmianki o `feature-planner` (jako skill v2) zaktualizowane do `replit-style-workflow` z notą historyczną. Decision tree i tabela pluginu zsynchronizowane.
-- **`dev/feature-planner-v3/SKILL.md`** — `extends: feature-planner-v2` → `extends: replit-style-workflow` + link w indeksie referencji zsynchronizowany.
-- **`dev/feature-planner-v3/README.md`** + **`dev/feature-planner-v3/CHANGELOG.md`** (preambuła) + **`dev/feature-planner-v3/references/testing-map.md`** (Anti-Rat wiersz) — wzmianki o "v2" zsynchronizowane.
+- **`dev/audited-feature-workflow/SKILL.md`** — `extends: feature-planner-v2` → `extends: replit-style-workflow` + link w indeksie referencji zsynchronizowany.
+- **`dev/audited-feature-workflow/README.md`** + **`dev/audited-feature-workflow/CHANGELOG.md`** (preambuła) + **`dev/audited-feature-workflow/references/testing-map.md`** (Anti-Rat wiersz) — wzmianki o "v2" zsynchronizowane.
 - **`pzp/odpowiedzi-pytania/SKILL.md`** — usunięte stale ref do `feature-planner` (wzmianka „przygotuj SWZ" — to skill PZP, nie dev/, więc reference był błędny od dawna; po renamie skill author'a wzmianka byłaby podwójnie myląca).
 
 ### Why
@@ -33,7 +61,7 @@ Wywoływanie przez trigger phrasy → bez zmian. Wywoływanie przez `name:` bezp
 ### Added
 
 - **`dev/agent-teams-builder/references/testing-map.md`** (v1.9.0) — mapa meta-testów walidatorów: 19 walidatorów × status (10/19 unit ✅, 3/19 integration ✅, 9 TODO) + 22/22 cases w runnerze + procedura Prove-It dla regresji. Status pokrycia surowo z `bash tests/run-meta-tests.sh`.
-- **`dev/feature-planner-v3/references/testing-map.md`** (v3.2.0) — mapa meta-testów skryptów v3 (0/7 obecnie pokryte, plan retrofitting). Rozróżnia 2 piętra: `testing-protocol.md` (testy aplikacji wytwarzanej) vs `testing-map.md` (meta-testy samego skilla). Wykryto martwe fixtures `complete-plan.md`/`incomplete-plan.md` w v3 — żaden skrypt v3 ich nie wywołuje.
+- **`dev/audited-feature-workflow/references/testing-map.md`** (v3.2.0) — mapa meta-testów skryptów v3 (0/7 obecnie pokryte, plan retrofitting). Rozróżnia 2 piętra: `testing-protocol.md` (testy aplikacji wytwarzanej) vs `testing-map.md` (meta-testy samego skilla). Wykryto martwe fixtures `complete-plan.md`/`incomplete-plan.md` w v3 — żaden skrypt v3 ich nie wywołuje.
 - **`dev/feature-planner/references/testing-map.md`** (v2.2.0) — Test Discipline dla v2 (prose-heavy, 0 walidatorów). Wymusza pryncypium retrofittingu: każda nowa funkcjonalność v2 = nowy walidator + fixture + assert_exit.
 - **SKILL.md w 3 skillach** — 1-3 wiersze Anti-Rationalization (specyficzne dla meta-testów: trywialny walidator/bug bez regresji/integration zbędny), 1 checkbox DoD (Beyoncé Rule dla samego skilla), 1 wpis w indeksie referencji z regułą ładowania.
 
@@ -57,7 +85,7 @@ $ bash dev/agent-teams-builder/tests/run-meta-tests.sh | tail -3
 | Skill | Wersja | Unit | Integration | Regression | Runner |
 |---|---|---|---|---|---|
 | agent-teams-builder | v1.9.0 | 10/19 ✅ | 3/19 ✅ | 0 (brak historycznych bugów) | ✅ tests/run-meta-tests.sh (345 linii, 22/22 passed) |
-| feature-planner-v3 | v3.2.0 | 0/7 ❌ | 0 ❌ | 0 ❌ | ❌ TODO retrofit (priorytet #1 wg testing-map.md) |
+| audited-feature-workflow | v3.2.0 | 0/7 ❌ | 0 ❌ | 0 ❌ | ❌ TODO retrofit (priorytet #1 wg testing-map.md) |
 | feature-planner (v2) | v2.2.0 | 0 ❌ (brak scripts/) | 0 ❌ | 0 ❌ | ❌ Pryncypium retrofittingu: każda nowa funkcjonalność = nowy walidator |
 
 ### Sources
@@ -68,7 +96,7 @@ DOC (lokalne, gitignored): `DOC/material_skill.md §4 (DoD = dowód), §5 (Beyon
 
 ### Removed
 
-- **`dev/feature-planner-codex/`** — cały skill (8 plików: SKILL.md, CHANGELOG.md, agents/openai.yaml, references/{ac-protocol,adr-template,analysis-protocol,code-review-protocol,testing-protocol}.md). Wariant codex-native (OpenAI Codex CLI) wycofany — repo koncentruje się wyłącznie na Claude Code (3 warianty plannerów: feature-planner v2 · feature-planner-v3 · planner-f).
+- **`dev/feature-planner-codex/`** — cały skill (8 plików: SKILL.md, CHANGELOG.md, agents/openai.yaml, references/{ac-protocol,adr-template,analysis-protocol,code-review-protocol,testing-protocol}.md). Wariant codex-native (OpenAI Codex CLI) wycofany — repo koncentruje się wyłącznie na Claude Code (3 warianty plannerów: feature-planner v2 · audited-feature-workflow · planner-f).
 
 ### Changed
 
@@ -82,7 +110,7 @@ DOC (lokalne, gitignored): `DOC/material_skill.md §4 (DoD = dowód), §5 (Beyon
 
 ### Added
 
-- **`dev/swarm-orchestrator/`** — nowy skill: orkiestracja 4 agentów Claude Code w tmux -CC panes (parent / planner / generator / evaluator) z 3 trybami (manual / hybrid default / yolo). Komponuje widzialność tmux z [`DOC/agents_swarm/`](DOC/agents_swarm/) (prototyp local-only), rygor 5 bramek + kontrakty + breadcrumbs z [`dev/agent-teams-builder/`](dev/agent-teams-builder/) i autonomię `/goal` z [`dev/feature-planner-v3/`](dev/feature-planner-v3/) (Phase 6-Goal route).
+- **`dev/swarm-orchestrator/`** — nowy skill: orkiestracja 4 agentów Claude Code w tmux -CC panes (parent / planner / generator / evaluator) z 3 trybami (manual / hybrid default / yolo). Komponuje widzialność tmux z [`DOC/agents_swarm/`](DOC/agents_swarm/) (prototyp local-only), rygor 5 bramek + kontrakty + breadcrumbs z [`dev/agent-teams-builder/`](dev/agent-teams-builder/) i autonomię `/goal` z [`dev/audited-feature-workflow/`](dev/audited-feature-workflow/) (Phase 6-Goal route).
 - SKILL.md (268 linii, limit 500) z 8 fazami + 5 bramkami + Anti-Rat 8 wierszy + DoD 12 punktów + frontmatter kanoniczny (`trigger`, `do-not-trigger-for`, `model`, `allowed-tools`, `sources`, `version`, `size-limit`).
 - 10× `references/*.md`: modes-protocol, tmux-orchestration, goal-mode-integration, stop-conditions, approval-gates-protocol, pivot-protocol, recovery-protocol, anti-rationalization (pełna tabela 18 wymówek), hook-integration, prd-input-schema.
 - 26 skryptów `scripts/`: lib/ (paths/state/prompt/tmux) + swarm-* entry-points + walidatory/checki + **NOWE** `swarm-yolo.sh` (single-iteration driver z 7 STOP conditions + atomic commit guard + auto-pivot), `error-hash.sh` (md5 sygnatury błędu dla no-progress detection), `archive-run.sh` (tar.gz + delete po gate:5).
@@ -128,7 +156,7 @@ DOC (lokalne, gitignored): `DOC/material_skill.md §4 (DoD = dowód), §5 (Beyon
 - **`.claude-plugin/marketplace.json`** (root) — manifest marketplace `kgpsp-skills` z 3 pluginami wg domen: `pzp-tools`, `legal-tools`, `dev-tools`.
 - **`pzp/.claude-plugin/plugin.json`** — plugin `pzp-tools` (4 skille: analyzing-pzp-offers, drafting-pzp-letters, odpowiedzi-pytania, weryfikacja-umow-pzp).
 - **`legal/.claude-plugin/plugin.json`** — plugin `legal-tools` (1 skill: opinie-prawne).
-- **`dev/.claude-plugin/plugin.json`** — plugin `dev-tools` (6 skilli: agent-teams-builder, feature-planner-v2, feature-planner-v3, feature-planner-v2-codex, planner-f, playwright-test-suite).
+- **`dev/.claude-plugin/plugin.json`** — plugin `dev-tools` (6 skilli: agent-teams-builder, feature-planner-v2, audited-feature-workflow, feature-planner-v2-codex, planner-f, playwright-test-suite).
 - Pole `skills:` w każdym `plugin.json` wskazuje istniejące katalogi skilli wprost (bez przenoszenia plików) — `skills` jest additywne do domyślnego `skills/`. Instalacja: `/plugin marketplace add KGPSP/skills` → `/plugin install <plugin>@kgpsp-skills`. Zwalidowane `claude plugin validate .` (passed).
 
 ## [2026-05-22] weryfikacja-umow-pzp v1.1.0 — domknięcie zgodności z DOC
@@ -206,11 +234,11 @@ DOC (lokalne, gitignored): `DOC/material_skill.md §4 (DoD = dowód), §5 (Beyon
   - **Filar 4** — jawne **reguły ładowania L3** (tabela „załaduj gdy") + **frontmatter referencji** (`type: reference`, `parent`, `sources:` → sekcje DOC z numerem §) w obu plikach `references/` (§10).
   - SKILL.md 464 linie (limit ≤500).
 
-## [2026-05-21] planner-f v1.0.0 — planning-only wariant feature-planner-v3
+## [2026-05-21] planner-f v1.0.0 — planning-only wariant audited-feature-workflow
 
 ### Added
 
-- **`dev/planner-f/`** — skill planowania, analizy i dokumentacji feature'a **bez fazy implementacji**. Pochodny od `feature-planner-v3` (fazy 0–5 + ADR), odcina fazy wykonawcze.
+- **`dev/planner-f/`** — skill planowania, analizy i dokumentacji feature'a **bez fazy implementacji**. Pochodny od `audited-feature-workflow` (fazy 0–5 + ADR), odcina fazy wykonawcze.
   - **SKILL.md** (256 linii, limit ≤500) — **7 faz + 1 bramka akceptacji** (Phase 6): env-detection → deep analysis (Hyrum+Chesterton) → impact radius → ≥3 hipotezy → recommendation → plan (AC matrix + DoD-spec + Thin Slices + Out-of-scope + Rollback) → ADR → handoff.
   - **8 referencji** — `non-negotiables` i `anti-rationalization` przepisane w wersji planistycznej; `analysis-protocol`, `ac-protocol` (+ DAMP + piramida 80/15/5), `dod-evidence-protocol`, `incremental-implementation`, `adr-template`, `gotchas` zaadaptowane (numery faz przemapowane na model planner-f).
   - **2 skrypty** — `api-impact-scan.sh` (Hyrum, z v3) + nowy `check-plan-complete.sh` (bramka kompletności pakietu) + 2 fixtures (gate exit 0 / exit 1).
@@ -222,7 +250,7 @@ DOC (lokalne, gitignored): `DOC/material_skill.md §4 (DoD = dowód), §5 (Beyon
 ### Pozycjonowanie
 
 - **planner-f** — wytwarza audytowalny pakiet planistyczny (analiza + plan + ADR), kończy na zatwierdzonym planie.
-- **feature-planner-v3** — od Phase 6 realizuje plan (implementacja + testy + review). Komplementarne: planner-f planuje, v3 buduje.
+- **audited-feature-workflow** — od Phase 6 realizuje plan (implementacja + testy + review). Komplementarne: planner-f planuje, v3 buduje.
 
 ---
 
@@ -253,11 +281,11 @@ User chce **wiedzieć co dzieje**. Po v1.6: każda decyzja udokumentowana (ADR),
 
 ---
 
-## [2026-05-20] Planning Rigor (transfer z feature-planner-v3) — agent-teams-builder v1.5.0
+## [2026-05-20] Planning Rigor (transfer z audited-feature-workflow) — agent-teams-builder v1.5.0
 
 ### Added
 
-- **Planning Rigor protocol** — `agent-teams-builder` dziedziczy dyscyplinę planistyczną z `feature-planner-v3`:
+- **Planning Rigor protocol** — `agent-teams-builder` dziedziczy dyscyplinę planistyczną z `audited-feature-workflow`:
   - **3 hipotezy per sprint** (Minimal/Idiomatic/Ambitious) z trade-offs, Hyrum risk, kosztem.
   - **11 obowiązkowych sekcji planu** (z 6 do 11): Goal, Sprints (z hipotezami), Dependencies, Open Questions, Out of scope, Success metric, Risks (skalowane H/M/L), **Recommendation summary** (nowa), **Hyrum Impact** (nowa), **Rollback plan** (nowa), **Alternatives considered** (nowa).
   - **AC priorities** MUST/SHOULD/COULD (przejęte z `ac-protocol.md`).
@@ -265,7 +293,7 @@ User chce **wiedzieć co dzieje**. Po v1.6: każda decyzja udokumentowana (ADR),
 
 ### Why
 
-Planner v1.4 produkował płaską listę sprintów bez audytu wyborów architektonicznych. Po transferze rygoru z feature-planner-v3 — każda decyzja jest udokumentowana, alternatywy odrzucone explicite, Hyrum Impact wykrywany PRZED implementacją (nie po regresji).
+Planner v1.4 produkował płaską listę sprintów bez audytu wyborów architektonicznych. Po transferze rygoru z audited-feature-workflow — każda decyzja jest udokumentowana, alternatywy odrzucone explicite, Hyrum Impact wykrywany PRZED implementacją (nie po regresji).
 
 ### Test results
 
@@ -385,18 +413,18 @@ parent agent (główne okno)
 - `DOC/since_skill.md` §2 (5 filarów: Process / Anti-Rat / Verification / Progressive / Scope)
 - `DOC/goal_mode.md` (przykłady `/goal` z mierzalną weryfikacją)
 
-### Pozycjonowanie vs feature-planner-v3
+### Pozycjonowanie vs audited-feature-workflow
 
-- **feature-planner-v3** — pojedynczy feature, 1 sesja, 1 agent. Optymalny dla 100-300 linii diff.
+- **audited-feature-workflow** — pojedynczy feature, 1 sesja, 1 agent. Optymalny dla 100-300 linii diff.
 - **agent-teams-builder** (ten skill) — projekty wielosprintowe, zespół sub-agentów z presją rywalizacyjną, dla pracy >2h. Optymalny dla "zbuduj aplikację od zera".
 
 ---
 
-## [2026-05-12] feature-planner-v3 + dokumentacja repo
+## [2026-05-12] audited-feature-workflow + dokumentacja repo
 
 ### Added
 
-- **`dev/feature-planner-v3/`** — nowy senior-grade skill (18 plików, 4200 linii):
+- **`dev/audited-feature-workflow/`** — nowy senior-grade skill (18 plików, 4200 linii):
   - SKILL.md (344 linii, hard limit ≤500)
   - 12 referencji (`anti-rationalization`, `non-negotiables`, `dod-evidence-protocol`, `fragile-operations-protocol`, `incremental-implementation`, `five-axis-review`, `gotchas` + 4 rozszerzone z v2 + `adr-template`)
   - 5 deterministycznych skryptów POSIX (`check-pr-size`, `verify-build-clean`, `check-ac-coverage`, `extract-raw-log`, `api-impact-scan`)
@@ -407,11 +435,11 @@ parent agent (główne okno)
 
 ### Changed
 
-- **`README.md`** (top-level) — dodano `feature-planner-v3` do tabeli `dev/`, sekcja "Wybór dev/feature-planner (skrót)", sekcja "Pryncypia projektowania skilli (od v3)"
+- **`README.md`** (top-level) — dodano `audited-feature-workflow` do tabeli `dev/`, sekcja "Wybór dev/feature-planner (skrót)", sekcja "Pryncypia projektowania skilli (od v3)"
 
 ### Reżim koegzystencji
 
-`feature-planner` (v2) i `feature-planner-v3` koegzystują — żadnych zmian w plikach v2. Wybór świadomy przez trigger (`v3` w prompcie → v3, inaczej → v2).
+`feature-planner` (v2) i `audited-feature-workflow` koegzystują — żadnych zmian w plikach v2. Wybór świadomy przez trigger (`v3` w prompcie → v3, inaczej → v2).
 
 ---
 

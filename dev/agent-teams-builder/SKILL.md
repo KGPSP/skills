@@ -14,7 +14,7 @@ do-not-trigger-for:
   - "wytłumacz co robi ta funkcja"
   - "popraw literówkę w komentarzu"
   - "1-liniowa zmiana w istniejącym module"
-  - "review jednego PR" # użyj feature-planner-v3
+  - "review jednego PR" # użyj audited-feature-workflow
   - eksploracja repozytorium bez intencji budowania
   - zadania mieszczące się w jednej sesji jednego agenta (<2h pracy)
 model: claude-opus-4-7
@@ -215,7 +215,7 @@ Po zakończeniu wszystkich sprintów:
 2. Uruchom `scripts/verify-non-negotiables.sh` — wymusza 5 zasad nienegocjowalnych (assumptions, brak blockerów open, evidence per passed, scope discipline).
 3. Uruchom `scripts/check-evidence-completeness.sh --all-sprints` — każde `passed: true` ma plik dowodowy.
 4. Uruchom `scripts/check-breadcrumbs-append-only.sh` — brak usuniętych wpisów (audit trail).
-5. Five-Axis Review (opcjonalnie, jeśli `dev/feature-planner-v3` jest zainstalowany): Correctness, Readability, Architecture, Security, Performance — wywołaj przez Task tool z `subagent_type: "reviewer"` z feature-planner-v3.
+5. Five-Axis Review (opcjonalnie, jeśli `dev/audited-feature-workflow` jest zainstalowany): Correctness, Readability, Architecture, Security, Performance — wywołaj przez Task tool z `subagent_type: "reviewer"` z audited-feature-workflow.
 6. **Beyoncé Rule:** każda funkcja w diffie ma test. Brak testu = blokada (heurystyka: `git diff --name-only HEAD~N | grep -E "src/.*\\.(ts|js|py)$" | xargs -I {} sh -c 'test -f "tests/$(basename {} | sed s/src//).spec.{ts,js,py}"'`).
 7. Uruchom `scripts/verify-approval-gates.sh` — wszystkie bramki (#1-#5) domknięte zgodą człowieka w breadcrumbs.
 
@@ -319,7 +319,7 @@ Załaduj `references/{plik}.md` **tylko** gdy spełniony warunek:
 | User napisał `/goal` | `goal-mode-protocol.md` |
 | Generator wpadł w wymówkę nieujętą w tabeli | `anti-rationalization.md` |
 | Konflikt wymagań LUB eskalacja | `non-negotiables.md` |
-| Faza 6 (verify) | `dod-evidence-protocol.md` (Five-Axis Review przez feature-planner-v3 jeśli zainstalowany) |
+| Faza 6 (verify) | `dod-evidence-protocol.md` (Five-Axis Review przez audited-feature-workflow jeśli zainstalowany) |
 | Kalibracja skilla po 3+ realnych przebiegach | `traces-reading.md` |
 | Planner/Generator/Evaluator dodaje bibliotekę LUB nowy import | `library-currency-protocol.md` (context7 + fallback chain) |
 | Faza 1 (Planner pisze state/plan.md) — ZAWSZE | `planning-rigor.md` (3 hipotezy/sprint + Hyrum Impact + Rollback + Alternatives) |
@@ -350,4 +350,4 @@ Załaduj `references/{plik}.md` **tylko** gdy spełniony warunek:
 - [DOC/since_skill.md](../../DOC/since_skill.md) — pryncypia projektowe skilla: token budget, kebab-case, Negative Triggers, Plan-Validate-Execute, Beyoncé Rule.
 - [DOC/agent-teams-generator-ewaluator.md](../../DOC/agent-teams-generator-ewaluator.md) — wzorzec Generator-Ewaluator (§1-10).
 - [DOC/goal_mode.md](../../DOC/goal_mode.md) — przykłady `/goal` z mierzalną weryfikacją.
-- Reference implementation: `dev/feature-planner-v3/` (struktura references/ + scripts/).
+- Reference implementation: `dev/audited-feature-workflow/` (struktura references/ + scripts/).

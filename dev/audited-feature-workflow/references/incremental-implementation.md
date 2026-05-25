@@ -2,7 +2,7 @@
 name: incremental-implementation
 description: Thin Vertical Slices + 5-step incremental rule. Wymusza budowanie end-to-end odnogami zamiast warstwa-po-warstwie.
 type: reference
-parent: feature-planner-v3
+parent: audited-feature-workflow
 source: 'since_skill.md §5 (Incremental Implementation + TDD)'
 ---
 

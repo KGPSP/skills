@@ -1,4 +1,4 @@
-# feature-planner-v3
+# audited-feature-workflow
 
 > Senior-grade feature workflow z deterministyczną uprzężą inżynieryjną dla agentów AI. **16 faz, 6 bramek approval, 11 wierszy Anti-Rationalization, 5-osiowy code review, plus tryb `/goal`** — autonomiczna pętla weryfikacji AC z mierzalnym stopem.
 
@@ -8,7 +8,7 @@
 
 ## Co to jest
 
-`feature-planner-v3` to skill dla Claude Code, który prowadzi agenta AI przez **audytowalny proces wdrażania feature-ów** — od deep analysis przez plan, implementation, testing, review aż po ADR. Każda faza ma mierzalne exit criteria. Każda bramka wymaga jawnej zgody lub twardego dowodu.
+`audited-feature-workflow` to skill dla Claude Code, który prowadzi agenta AI przez **audytowalny proces wdrażania feature-ów** — od deep analysis przez plan, implementation, testing, review aż po ADR. Każda faza ma mierzalne exit criteria. Każda bramka wymaga jawnej zgody lub twardego dowodu.
 
 Skill nie jest „helper-em do refaktoringów". To **rygorystyczna uprząż** dla nietrywialnych zmian: nowe feature, migracje API, zmiany w infrastrukturze, refactoring z impactem architektonicznym.
 
@@ -178,7 +178,7 @@ Pełen protokół: [references/goal-mode-protocol.md](references/goal-mode-proto
 ## Struktura plików
 
 ```
-dev/feature-planner-v3/
+dev/audited-feature-workflow/
 ├── README.md                          ← ten plik
 ├── SKILL.md                           ← główny prompt skilla (413 linii)
 ├── references/                        ← protokoły hub-and-spoke
@@ -256,12 +256,12 @@ dev/feature-planner-v3/
 - **v3.1** — dodanie `/goal` mode (Phase 5.8 + 6-Goal route + Gate #1.5).
 - **v3.1.1** — hardening Five-Axis Review fixes (18 fixów w jednym commicie: RC capture, strict cell guard, Komenda chaining rejection, SHA256 TOCTOU protection, max-iter guard, path traversal guard, secret detection, fragile-zone enforcement, dokumentacja consistency).
 
-Pełna historia: `git log dev/feature-planner-v3/`.
+Pełna historia: `git log dev/audited-feature-workflow/`.
 
 ## Linki
 
-- [Spec designu /goal mode](../../docs/superpowers/specs/2026-05-13-feature-planner-v3-goal-mode-design.md)
-- [Plan implementacji /goal mode](../../docs/superpowers/plans/2026-05-13-feature-planner-v3-goal-mode.md)
+- [Spec designu /goal mode](../../docs/superpowers/specs/2026-05-13-audited-feature-workflow-goal-mode-design.md)
+- [Plan implementacji /goal mode](../../docs/superpowers/plans/2026-05-13-audited-feature-workflow-goal-mode.md)
 - [SKILL.md](SKILL.md) — główny prompt skilla
 - [goal-mode-protocol.md](references/goal-mode-protocol.md) — pełny protokół /goal
 - [replit-style-workflow (wygodny wariant)](../replit-style-workflow/) — historycznie feature-planner-v2; bez Anti-Rat #11, bez /goal, bez Five-Axis hardening
@@ -272,4 +272,4 @@ Pełna historia: `git log dev/feature-planner-v3/`.
 
 — Anti-Laziness preamble, SKILL.md.
 
-`feature-planner-v3` jest dla zespołów, które wolą **godzinę więcej pracy z agentem AI w zamian za audytowalność, bezpieczeństwo i deterministyczne exit criteria** niż szybki diff bez gwarancji. Skill nie jest pluginem do generowania kodu — jest **uprzężą inżynieryjną**, która sprawia, że agent AI pracuje jak senior engineer w 1:1 review.
+`audited-feature-workflow` jest dla zespołów, które wolą **godzinę więcej pracy z agentem AI w zamian za audytowalność, bezpieczeństwo i deterministyczne exit criteria** niż szybki diff bez gwarancji. Skill nie jest pluginem do generowania kodu — jest **uprzężą inżynieryjną**, która sprawia, że agent AI pracuje jak senior engineer w 1:1 review.

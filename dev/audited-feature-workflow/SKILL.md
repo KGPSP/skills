@@ -1,5 +1,5 @@
 ---
-name: feature-planner-v3
+name: audited-feature-workflow
 description: Senior-grade feature workflow z deterministyczną uprzężą inżynieryjną. Rozszerza v2 (Replit Agent style, Agent Teams, ralph-loop, worktree, 7 test scopes) o twarde bramki z material_skill.md + since_skill.md — Anti-Rationalization, Hyrum's Law, Chesterton's Fence, Beyoncé Rule, DAMP over DRY, PR Sizing, Five-Axis Review, Plan-Validate-Execute dla fragile ops, Thin Vertical Slices, Prove-It Pattern. Używaj gdy zadanie wymaga audytowalnej delegacji na agenta AI z mierzalnymi exit criteria w każdej fazie. Plus /goal mode — autonomiczna pętla weryfikacji AC z mierzalnym stopem (Phase 5.8 + 6-Goal route).
 trigger:
   - "feature-planner v3"
@@ -23,12 +23,12 @@ sources:
   - DOC/material_skill.md
   - DOC/since_skill.md
   - DOC/goal_mode.md
-version: v3.2.0
+version: v3.3.0
 extends: replit-style-workflow
 size-limit: 500-lines-hard
 ---
 
-# feature-planner v3 — senior-grade enforcement
+# audited-feature-workflow — senior-grade enforcement (historycznie feature-planner-v3)
 
 > [!quote] Anti-Laziness preamble (since_skill.md §6)
 > Najwyższa waga jakości. **Nie optymalizuj pod szybkość implementacji wykonawczej.** Każda bramka i każdy artefakt dowodowy jest nienegocjowalny. Brak skrótów, nawet jeśli wymówka brzmi inżynieryjnie.
@@ -120,7 +120,7 @@ Wywołaj [analysis-protocol.md](references/analysis-protocol.md). Wymagane outpu
 
 ## Phase 1.5 — Dependency Impact Radius
 
-1. Uruchom `sh {baseDir}/dev/feature-planner-v3/scripts/api-impact-scan.sh --base main`.
+1. Uruchom `sh {baseDir}/dev/audited-feature-workflow/scripts/api-impact-scan.sh --base main`.
 2. Sklasyfikuj każdy eksport: `breaking` / `additive` / `internal`.
 3. Dla `breaking`: deprecation plan lub uzasadnienie braku w ADR.
 4. Reverse search callerów: `git grep <symbol> -- ':!*test*'`.
@@ -212,7 +212,7 @@ Aktywuje się **tylko** gdy prompt zawiera `/goal` lub `goal mode`.
 
 **Goal derivation (deterministyczna):**
 
-1. `sh {baseDir}/dev/feature-planner-v3/scripts/derive-goal-from-ac.sh --plan "$PLAN_FILE"`.
+1. `sh {baseDir}/dev/audited-feature-workflow/scripts/derive-goal-from-ac.sh --plan "$PLAN_FILE"`.
 2. Skrypt waliduje 10 reguł (patrz [goal-mode-protocol.md](references/goal-mode-protocol.md) §3).
 3. Brak któregokolwiek pola → exit 1 + lista braków + lokalizacje. Faza zatrzymana.
 4. Generuje:
@@ -250,9 +250,9 @@ Dla każdej slice (Thin Vertical Slices — [incremental-implementation.md](refe
 1. **Najprostsza logika bazowa** dla slice.
 2. **Failing test** (RED) — TDD. Commit failing test PRZED implementacją.
 3. **Implementacja minimalna** → test GREEN.
-4. **Build validation**: `sh {baseDir}/dev/feature-planner-v3/scripts/verify-build-clean.sh` — exit 0.
+4. **Build validation**: `sh {baseDir}/dev/audited-feature-workflow/scripts/verify-build-clean.sh` — exit 0.
 5. **Commit atomic** — slice = jeden commit lub mała seria.
-6. **PR Sizing check**: `sh {baseDir}/dev/feature-planner-v3/scripts/check-pr-size.sh` po każdym commit.
+6. **PR Sizing check**: `sh {baseDir}/dev/audited-feature-workflow/scripts/check-pr-size.sh` po każdym commit.
    - ≤300 linii: ✅ proceed
    - 301-1000: ⚠️ wymaga `--justified` + wpis w PR description
    - \>1000: ⛔ hard stop, split (stacking lub vertical slicing)
@@ -264,7 +264,7 @@ Dla każdej slice (Thin Vertical Slices — [incremental-implementation.md](refe
 
 Pre-flight: APPROVAL #1.5 ✅, `git status` clean, build baseline.
 
-Driver: `sh {baseDir}/dev/feature-planner-v3/scripts/run-goal-loop.sh --goal "$GOAL_FILE" --plan "$PLAN_FILE" --max-iter 20 --max-time 480`.
+Driver: `sh {baseDir}/dev/audited-feature-workflow/scripts/run-goal-loop.sh --goal "$GOAL_FILE" --plan "$PLAN_FILE" --max-iter 20 --max-time 480`.
 
 Per iteracja:
 
@@ -318,9 +318,9 @@ Test scopes (matryca S/M/L w [testing-protocol.md](references/testing-protocol.m
 
 Bramki Phase 7:
 
-- [ ] **Build clean**: `sh {baseDir}/dev/feature-planner-v3/scripts/verify-build-clean.sh` → exit 0, zero warnings.
-- [ ] **Raw log requirement** — `sh {baseDir}/dev/feature-planner-v3/scripts/extract-raw-log.sh --cmd "<TEST_CMD>"` wklejony do PR description. **Bez parafraz modelu.**
-- [ ] **AC coverage 1:1**: `sh {baseDir}/dev/feature-planner-v3/scripts/check-ac-coverage.sh --plan "$PLAN_FILE"` → 100%.
+- [ ] **Build clean**: `sh {baseDir}/dev/audited-feature-workflow/scripts/verify-build-clean.sh` → exit 0, zero warnings.
+- [ ] **Raw log requirement** — `sh {baseDir}/dev/audited-feature-workflow/scripts/extract-raw-log.sh --cmd "<TEST_CMD>"` wklejony do PR description. **Bez parafraz modelu.**
+- [ ] **AC coverage 1:1**: `sh {baseDir}/dev/audited-feature-workflow/scripts/check-ac-coverage.sh --plan "$PLAN_FILE"` → 100%.
 - [ ] **DAMP checklist** per test file (patrz [testing-protocol.md](references/testing-protocol.md) sekcja DAMP).
 - [ ] **Trace runtime** dla ścieżki krytycznej.
 - [ ] **Meta-testy skryptów v3 (Beyoncé Rule dla samego skilla)** — jeśli ta sesja dodała/zmodyfikowała `scripts/*.sh`: fixture w `tests/fixtures/` + `assert_exit` w `tests/run-meta-tests.sh` (utwórz runner jeśli nie istnieje — wzorzec: `dev/agent-teams-builder/tests/`). Fix buga skryptu → `regression-*.<ext>` (analog Phase 6.5 dla walidatora). Mapa + procedura: [testing-map.md](references/testing-map.md). **Stan obecny: 0 / 7 skryptów ma meta-testy** — patrz testing-map.md §TODO retrofitting.

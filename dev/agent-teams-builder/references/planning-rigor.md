@@ -1,17 +1,17 @@
 ---
-title: Planning Rigor — hipotezy, rekomendacje, Hyrum impact, rollback (dziedziczone z feature-planner-v3)
+title: Planning Rigor — hipotezy, rekomendacje, Hyrum impact, rollback (dziedziczone z audited-feature-workflow)
 load-when: "Faza 1 SKILL.md (Planner) — ZAWSZE. Plus odświeżenie przy każdej amendment do state/plan.md."
 source:
-  - dev/feature-planner-v3/SKILL.md §Phase 2-4 (hipotezy + rekomendacje + plan output)
-  - dev/feature-planner-v3/references/ac-protocol.md (AC structure)
-  - dev/feature-planner-v3/references/five-axis-review.md
+  - dev/audited-feature-workflow/SKILL.md §Phase 2-4 (hipotezy + rekomendacje + plan output)
+  - dev/audited-feature-workflow/references/ac-protocol.md (AC structure)
+  - dev/audited-feature-workflow/references/five-axis-review.md
   - DOC/material_skill.md §5 (Prawo Hyruma, Płot Chestertona)
   - DOC/since_skill.md §6 (Grounding in real expertise)
 ---
 
-# Planning Rigor — dziedziczone z feature-planner-v3
+# Planning Rigor — dziedziczone z audited-feature-workflow
 
-> **Cel:** transferować dyscyplinę planistyczną Senior Engineera z `feature-planner-v3` (1 feature, 1 sesja) do `agent-teams-builder` (zespół, N sprintów). Planner przestaje być "generatorem listy sprintów" — staje się architektem **uzasadnionych** wyborów z wyraźnym audit trail.
+> **Cel:** transferować dyscyplinę planistyczną Senior Engineera z `audited-feature-workflow` (1 feature, 1 sesja) do `agent-teams-builder` (zespół, N sprintów). Planner przestaje być "generatorem listy sprintów" — staje się architektem **uzasadnionych** wyborów z wyraźnym audit trail.
 
 ---
 

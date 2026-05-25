@@ -1,16 +1,16 @@
 ---
 name: testing-map
 type: reference
-parent: feature-planner-v3
+parent: audited-feature-workflow
 sources:
   - DOC/material_skill.md §4 — Definition of Done (dowód zamiast deklaracji)
   - DOC/material_skill.md §5 — Beyoncé Rule, DAMP over DRY, piramida 80/15/5
   - DOC/since_skill.md §5 — Incremental Implementation + TDD RED-GREEN-REFACTOR + Prove-It Pattern (regresja)
   - DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md §9 — Checklist gotowości (Beyoncé)
-description: Mapa testów (unit / integration / regression) dla każdego skryptu i funkcjonalności skilla feature-planner-v3. Egzekwuje regułę „wytwarzasz funkcjonalność → wytwarzasz test" przy każdej modyfikacji skilla.
+description: Mapa testów (unit / integration / regression) dla każdego skryptu i funkcjonalności skilla audited-feature-workflow. Egzekwuje regułę „wytwarzasz funkcjonalność → wytwarzasz test" przy każdej modyfikacji skilla.
 ---
 
-# Test Discipline — feature-planner-v3
+# Test Discipline — audited-feature-workflow
 
 > **Zakres:** meta-testy skryptów-bramek i exit-criteriów **samego skilla** (`scripts/` + fazy `SKILL.md`).
 > **NIE w zakresie:** testy aplikacji, którą skill buduje (Phase 7 — 7 scopes × S/M/L, patrz [`testing-protocol.md`](testing-protocol.md)).
@@ -28,7 +28,7 @@ description: Mapa testów (unit / integration / regression) dla każdego skryptu
 > **DAMP over DRY** — nazwa fixture = scenariusz (`pr-size-over-1000.diff`, nie `bad-1.diff`).
 > **DoD = dowód** — `bash tests/run-meta-tests.sh | tail -3` → surowy `X/X passed`.
 
-## Definicje (w kontekście feature-planner-v3)
+## Definicje (w kontekście audited-feature-workflow)
 
 | Typ | Definicja | Lokalizacja | Konwencja nazwy |
 |---|---|---|---|

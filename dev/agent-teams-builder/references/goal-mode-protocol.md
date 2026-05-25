@@ -214,13 +214,13 @@ Wszystkie 4 stany loguje się w `state/breadcrumbs.json` z polami `final_state`,
 
 ---
 
-## 8. Integracja z feature-planner-v3
+## 8. Integracja z audited-feature-workflow
 
-Jeśli `feature-planner-v3` jest zainstalowany w tym samym projekcie:
+Jeśli `audited-feature-workflow` jest zainstalowany w tym samym projekcie:
 
 - `/goal` w agent-teams-builder uruchamia **całą pętlę** z generator-ewaluator.
-- `/goal` w feature-planner-v3 uruchamia **pojedynczą pętlę AC** dla 1 feature.
+- `/goal` w audited-feature-workflow uruchamia **pojedynczą pętlę AC** dla 1 feature.
 
 Wybierz wg skali:
-- Zadanie 1 feature → `feature-planner-v3`.
+- Zadanie 1 feature → `audited-feature-workflow`.
 - Zadanie 5+ sprintów → `agent-teams-builder` (ten skill).

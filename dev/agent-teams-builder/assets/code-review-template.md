@@ -1,7 +1,7 @@
 # CR-sprint-{N}-{slug} — Five-Axis Code Review
 
-> Pisany przez **Evaluator** (lub delegacja do feature-planner-v3 Reviewer jeśli skill zainstalowany).
-> Format Five-Axis Review przejęty z `dev/feature-planner-v3/references/five-axis-review.md`.
+> Pisany przez **Evaluator** (lub delegacja do audited-feature-workflow Reviewer jeśli skill zainstalowany).
+> Format Five-Axis Review przejęty z `dev/audited-feature-workflow/references/five-axis-review.md`.
 > Wykonywany **po** `sprint_passed`, **przed** fazą 7 (ship).
 
 ---

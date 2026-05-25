@@ -2,17 +2,17 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "dev-tools",
   "description": "Narzędzia developerskie dla agentów AI: planowanie feature'a (Claude Code), orkiestracja zespołów sub-agentów, QA E2E, swarm tmux orchestration z trybem YOLO/goal.",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "author": {
     "name": "Komenda Główna PSP",
     "email": "claude@kg.straz.gov.pl"
   },
   "homepage": "https://github.com/KGPSP/skills",
   "repository": "https://github.com/KGPSP/skills",
-  "keywords": ["feature-planning", "agent-teams", "qa", "playwright", "tmux", "swarm", "yolo", "goal-mode", "replit-style"],
+  "keywords": ["feature-planning", "agent-teams", "qa", "playwright", "tmux", "swarm", "yolo", "goal-mode", "replit-style", "audited-workflow"],
   "skills": [
     "./agent-teams-builder",
-    "./feature-planner-v3",
+    "./audited-feature-workflow",
     "./planner-f",
     "./playwright-test-suite",
     "./replit-style-workflow",

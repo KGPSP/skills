@@ -1,6 +1,6 @@
 # Plan — <nazwa projektu>
 
-> Szablon dla `state/plan.md` (wzbogacony v1.5 — dziedziczone z feature-planner-v3).
+> Szablon dla `state/plan.md` (wzbogacony v1.5 — dziedziczone z audited-feature-workflow).
 > Wypełnia **Planner** w fazie 1 SKILL.md. Walidator: `scripts/verify-plan-rigor.sh`.
 
 ---
@@ -102,7 +102,7 @@ Przykład:
 
 ## 8. Recommendation summary (top-level)
 
-<!-- NOWA sekcja (v1.5) — dziedziczone z feature-planner-v3 Phase 3. -->
+<!-- NOWA sekcja (v1.5) — dziedziczone z audited-feature-workflow Phase 3. -->
 
 **Architektura ogólna:** Single-page React app z Phaser 3 jako embedded game engine. localStorage dla persistencji. Brak backendu (offline-first).
 

@@ -1,7 +1,7 @@
 ---
 name: testing-protocol
 type: reference
-parent: feature-planner-v3
+parent: audited-feature-workflow
 sources:
   - dev/feature-planner v2 baseline
   - DOC/material_skill.md §5 (DAMP over DRY, Beyoncé Rule)
@@ -647,7 +647,7 @@ Każdy framework ma własny wzorzec output'u. Akceptowalne tylko surowy tekst z 
 ### Komenda ekstrakcji
 
 ```bash
-bash {baseDir}/dev/feature-planner-v3/scripts/extract-raw-log.sh "<test-command>"
+bash {baseDir}/dev/audited-feature-workflow/scripts/extract-raw-log.sh "<test-command>"
 # np.: bash .../extract-raw-log.sh "pnpm test --run"
 ```
 
@@ -707,7 +707,7 @@ Wprowadza **NOWĄ Phase 6.5** w workflow dla wszystkich planów typu „bugfix" 
 
 3. **Uruchom test → dowód RED**:
    ```bash
-   bash {baseDir}/dev/feature-planner-v3/scripts/extract-raw-log.sh "pnpm test bugfix-PLAN_NUM"
+   bash {baseDir}/dev/audited-feature-workflow/scripts/extract-raw-log.sh "pnpm test bugfix-PLAN_NUM"
    ```
    - Output musi pokazać `1 failed` z konkretnym assertion message.
    - Wklej dowód do `docs/test-evidence/PLAN_NUM-RED.log`.
@@ -720,7 +720,7 @@ Wprowadza **NOWĄ Phase 6.5** w workflow dla wszystkich planów typu „bugfix" 
 
 5. **Test wraca do GREEN → fix zatwierdzony**:
    ```bash
-   bash {baseDir}/dev/feature-planner-v3/scripts/extract-raw-log.sh "pnpm test bugfix-PLAN_NUM"
+   bash {baseDir}/dev/audited-feature-workflow/scripts/extract-raw-log.sh "pnpm test bugfix-PLAN_NUM"
    ```
    - Output musi pokazać `1 passed` dla tego konkretnego testu.
    - Wklej dowód do `docs/test-evidence/PLAN_NUM-GREEN.log`.

@@ -1,7 +1,7 @@
 ---
 name: anti-rationalization
 type: reference
-parent: feature-planner-v3
+parent: audited-feature-workflow
 source: DOC/material_skill.md §3
 description: Pełna tabela wymówek agenta AI z gotowymi ripostami. Egzekwowana w Phase 6 (przed commit), Phase 7 (przed deklaracją done), Phase 8 (final pass), oraz w każdej iteracji ralph-loop.
 ---

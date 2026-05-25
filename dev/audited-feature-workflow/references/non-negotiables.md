@@ -1,7 +1,7 @@
 ---
 name: non-negotiables
 type: reference
-parent: feature-planner-v3
+parent: audited-feature-workflow
 source: DOC/material_skill.md §8
 description: Siedem zasad nienegocjowalnych dla agenta v3. Pięć rdzennych z material_skill.md §8 + dwie specyficzne dla v3 (Verification with raw artifacts, Anti-Laziness w bramkach). Każda zasada egzekwowana w konkretnych fazach.
 ---

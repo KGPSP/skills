@@ -11,7 +11,7 @@ description: Acceptance Criteria derivation (F/N/C), AC↔DoD mapping, SMART rul
 # references/ac-protocol.md
 
 > [!important] Zakres w planner-f
-> AC powstają w **Phase 4 (Plan Document)** jako **specyfikacja**, nie jako wynik wykonania. „Test ID / Komenda / Plik testu" w matrycy AC opisują, czym AC **zostanie** zweryfikowany przez skill wykonawczy — testów jeszcze nie ma. planner-f egzekwuje tylko **kompletność specyfikacji** (każdy AC ma niepusty Test ID + Komenda — sprawdza `check-plan-complete.sh`). Faktyczne uruchomienie testów, coverage check i werdykt PASS/FAIL należą do wykonawcy (np. feature-planner-v3 Phase 7–8). Numery faz „Phase 6/7/8" w tym pliku odnoszą się do tego **downstream** wykonawcy.
+> AC powstają w **Phase 4 (Plan Document)** jako **specyfikacja**, nie jako wynik wykonania. „Test ID / Komenda / Plik testu" w matrycy AC opisują, czym AC **zostanie** zweryfikowany przez skill wykonawczy — testów jeszcze nie ma. planner-f egzekwuje tylko **kompletność specyfikacji** (każdy AC ma niepusty Test ID + Komenda — sprawdza `check-plan-complete.sh`). Faktyczne uruchomienie testów, coverage check i werdykt PASS/FAIL należą do wykonawcy (np. audited-feature-workflow Phase 7–8). Numery faz „Phase 6/7/8" w tym pliku odnoszą się do tego **downstream** wykonawcy.
 
 Cel protokołu: zamienić cel biznesowy i „Definition of Done" na **binarnie weryfikowalne** warunki
 odbioru — kontrakt, na podstawie którego wykonawca później wyda werdykt.
@@ -421,7 +421,7 @@ sh {baseDir}/dev/planner-f/scripts/check-plan-complete.sh --plan {baseDir}/plans
 
 Output: ❌ przy pustej komórce w wierszu AC → STOP, uzupełnij specyfikację. planner-f **nie** sprawdza, czy testy istnieją/przechodzą — testów jeszcze nie ma.
 
-**U wykonawcy (downstream, np. feature-planner-v3 Phase 7):** osobny skrypt `check-ac-coverage.sh` weryfikuje, że zadeklarowane testy realnie istnieją i są wykonywalne (`AC-F-01 → tests/health.test.ts:42 — found`), a brak testu na MUST AC zamyka jego gate. To poza zakresem planner-f.
+**U wykonawcy (downstream, np. audited-feature-workflow Phase 7):** osobny skrypt `check-ac-coverage.sh` weryfikuje, że zadeklarowane testy realnie istnieją i są wykonywalne (`AC-F-01 → tests/health.test.ts:42 — found`), a brak testu na MUST AC zamyka jego gate. To poza zakresem planner-f.
 
 **Hard rule planner-f**: pusty `Test ID`/`Komenda` w matrycy = specyfikacja niekompletna = gate akceptacji zamknięty. Jeśli nie wiesz, jakim testem zweryfikujesz AC — AC jest źle zdefiniowany, dopracuj go w Phase 4.
 

@@ -1,7 +1,7 @@
 ---
 name: ac-protocol
 type: reference
-parent: feature-planner-v3
+parent: audited-feature-workflow
 sources:
   - dev/feature-planner v2 baseline
   - DOC/material_skill.md §5 (Beyoncé Rule — 1:1 AC↔Test mapping)
@@ -401,7 +401,7 @@ Kolumny obowiązkowe:
 Phase 7 weryfikuje matrix przed otwarciem gate:
 
 ```bash
-bash {baseDir}/dev/feature-planner-v3/scripts/check-ac-coverage.sh {baseDir}/docs/plany/PLAN_NUM-*.md
+bash {baseDir}/dev/audited-feature-workflow/scripts/check-ac-coverage.sh {baseDir}/docs/plany/PLAN_NUM-*.md
 ```
 
 Output skryptu:

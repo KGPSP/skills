@@ -1,6 +1,6 @@
 # CHANGELOG — planner-f
 
-> Skill pochodny od `feature-planner-v3` — zachowuje fazy analizy/planu/ADR, odcina fazy wykonawcze.
+> Skill pochodny od `audited-feature-workflow` — zachowuje fazy analizy/planu/ADR, odcina fazy wykonawcze.
 
 ## [v1.0.0] — 2026-05-21 — initial release (planning-only)
 
@@ -12,9 +12,9 @@
 - AC ↔ Test (Beyoncé Rule) i DoD evidence jako **specyfikacja** dla wykonawcy — planner-f nie uruchamia testów ani nie zbiera raw artefaktów.
 - Skrypty: `api-impact-scan.sh` (Hyrum scan, z v3) + nowy `check-plan-complete.sh` (bramka kompletności pakietu: sekcje planu, niepuste komórki AC, Out-of-scope, fragile→Rollback).
 - Fixtures: `complete-plan.md` (gate exit 0) + `incomplete-plan.md` (gate exit 1).
-- Handoff summary po akceptacji — wskazuje skill wykonawczy (feature-planner-v3 / agent-teams-builder).
+- Handoff summary po akceptacji — wskazuje skill wykonawczy (audited-feature-workflow / agent-teams-builder).
 
-### Removed (vs feature-planner-v3)
+### Removed (vs audited-feature-workflow)
 
 - Fazy wykonawcze: Phase 6 implementacja, 6.5 Prove-It, 7 testy (7 scopes), 7.8 live preview, 8 Five-Axis code review.
 - Tryby pętli: ralph-loop, Agent Teams, `/goal` (Phase 5.8 + 6-Goal + Gate #1.5).

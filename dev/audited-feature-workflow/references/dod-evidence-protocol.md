@@ -1,7 +1,7 @@
 ---
 name: dod-evidence-protocol
 type: reference
-parent: feature-planner-v3
+parent: audited-feature-workflow
 source: DOC/material_skill.md §4
 description: Formaty akceptowanych dowodów per typ AC (Functional / Non-functional / Constraint). Egzekwowane w Phase 5 (plan musi deklarować format) i Phase 7 (artefakt musi być dostarczony przed approval gate).
 ---
@@ -147,7 +147,7 @@ type UserId = string & { readonly __brand: 'UserId' };  // AC-C-01: branded type
 Skrypt `extract-raw-log.sh` jest gotowym narzędziem do generowania dowodu:
 
 ```bash
-sh {baseDir}/dev/feature-planner-v3/scripts/extract-raw-log.sh \
+sh {baseDir}/dev/audited-feature-workflow/scripts/extract-raw-log.sh \
    --cmd "pnpm test src/health.test.ts" \
    --lines 30
 ```
@@ -157,7 +157,7 @@ Output: gotowy blok Markdown z sygnaturą `Status: PASSED|FAILED` + komenda + ex
 Coverage check (Beyoncé Rule 1:1):
 
 ```bash
-sh {baseDir}/dev/feature-planner-v3/scripts/check-ac-coverage.sh \
+sh {baseDir}/dev/audited-feature-workflow/scripts/check-ac-coverage.sh \
    --plan {baseDir}/plans/<N>-<slug>.md
 ```
 

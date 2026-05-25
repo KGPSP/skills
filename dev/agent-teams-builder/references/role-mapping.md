@@ -127,7 +127,7 @@ Każda strzałka `→` = wymiana plików w `state/`, nie message passing w jedny
 ### 3.2 Kiedy NIE skalować
 
 - Sprintów ≤3 → minimalna konfiguracja (3 agenty) wystarcza.
-- Pojedynczy plik / pojedyncza funkcja → użyj `feature-planner-v3`, nie agent-teams.
+- Pojedynczy plik / pojedyncza funkcja → użyj `audited-feature-workflow`, nie agent-teams.
 - Brak smoke testu / brak Playwright → skalowanie tylko pogłębi chaos.
 
 ---

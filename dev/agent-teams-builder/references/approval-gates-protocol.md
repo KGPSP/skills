@@ -2,7 +2,7 @@
 title: Approval Gates Protocol — 6 bramek akceptacji człowieka (human-in-the-loop) dla całego flow zespołu agentów
 load-when: "ZAWSZE — pierwsza bramka domyka Fazę 1. Załaduj na start sesji (każdy tryb, włącznie z /goal)."
 source:
-  - dev/feature-planner-v3/SKILL.md §Phase 5/5.8/6/7/7.8/8 (6 APPROVAL GATES)
+  - dev/audited-feature-workflow/SKILL.md §Phase 5/5.8/6/7/7.8/8 (6 APPROVAL GATES)
   - references/documentation-protocol.md (artefakty zatwierdzane na bramkach)
   - references/planning-rigor.md (plan zatwierdzany na GATE #1)
   - DOC/material_skill.md §8 (Non-negotiable #1 — uwidaczniaj założenia; #2 — stop przy konflikcie)
@@ -10,7 +10,7 @@ source:
 
 # Approval Gates Protocol — human-in-the-loop
 
-> **Cel:** agent-teams-builder przestaje być "odpal i zostaw". Każdy artefakt o wysokim koszcie błędu (plan, kontrakt, kod sprintu, QA, review, ship) **zatrzymuje proces** i czeka na **jawną zgodę człowieka** zanim pętla ruszy dalej. To wzorzec **6 APPROVAL GATES** przeniesiony z `feature-planner-v3` na flow zespołu N-sprintowego.
+> **Cel:** agent-teams-builder przestaje być "odpal i zostaw". Każdy artefakt o wysokim koszcie błędu (plan, kontrakt, kod sprintu, QA, review, ship) **zatrzymuje proces** i czeka na **jawną zgodę człowieka** zanim pętla ruszy dalej. To wzorzec **6 APPROVAL GATES** przeniesiony z `audited-feature-workflow` na flow zespołu N-sprintowego.
 
 > [!important] Zasada nadrzędna
 > **Naruszenie litery bramki = naruszenie ducha bramki.** Bramka nie jest "sugestią do rozważenia" — to twardy STOP. Bez frazy akceptującej od człowieka proces NIE przechodzi do następnej fazy. Dotyczy to **także trybu `/goal`** (decyzja projektowa: wszystkie bramki aktywne, `/goal` je respektuje).

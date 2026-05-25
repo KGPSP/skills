@@ -1,7 +1,7 @@
 ---
 name: code-review-protocol
 type: reference
-parent: feature-planner-v3
+parent: audited-feature-workflow
 sources:
   - dev/feature-planner v2 baseline
   - DOC/material_skill.md §1 (PR Sizing ~100/300/1000)
@@ -216,7 +216,7 @@ PR Sizing Gate to twardy checkpoint w Phase 8 — uruchamiany **przed** five-axi
 ### Komenda gate'u
 
 ```bash
-bash {baseDir}/dev/feature-planner-v3/scripts/check-pr-size.sh <commit-range>
+bash {baseDir}/dev/audited-feature-workflow/scripts/check-pr-size.sh <commit-range>
 # np.: bash .../check-pr-size.sh origin/main..HEAD
 ```
 

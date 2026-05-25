@@ -15,7 +15,7 @@ Użyj, gdy:
 
 **NIE używaj dla:**
 
-- Jednoplikowych zmian / one-linerów (użyj `feature-planner-v3`).
+- Jednoplikowych zmian / one-linerów (użyj `audited-feature-workflow`).
 - Eksploracji kodu bez intencji budowania (zwykły chat).
 - Code review pojedynczego PR (użyj dedykowanego skilla).
 
@@ -205,7 +205,7 @@ Dwie warstwy ochrony, niezależne od trybu autonomii:
 - [DOC/since_skill.md](../../DOC/since_skill.md)
 - [DOC/agent-teams-generator-ewaluator.md](../../DOC/agent-teams-generator-ewaluator.md)
 - [DOC/goal_mode.md](../../DOC/goal_mode.md)
-- Reference implementation: `dev/feature-planner-v3/`
+- Reference implementation: `dev/audited-feature-workflow/`
 
 ---
 

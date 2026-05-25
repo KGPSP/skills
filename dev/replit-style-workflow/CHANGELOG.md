@@ -1,7 +1,7 @@
 # CHANGELOG — replit-style-workflow (historycznie feature-planner-v2)
 
 > Wersje przed wprowadzeniem semver zrekonstruowane z historii git (backfill).
-> Wariant **wygodny** Claude Code workflow — koegzystuje z `feature-planner-v3` (senior-grade) i `planner-f` (planning-only).
+> Wariant **wygodny** Claude Code workflow — koegzystuje z `audited-feature-workflow` (senior-grade) i `planner-f` (planning-only).
 > **Rename 2026-05-25:** `feature-planner` → `replit-style-workflow` (folder + frontmatter `name:`). Trigger keywords zachowane.
 
 ## [v2.3.0] — 2026-05-25 — Rename: feature-planner → replit-style-workflow
@@ -9,7 +9,7 @@
 ### Changed
 
 - **Folder:** `dev/feature-planner/` → `dev/replit-style-workflow/` (`git mv`, rename detected przez gita — historia plików zachowana).
-- **Frontmatter SKILL.md:** `name: feature-planner-v2` → `name: replit-style-workflow`. Description rozszerzona o pozycjonowanie ("wygodny rygor, lighter niż feature-planner-v3, domyślny dla typowych zadań").
+- **Frontmatter SKILL.md:** `name: feature-planner-v2` → `name: replit-style-workflow`. Description rozszerzona o pozycjonowanie ("wygodny rygor, lighter niż audited-feature-workflow, domyślny dla typowych zadań").
 - **`parent:`** w `references/testing-map.md` zsynchronizowane: `feature-planner-v2` → `replit-style-workflow`.
 
 ### Why
@@ -20,7 +20,7 @@ Nazwa `feature-planner` sugerowała wyłącznie planowanie, ale skill robi pełn
 
 - **Trigger keywords** — `"dodaj feature v2"`, `"zaimplementuj"`, `"zrób żeby"`, `"implement"`, `"build feature"`, `"ralph"`, `"ralph-loop"`, `"iteruj aż zielono"` zachowane bez zmian. Skill aktywuje się tak samo.
 - **Zawartość SKILL.md + references/** — bez zmian funkcjonalnych. Pure rename refactor.
-- **Cross-references** w `feature-planner-v3` (`extends:`), `agent-teams-builder`, `planner-f`, README — zsynchronizowane (5 plików).
+- **Cross-references** w `audited-feature-workflow` (`extends:`), `agent-teams-builder`, `planner-f`, README — zsynchronizowane (5 plików).
 
 ### Migracja dla użytkownika
 

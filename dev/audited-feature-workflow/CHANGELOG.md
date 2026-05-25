@@ -1,7 +1,41 @@
-# CHANGELOG — feature-planner-v3
+# CHANGELOG — audited-feature-workflow (historycznie feature-planner-v3)
 
 > Wersje przed wprowadzeniem semver zrekonstruowane z historii git (backfill).
-> Major `v3` to generacja wariantu (senior-grade) — koegzystuje z `replit-style-workflow` (wygodny wariant, historycznie `feature-planner-v2`).
+> Wariant **senior-grade** Claude Code workflow — koegzystuje z `replit-style-workflow` (wygodny, historycznie `feature-planner-v2`) i `planner-f` (planning-only).
+> **Rename 2026-05-25:** `feature-planner-v3` → `audited-feature-workflow` (folder + frontmatter `name:`). Trigger keywords zachowane (`/goal`, `senior-grade feature`, `dodaj feature v3`).
+
+## [v3.3.0] — 2026-05-25 — Rename: feature-planner-v3 → audited-feature-workflow
+
+### Changed
+
+- **Folder:** `dev/feature-planner-v3/` → `dev/audited-feature-workflow/` (`git mv`, history preserved).
+- **Frontmatter SKILL.md:** `name: feature-planner-v3` → `name: audited-feature-workflow`. Heading H1 zaktualizowany z notą historyczną.
+- **`parent:` w 13× references/*.md** — wszystkie zsynchronizowane na `audited-feature-workflow`.
+- **Komentarze w scripts/** (3 wystąpienia: `check-pr-size.sh`, `derive-goal-from-ac.sh`) — zsynchronizowane.
+- **Cross-refs w pozostałych skillach** (replit-style-workflow, planner-f, agent-teams-builder, swarm-orchestrator) — wszystkie `feature-planner-v3` → `audited-feature-workflow` zsynchronizowane przez globalny sed.
+
+### Why
+
+Po renamie `feature-planner` → `replit-style-workflow` (2026-05-25, v2.3.0) sufix `-v3` stracił semantykę sekwencji (nie ma już „v2" w nazwie poprzednika). „Planner" sugerowało wyłącznie planowanie, podczas gdy skill robi pełen workflow z **unikalnym audit trail**: 6 HITL approval gates + raw evidence per AC + breadcrumbs + Five-Axis Review. Nowa nazwa odzwierciedla unique value proposition vs replit-style-workflow — **audytowalność**, zgodność z compliance/regulated environment KG PSP.
+
+### Co NIE zmienia się
+
+- **Funkcjonalność skilla** — pure rename refactor, zero zmian w SKILL.md content czy references.
+- **Trigger keywords** — `/goal`, `senior-grade feature`, `dodaj feature v3`, `ralph v3`, `feature-planner v3`, `implement v3` zachowane bez zmian. Skill aktywuje się tak samo.
+- **`extends: replit-style-workflow`** — relacja dziedziczenia zachowana (audited rozszerza replit-style o senior-grade harness).
+- **22/22 testów `agent-teams-builder/tests/run-meta-tests.sh`** — regresja sprawdzona.
+
+### Migracja
+
+Wywoływanie przez trigger phrasy → bez zmian. Wywoływanie przez `name:` bezpośrednio → użyj `audited-feature-workflow` (nie `feature-planner-v3`).
+
+### Sources
+
+- DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md §4 (nazwa skilla: kebab-case, niemyląca, opisowa względem zawartości).
+- DOC/material_skill.md §4 (DoD = dowód — audit trail jest unikalną wartością tego skilla).
+- DOC/material_skill.md §6 (Meta-Skill Router — `name:` jednoznacznie wskazuje funkcjonalność).
+
+---
 
 ## [v3.2.0] — 2026-05-25 — Test Discipline (mapa unit/integration/regression dla skryptów v3)
 

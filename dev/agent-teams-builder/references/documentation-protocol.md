@@ -2,8 +2,8 @@
 title: Documentation Protocol — pełen audit trail wszystkich dokumentów (PRD, ADR, retrospectives, code reviews, QA reports, decisions, sessions)
 load-when: "Faza 1 (Planner) — ZAWSZE. Plus każda faza która produkuje dokument (3-7)."
 source:
-  - dev/feature-planner-v3/SKILL.md (Phase 4/8/9 — plan/code-review/ADR)
-  - dev/feature-planner-v3/references/adr-template.md
+  - dev/audited-feature-workflow/SKILL.md (Phase 4/8/9 — plan/code-review/ADR)
+  - dev/audited-feature-workflow/references/adr-template.md
   - DOC/material_skill.md §4 (Definition of Done — dowód zamiast deklaracji)
   - DOC/since_skill.md §6 (Grounding in real expertise — runbooki + traces)
 ---
@@ -159,7 +159,7 @@ docs/                                           (committable do repo projektu)
 
 - **Kto:** Generator (po każdej decyzji architektonicznej)
 - **Kiedy:** wybór biblioteki, design pattern, schema DB, format protokołu, breaking change.
-- **Format:** `assets/adr-template.md` (przejęty z feature-planner-v3). Sekcje:
+- **Format:** `assets/adr-template.md` (przejęty z audited-feature-workflow). Sekcje:
   - Status (Accepted | Proposed | Superseded by ADR-XXXX)
   - Context
   - Decision
@@ -172,7 +172,7 @@ docs/                                           (committable do repo projektu)
 
 ### Dokument 10: `docs/code-reviews/CR-sprint-{n}-{slug}.md` — Five-Axis Code Review
 
-- **Kto:** Evaluator (po `sprint_passed` LUB delegacja do feature-planner-v3 reviewer)
+- **Kto:** Evaluator (po `sprint_passed` LUB delegacja do audited-feature-workflow reviewer)
 - **Kiedy:** po zakończeniu sprintu, **przed** fazą 7 (ship).
 - **Format:** `assets/code-review-template.md` (Five-Axis Review style):
   - Change sizing (diff lines, files touched)

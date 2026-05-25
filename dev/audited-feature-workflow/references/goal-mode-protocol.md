@@ -1,4 +1,4 @@
-# Goal Mode Protocol — feature-planner-v3
+# Goal Mode Protocol — audited-feature-workflow
 
 > Pełny protokół dla Phase 5.8 + Gate #1.5 + 6-Goal route. Hub-and-spoke: zwięzła wersja w `SKILL.md`, szczegóły tutaj.
 

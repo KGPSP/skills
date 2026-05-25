@@ -2,7 +2,7 @@
 name: gotchas
 description: Auto-populating baza wiedzy projektowych anomalii (Grounding in Real Expertise). Phase 1 wykrywa, Phase 9 deduplikuje.
 type: reference
-parent: feature-planner-v3
+parent: audited-feature-workflow
 source: 'since_skill.md §6 (Grounding in Real Expertise)'
 auto-populated: true
 ---
@@ -89,13 +89,13 @@ LLM-y mają domyślną wiedzę o typowych wzorcach (REST, JWT, TypeScript). Brak
 
 ```bash
 # Liczba wpisów
-grep -c '^## ' {baseDir}/dev/feature-planner-v3/references/gotchas.md
+grep -c '^## ' {baseDir}/dev/audited-feature-workflow/references/gotchas.md
 
 # Sortowanie alfabetyczne (manual review przed apply)
-awk '/^## /{print NR":"$0}' {baseDir}/dev/feature-planner-v3/references/gotchas.md
+awk '/^## /{print NR":"$0}' {baseDir}/dev/audited-feature-workflow/references/gotchas.md
 
 # Stale check (wpisy >12 miesięcy)
-grep -E '\*\*Wykryto:\*\* 202[0-4]-' {baseDir}/dev/feature-planner-v3/references/gotchas.md
+grep -E '\*\*Wykryto:\*\* 202[0-4]-' {baseDir}/dev/audited-feature-workflow/references/gotchas.md
 ```
 
 ---

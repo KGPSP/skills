@@ -1,7 +1,7 @@
 ---
 name: adr-template
 type: reference
-parent: feature-planner-v3
+parent: audited-feature-workflow
 sources:
   - dev/feature-planner v2 baseline (kopia bez zmian)
 description: Phase 9 ADR template — kontekst, decyzja, alternatywy. W v3 SKILL.md Phase 9 wymusza dodatkowe sekcje (Anti-rationalization decisions, Hyrum/Chesterton decisions).

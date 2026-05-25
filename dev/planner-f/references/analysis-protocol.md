@@ -5,7 +5,7 @@ parent: planner-f
 sources:
   - dev/feature-planner v2 baseline
   - DOC/material_skill.md §5 (Hyrum's Law, Chesterton's Fence)
-description: Phase 1 deep analysis — stack detection, architecture walk, analog feature, PRIMARY TEMPLATE. planner-f zachowuje Hyrum Impact Analysis i Chesterton's Fence dla deletion (dziedziczone z feature-planner-v3).
+description: Phase 1 deep analysis — stack detection, architecture walk, analog feature, PRIMARY TEMPLATE. planner-f zachowuje Hyrum Impact Analysis i Chesterton's Fence dla deletion (dziedziczone z audited-feature-workflow).
 ---
 
 # references/analysis-protocol.md

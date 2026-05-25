@@ -9,10 +9,10 @@ Trzy warianty pokrywają różne kombinacje **rygoru** (wygodny vs senior-grade)
 | Skill | Wariant | Wersja | Rygor | Zakres | Wielkość |
 |---|---|---|---|---|---|
 | [`replit-style-workflow`](replit-style-workflow/) | **wygodny** (historycznie v2) | `v2.3.0` | wygodny | plan + implementacja | ~2200 linii SKILL.md |
-| [`feature-planner-v3`](feature-planner-v3/) | **v3** | `v3.1.0` | senior-grade | plan + implementacja | 344 linii SKILL.md + 12 refs + 5 scripts |
+| [`audited-feature-workflow`](audited-feature-workflow/) | **v3** | `v3.1.0` | senior-grade | plan + implementacja | 344 linii SKILL.md + 12 refs + 5 scripts |
 | [`planner-f`](planner-f/) | **planning-only** | `v1.0.0` | senior-grade | **tylko plan + analiza + ADR** | 256 linii SKILL.md + 8 refs + 2 scripts |
 
-> **`planner-f` vs `feature-planner-v3`:** ten sam rygor analityczno-planistyczny (fazy 0–5 + ADR), ale planner-f **kończy na zatwierdzonym planie** — nie pisze kodu, nie pisze/uruchamia testów, nie commituje. Reguły wykonawcze (TDD RED, build clean, Five-Axis, Prove-It, PR sizing przy commitach) są **specyfikowane** w planie i przekazywane wykonawcy (handoff do v3 Phase 6+ lub `agent-teams-builder`). Używaj, gdy chcesz oddzielić „co/dlaczego budujemy" od „budujemy".
+> **`planner-f` vs `audited-feature-workflow`:** ten sam rygor analityczno-planistyczny (fazy 0–5 + ADR), ale planner-f **kończy na zatwierdzonym planie** — nie pisze kodu, nie pisze/uruchamia testów, nie commituje. Reguły wykonawcze (TDD RED, build clean, Five-Axis, Prove-It, PR sizing przy commitach) są **specyfikowane** w planie i przekazywane wykonawcy (handoff do v3 Phase 6+ lub `agent-teams-builder`). Używaj, gdy chcesz oddzielić „co/dlaczego budujemy" od „budujemy".
 
 ## Orkiestracja i QA
 
@@ -47,16 +47,16 @@ START
   │     └── YES → planner-f  (kończy na zatwierdzonym planie, handoff)
   │
   ├── Zadanie dotyka fragile zone (DB migration, auth core, infra, secrets)?
-  │     └── YES → feature-planner-v3 (Plan-Validate-Execute reżim)
+  │     └── YES → audited-feature-workflow (Plan-Validate-Execute reżim)
   │
   ├── Wymagana audytowalność (compliance, regulatory, post-mortem-ready)?
-  │     └── YES → feature-planner-v3 (raw artifacts, evidence per AC)
+  │     └── YES → audited-feature-workflow (raw artifacts, evidence per AC)
   │
   ├── Zmiana > 300 linii lub publiczne API?
-  │     └── YES → feature-planner-v3 (PR Sizing gate, Hyrum impact)
+  │     └── YES → audited-feature-workflow (PR Sizing gate, Hyrum impact)
   │
   ├── Bugfix?
-  │     └── YES → feature-planner-v3 (Prove-It Pattern w Phase 6.5)
+  │     └── YES → audited-feature-workflow (Prove-It Pattern w Phase 6.5)
   │
   └── Typowy feature, mid-size, niska wrażliwość?
         └── feature-planner (v2)
@@ -95,7 +95,7 @@ START
 ### Struktura plików v3
 
 ```
-feature-planner-v3/
+audited-feature-workflow/
 ├── SKILL.md (344 linii, ≤500 hard limit)
 ├── references/
 │   ├── analysis-protocol.md          # + Hyrum + Chesterton
@@ -129,7 +129,7 @@ feature-planner-v3/
 "build feature", "ralph", "ralph-loop", "iteruj aż zielono"
 ```
 
-### feature-planner-v3
+### audited-feature-workflow
 
 ```
 "feature-planner v3", "dodaj feature v3", "senior-grade feature",

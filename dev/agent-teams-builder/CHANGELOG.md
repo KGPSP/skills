@@ -54,11 +54,11 @@ User feedback: „jak coś wytwarzasz to tworzysz testy". Przed v1.9.0 a-t-b mia
   - `SKILL.md` Faza 1 — nowy callout „Planning = effort max (ultrathink)" + prompt spawnu Plannera zaczyna się od `ultrathink`. Przykład `Task()` w Fazie 2 prependuje `ultrathink`.
   - `agents/planner.md` — nowa reguła na starcie roli: praca z maksymalnym budżetem rozumowania, głęboka analiza przed każdą hipotezą / klasyfikacją Hyrum / wyborem architektury.
 
-## [v1.7.0] — 2026-05-20 — Approval Gates Protocol (6 bramek human-in-the-loop, transfer z feature-planner-v3)
+## [v1.7.0] — 2026-05-20 — Approval Gates Protocol (6 bramek human-in-the-loop, transfer z audited-feature-workflow)
 
 ### Added
 
-Pełny mechanizm **6 bramek akceptacji człowieka** (human-in-the-loop) przeniesiony z `feature-planner-v3`. Proces ZATRZYMUJE się na każdej bramce i czeka na jawną frazę akceptującą — **także w trybie `/goal`** (decyzja projektowa: wszystkie bramki aktywne, `/goal` je respektuje).
+Pełny mechanizm **6 bramek akceptacji człowieka** (human-in-the-loop) przeniesiony z `audited-feature-workflow`. Proces ZATRZYMUJE się na każdej bramce i czeka na jawną frazę akceptującą — **także w trybie `/goal`** (decyzja projektowa: wszystkie bramki aktywne, `/goal` je respektuje).
 
 **6 bramek mapowanych na fazy:**
 - **GATE #1 — Plan** (po Fazie 1, przed spawnem) — `state/plan.md` + PRD.
@@ -96,7 +96,7 @@ Pełen audit trail wszystkich dokumentów pracy zespołu agentów. **10 typów d
 - `state/final-report.md` — executive summary po fazie 7
 
 **Committable (docs/):**
-- `docs/adr/ADR-{NNNN}-{slug}.md` — **Architecture Decision Records** sekwencyjne, per decyzja architektoniczna (template przejęty z feature-planner-v3)
+- `docs/adr/ADR-{NNNN}-{slug}.md` — **Architecture Decision Records** sekwencyjne, per decyzja architektoniczna (template przejęty z audited-feature-workflow)
 - `docs/code-reviews/CR-sprint-{n}-{slug}.md` — **Five-Axis Code Review** per sprint passed (Correctness/Readability/Architecture/Security/Performance × Critical/Optional/Nit/FYI)
 - `docs/reports/final-{slug}.md` — kopia state/final-report.md (committable)
 
@@ -122,7 +122,7 @@ Pełen audit trail wszystkich dokumentów pracy zespołu agentów. **10 typów d
 User chce **wiedzieć co dzieje** w trakcie pracy zespołu agentów. Do tej pory:
 - Stan był rozproszony: kontrakty (JSON), breadcrumbs (JSON), evidence files (heterogenne).
 - Brakowało **czytelnych dokumentów** do code review, audit compliance, knowledge handoff.
-- ADRs i Five-Axis reviews były tylko w `feature-planner-v3` (1 feature) — nie w orkiestracji zespołu.
+- ADRs i Five-Axis reviews były tylko w `audited-feature-workflow` (1 feature) — nie w orkiestracji zespołu.
 
 Po v1.6: każda decyzja udokumentowana, każdy sprint ma retrospektywę, code review ze Five-Axis, ADR w `docs/adr/` (committable). Po sesji `/goal` można prześledzić KAŻDĄ decyzję bez czytania surowych breadcrumbs.
 
@@ -132,11 +132,11 @@ Po v1.6: każda decyzja udokumentowana, każdy sprint ma retrospektywę, code re
 
 ---
 
-## [v1.5.0] — 2026-05-20 — Planning Rigor (dziedziczone z feature-planner-v3)
+## [v1.5.0] — 2026-05-20 — Planning Rigor (dziedziczone z audited-feature-workflow)
 
 ### Added
 
-- **`references/planning-rigor.md`** — pełen protokół planowania przejęty z `feature-planner-v3`:
+- **`references/planning-rigor.md`** — pełen protokół planowania przejęty z `audited-feature-workflow`:
   - 3 hipotezy per sprint (Minimal/Idiomatic/Ambitious) + wybór + uzasadnienie wg 5 Non-negotiables.
   - 11 obowiązkowych sekcji planu (z 6 do 11 — 5 nowych).
   - Hyrum Impact analysis (klasyfikacja breaking/additive/internal per sprint dotykający API).
@@ -155,7 +155,7 @@ Po v1.6: każda decyzja udokumentowana, każdy sprint ma retrospektywę, code re
 
 ### Why
 
-Planowanie w v1.4 było płaskie: Planner produkował listę sprintów z mierzalnymi celami, ale **bez audytu wyborów architektonicznych**. Generator dostawał plan w którym nie było widać DLACZEGO wybrano X zamiast Y. Konsekwencja: w fazie 3 (negocjacja kontraktu) Evaluator nie miał punktu odniesienia do oceny czy proposed implementation realizuje cel biznesowy najlepszą dostępną metodą. Dziedzicząc rygor z `feature-planner-v3` (1 feature, sprawdzony) wprowadzamy ten sam standard do orkiestracji wielu sprintów.
+Planowanie w v1.4 było płaskie: Planner produkował listę sprintów z mierzalnymi celami, ale **bez audytu wyborów architektonicznych**. Generator dostawał plan w którym nie było widać DLACZEGO wybrano X zamiast Y. Konsekwencja: w fazie 3 (negocjacja kontraktu) Evaluator nie miał punktu odniesienia do oceny czy proposed implementation realizuje cel biznesowy najlepszą dostępną metodą. Dziedzicząc rygor z `audited-feature-workflow` (1 feature, sprawdzony) wprowadzamy ten sam standard do orkiestracji wielu sprintów.
 
 ### Test results
 
@@ -248,7 +248,7 @@ Audit pryncypiów wykrył lukę: SKILL.md odwoływał się do Beyoncé Rule (w D
   - `scripts/check-state-schema.sh` → odwołanie do `verify-non-negotiables.sh` + `jq empty`
   - `scripts/check-goal-spec.sh` + `scripts/derive-goal-from-ac.sh` → inline w parent agencie (parsing prompta)
   - `scripts/check-test-pyramid.sh`, `scripts/append-changelog.sh` → usunięte z procedury (CHANGELOG ręczny, piramidę testów audytuje review)
-- **[BUG] Dead link `references/five-axis-review.md`.** Zastąpione delegacją do `feature-planner-v3` (jeśli zainstalowany) — Five-Axis Review nie jest core mechanizmem tego skilla.
+- **[BUG] Dead link `references/five-axis-review.md`.** Zastąpione delegacją do `audited-feature-workflow` (jeśli zainstalowany) — Five-Axis Review nie jest core mechanizmem tego skilla.
 - **[BUG] `verify-role-isolation.sh` szukało w `prompts/`.** Naprawione — szuka w `.claude/agents/` (standard Claude Code), fallback do `prompts/` (legacy).
 
 ### Tested

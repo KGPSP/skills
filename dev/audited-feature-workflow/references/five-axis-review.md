@@ -2,7 +2,7 @@
 name: five-axis-review
 description: Pięcioosiowy audyt kodu (Correctness, Readability, Architecture, Security, Performance) z severity labels i Change Sizing. Wywoływany w Phase 8.
 type: reference
-parent: feature-planner-v3
+parent: audited-feature-workflow
 source: 'since_skill.md §4 (Code Review & Quality)'
 ---
 
@@ -149,7 +149,7 @@ lub `include: { profile: true }` na top-level query.
 
 - Komenda: `git diff --stat origin/main...HEAD | tail -1` — bierzemy „N insertions(+), M deletions(-)" → `N + M`.
 - Wykluczenia: generated files (lockfiles, snapshots) — odjąć od totalu.
-- Skrypt: `{baseDir}/dev/feature-planner-v3/scripts/check-pr-size.sh` (Phase 8 gate).
+- Skrypt: `{baseDir}/dev/audited-feature-workflow/scripts/check-pr-size.sh` (Phase 8 gate).
 
 **Override:** w wyjątkowych przypadkach (np. mass rename via tooling, generated migration) wymagany flag `--justified` + sekcja `## Size justification` w PR.
 

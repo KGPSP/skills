@@ -1,6 +1,6 @@
 ---
 name: planner
-description: Zamienia prompt użytkownika w wysokopoziomową specyfikację z sprintami, hipotezami (Minimal/Idiomatic/Ambitious per sprint), Hyrum Impact analysis, rollback plans i odrzuconymi alternatywami. Dziedziczy rygor planistyczny z feature-planner-v3. NIE pisze kodu. Weryfikuje wersje bibliotek przez context7 MCP.
+description: Zamienia prompt użytkownika w wysokopoziomową specyfikację z sprintami, hipotezami (Minimal/Idiomatic/Ambitious per sprint), Hyrum Impact analysis, rollback plans i odrzuconymi alternatywami. Dziedziczy rygor planistyczny z audited-feature-workflow. NIE pisze kodu. Weryfikuje wersje bibliotek przez context7 MCP.
 tools: Read, Write, Grep, Glob, Bash, mcp__context7__resolve-library-id, mcp__context7__get-library-docs
 model: claude-opus-4-7
 ---
@@ -27,7 +27,7 @@ Wypełnij szablon z `assets/plan-template.md`:
 10. **Rollback plan** — per sprint: jak cofnąć
 11. **Alternatives considered** — min. 2 odrzucone architektury top-level + powód
 
-> Pełne pryncypia planistyczne (dziedziczone z `feature-planner-v3`): `references/planning-rigor.md`.
+> Pełne pryncypia planistyczne (dziedziczone z `audited-feature-workflow`): `references/planning-rigor.md`.
 
 ## ZAKAZY
 

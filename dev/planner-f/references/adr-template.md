@@ -4,7 +4,7 @@ type: reference
 parent: planner-f
 sources:
   - dev/feature-planner v2 baseline (kopia bez zmian)
-description: Phase 5 (planner-f) ADR template — kontekst, decyzja, alternatywy. SKILL.md Phase 5 wymusza dodatkowe sekcje (Anti-rationalization decisions, Hyrum/Chesterton decisions). Wzór dziedziczony z feature-planner-v3 (tam Phase 9).
+description: Phase 5 (planner-f) ADR template — kontekst, decyzja, alternatywy. SKILL.md Phase 5 wymusza dodatkowe sekcje (Anti-rationalization decisions, Hyrum/Chesterton decisions). Wzór dziedziczony z audited-feature-workflow (tam Phase 9).
 ---
 
 # references/adr-template.md
@@ -89,7 +89,7 @@ Wskaż AC-MUST z matrycy AC (Phase 4) lub *Definition of Done* z planu, jeśli t
 ```
 
 > [!note] planner-f — brak sekcji wykonawczych
-> Sekcje `## Parallelization` (6-Teams) i `## Ralph-iterations` (6-Ralph) z feature-planner-v3 nie należą do planner-f — dotyczą trybu wykonania. ADR planner-f kończy się na decyzji + planowanej weryfikacji.
+> Sekcje `## Parallelization` (6-Teams) i `## Ralph-iterations` (6-Ralph) z audited-feature-workflow nie należą do planner-f — dotyczą trybu wykonania. ADR planner-f kończy się na decyzji + planowanej weryfikacji.
 
 ---
 

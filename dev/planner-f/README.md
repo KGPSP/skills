@@ -10,7 +10,7 @@
 
 `planner-f` to skill dla Claude Code, który prowadzi agenta przez **audytowalny proces planowania** — od deep analysis, przez ≥3 hipotezy i rekomendację, po kompletny plan z weryfikowalnymi AC oraz ADR. **Tu się zatrzymuje.** Nie pisze kodu produkcyjnego, nie pisze ani nie uruchamia testów, nie robi commitów/buildów/deployów.
 
-To wariant `feature-planner-v3` odcięty od faz wykonawczych. Idea: oddzielić **„co i dlaczego budujemy"** (planner-f) od **„budujemy"** (wykonawca). Plan, który powstaje, jest na tyle precyzyjny, że dowolny skill wykonawczy (lub człowiek) może go zrealizować bez zgadywania.
+To wariant `audited-feature-workflow` odcięty od faz wykonawczych. Idea: oddzielić **„co i dlaczego budujemy"** (planner-f) od **„budujemy"** (wykonawca). Plan, który powstaje, jest na tyle precyzyjny, że dowolny skill wykonawczy (lub człowiek) może go zrealizować bez zgadywania.
 
 ## Kiedy używać
 
@@ -21,7 +21,7 @@ To wariant `feature-planner-v3` odcięty od faz wykonawczych. Idea: oddzielić *
 - Zadanie ma impact architektoniczny i warto najpierw rozważyć alternatywy.
 
 ❌ **NIE** — gdy:
-- Prosisz o napisanie/zmianę kodu, testy, build, deploy → użyj `feature-planner-v3`.
+- Prosisz o napisanie/zmianę kodu, testy, build, deploy → użyj `audited-feature-workflow`.
 - Jednoliniowa poprawka, literówka, rename.
 - Czysto deklaratywne pytanie („wytłumacz co robi ten kod").
 
@@ -52,9 +52,9 @@ Claude rozpozna trigger, wykona Phase 0 (env detection) i poprowadzi przez 7 faz
 | 5 | ADR (Architecture Decision Record) | — |
 | **6** | **Pakiet planistyczny + handoff** | **APPROVAL** |
 
-## Czym się różni od feature-planner-v3
+## Czym się różni od audited-feature-workflow
 
-| | feature-planner-v3 | planner-f |
+| | audited-feature-workflow | planner-f |
 |---|---|---|
 | Zakres | analiza + plan + **implementacja + testy + review** | analiza + plan + dokumentacja |
 | Fazy | 16 (+ /goal) | 7 |
@@ -66,7 +66,7 @@ Claude rozpozna trigger, wykona Phase 0 (env detection) i poprowadzi przez 7 faz
 | DoD evidence | zbiera raw artefakty | **specyfikuje** format dowodu |
 | Output końcowy | zmergowany feature + ADR | **pakiet planistyczny do handoffu** |
 
-planner-f i feature-planner-v3 są komplementarne: planner-f wytwarza plan, feature-planner-v3 (od Phase 6) go realizuje.
+planner-f i audited-feature-workflow są komplementarne: planner-f wytwarza plan, audited-feature-workflow (od Phase 6) go realizuje.
 
 ## Co planner-f świadomie NIE robi
 
@@ -107,4 +107,4 @@ Po akceptacji skill wypisuje podsumowanie handoff dla skilla wykonawczego.
 
 ## Źródła
 
-Dziedziczy z [`feature-planner-v3`](../feature-planner-v3) (fazy 0–5 + ADR) oraz `DOC/material_skill.md` i `DOC/since_skill.md`.
+Dziedziczy z [`audited-feature-workflow`](../audited-feature-workflow) (fazy 0–5 + ADR) oraz `DOC/material_skill.md` i `DOC/since_skill.md`.

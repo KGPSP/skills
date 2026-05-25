@@ -1,7 +1,7 @@
 ---
 name: analysis-protocol
 type: reference
-parent: feature-planner-v3
+parent: audited-feature-workflow
 sources:
   - dev/feature-planner v2 baseline
   - DOC/material_skill.md §5 (Hyrum's Law, Chesterton's Fence)
@@ -456,7 +456,7 @@ Każde obserwowalne zachowanie publicznego API ma użytkownika — nawet to nieu
 
 3. **Dla `breaking` — uruchom skan callerów**:
    ```bash
-   bash {baseDir}/dev/feature-planner-v3/scripts/api-impact-scan.sh <symbol> <repo-root>
+   bash {baseDir}/dev/audited-feature-workflow/scripts/api-impact-scan.sh <symbol> <repo-root>
    ```
    Output musi zawierać: ścieżka:linia każdego wywołania w monorepo + tag czy caller jest w scope tej zmiany.
 

@@ -2,7 +2,7 @@
 
 > Architecture Decision Record. Pisany przez **Generator** w momencie podjęcia decyzji architektonicznej.
 > Numbering sekwencyjne (ADR-0001, ADR-0002, ...). Filename: `docs/adr/ADR-{NNNN}-{kebab-slug}.md`.
-> Format inspirowany Michael Nygard's ADR + przejęty z `dev/feature-planner-v3/references/adr-template.md`.
+> Format inspirowany Michael Nygard's ADR + przejęty z `dev/audited-feature-workflow/references/adr-template.md`.
 
 ---
 

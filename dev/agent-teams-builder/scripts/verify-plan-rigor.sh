@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# verify-plan-rigor.sh — egzekwuje 11 sekcji planu (dziedziczone z feature-planner-v3)
+# verify-plan-rigor.sh — egzekwuje 11 sekcji planu (dziedziczone z audited-feature-workflow)
 # Usage: scripts/verify-plan-rigor.sh
 # Exit 0 = plan akceptowalny. Exit ≠0 = sekcja brakuje LUB nie spełnia minimum.
 
