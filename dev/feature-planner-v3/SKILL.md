@@ -24,7 +24,7 @@ sources:
   - DOC/since_skill.md
   - DOC/goal_mode.md
 version: v3.2.0
-extends: feature-planner-v2
+extends: replit-style-workflow
 size-limit: 500-lines-hard
 ---
 
@@ -416,5 +416,5 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 
 - [DOC/material_skill.md](../../DOC/material_skill.md) — pryncypia procesowe (Process over Prose, Anti-rationalization, DoD, Scope Discipline, Hyrum, Chesterton, Beyoncé, DAMP, 5 Non-negotiables).
 - [DOC/since_skill.md](../../DOC/since_skill.md) — pryncypia projektowe skilla (token budget, kebab-case, imperatyw, scripts/, Negative Triggers, Anti-Laziness, Plan-Validate-Execute, Five-Axis Review, Thin Vertical Slices, Prove-It).
-- [dev/feature-planner/SKILL.md](../feature-planner/SKILL.md) — v2 baseline (Agent Teams, ralph-loop, worktree decision, 7 test scopes).
+- [dev/replit-style-workflow/SKILL.md](../replit-style-workflow/SKILL.md) — wygodny workflow baseline (Agent Teams, ralph-loop, worktree decision, 7 test scopes); historycznie feature-planner-v2.
 - [DOC/goal_mode.md](../../DOC/goal_mode.md) (local-only, gitignored) — pattern „stan końcowy + weryfikacja + ograniczenia", przykłady, antywzorce.

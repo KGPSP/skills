@@ -91,7 +91,7 @@ description: Mapa testów (unit / integration / regression) dla każdego skryptu
 | „v3 i tak ma rygorystyczne bramki w SKILL.md, walidator testu nie potrzebuje" | Odrzucono. **Beyoncé Rule.** Bramka opisana w prozie ≠ bramka, której deterministyczność jest udowodniona. Bez meta-testu walidator może milcząco regresować przy refaktorze. | DOC/material_skill.md §5 |
 | „Fixtures są — `complete-plan.md` istnieje" | Odrzucono. Fixture bez runnera = martwy plik. Test = (fixture + assert_exit + runner). Wszystkie 3 wymagane. | DOC/material_skill.md §4 |
 | „Bug w `check-pr-size.sh` → fix, regression później" | Odrzucono. **Prove-It Pattern.** Bez `regression-<bug>.diff` + failing assert_exit PRZED fixem ten sam bug wróci. Test regresji nienegocjowalny. | DOC/since_skill.md §5 |
-| „v3 dziedziczy testy z v2" | Odrzucono. v2 nie ma żadnych meta-testów (`dev/feature-planner/tests/` nie istnieje). Dziedziczenie z pustego = pusta uprząż. | sprawdź `ls dev/feature-planner/` |
+| „v3 dziedziczy testy z replit-style-workflow (v2)" | Odrzucono. Wygodny wariant nie ma żadnych meta-testów (`dev/replit-style-workflow/tests/` nie istnieje). Dziedziczenie z pustego = pusta uprząż. | sprawdź `ls dev/replit-style-workflow/` |
 | „Skrypty są krótkie, testy ich nie usprawiedliwiają" | Odrzucono. Krótki skrypt z błędną klasyfikacją (np. `api-impact-scan.sh` myli breaking↔additive) kaskaduje przez cały Phase 1.5 → 6 → 9. | DOC/material_skill.md §5 (Hyrum) |
 
 ## DoD per zmiana (egzekwowane w `## Definition of Done` SKILL.md)

@@ -37,7 +37,7 @@ Workflowy planowania/implementacji feature'a + orkiestracja zespołów agentów 
 
 | Skill | Wariant | Zastosowanie |
 |-------|---------|--------------|
-| [`feature-planner`](dev/feature-planner/) | **v2** (Claude Code) · `v2.1.0` | Replit Agent style z auto Agent Teams routing, ralph-loop autonomous, `/effort max`, 7 test scopes (unit/integration/system/acceptance/E2E/regression/perf+sec), worktree decision matrix. Domyślny wybór dla **typowych** zadań feature'owych. |
+| [`replit-style-workflow`](dev/replit-style-workflow/) | **wygodny** (Claude Code) · `v2.3.0` | Replit Agent style z auto Agent Teams routing, ralph-loop autonomous, `/effort max`, 7 test scopes (unit/integration/system/acceptance/E2E/regression/perf+sec), worktree decision matrix. Domyślny wybór dla **typowych** zadań feature'owych. (Historycznie: `feature-planner-v2`.) |
 | [`feature-planner-v3`](dev/feature-planner-v3/) | **v3** (senior-grade) · `v3.1.0` | v2 + deterministyczna uprząż inżynieryjna: 15-wpisowa Anti-Rationalization Table, twardy DoD z surowymi artefaktami, PR Sizing 100/300/1000, Hyrum's Law, Chesterton's Fence, Beyoncé Rule 1:1 AC↔Test, DAMP over DRY, Five-Axis Review, Plan-Validate-Execute, Thin Vertical Slices, Prove-It Pattern. Dla zadań **wysokiego rygoru** — fragile ops, audytowalna delegacja, compliance. |
 | [`planner-f`](dev/planner-f/) | **planning-only** · `v1.0.0` | Pochodny od v3, **odcięty od implementacji**: 7 faz + 1 bramka akceptacji. Produkuje audytowalny pakiet planistyczny (Analysis Report + Plan z AC/DoD-spec/Thin Slices + ADR) gotowy do **handoffu** skillowi wykonawczemu. Zachowuje Hyrum/Chesterton/Beyoncé/DAMP jako **specyfikację** (nie pisze ani nie uruchamia kodu). Gdy chcesz analizę i decyzje **przed** kodowaniem, albo wykonanie deleguje ktoś inny. |
 
@@ -56,7 +56,7 @@ Repo jest **marketplace pluginów Claude Code** (`kgpsp-skills`). Skille są pog
 |--------|--------|------------|
 | `pzp-tools` | 4 | analyzing-pzp-offers, drafting-pzp-letters, odpowiedzi-pytania, weryfikacja-umow-pzp |
 | `legal-tools` | 2 | opinie-prawne, sejm-eli-api |
-| `dev-tools` | 6 | agent-teams-builder, feature-planner (v2), feature-planner-v3, planner-f, playwright-test-suite, swarm-orchestrator |
+| `dev-tools` | 6 | agent-teams-builder, replit-style-workflow, feature-planner-v3, planner-f, playwright-test-suite, swarm-orchestrator |
 
 **1. Dodaj marketplace** (jednorazowo):
 
@@ -97,7 +97,7 @@ lub naturalnym językiem zgodnym z `description` w SKILL.md.
 
 ### Wybór dev/feature-planner (skrót)
 
-- **„Dodaj endpoint", „zrób X", „zaimplementuj Y"** → `feature-planner` (v2).
+- **„Dodaj endpoint", „zrób X", „zaimplementuj Y"** → `replit-style-workflow` (historycznie feature-planner-v2, wygodny rygor).
 - **„senior-grade feature", „audytowalnie", „fragile op", „migration DB", „auth refactor"** → `feature-planner-v3`.
 - **„zaplanuj", „przeanalizuj i zaprojektuj", „przygotuj plan/ADR bez implementacji"** → `planner-f` (kończy na zatwierdzonym planie, handoff do wykonawcy).
 

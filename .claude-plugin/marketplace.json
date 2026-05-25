@@ -6,7 +6,7 @@
     "email": "claude@kg.straz.gov.pl"
   },
   "description": "Katalog skilli Claude Code KG PSP: Prawo Zamówień Publicznych (PZP), opinie prawne oraz narzędzia developerskie dla agentów AI.",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "plugins": [
     {
       "name": "pzp-tools",
@@ -21,7 +21,7 @@
     {
       "name": "dev-tools",
       "source": "./dev",
-      "description": "Narzędzia developerskie dla agentów AI: planowanie feature'a (feature-planner v2/v3, planner-f), orkiestracja zespołów sub-agentów (agent-teams-builder), QA E2E (playwright-test-suite), swarm tmux -CC w iTerm2 z trybem YOLO/goal (swarm-orchestrator). 6 skilli."
+      "description": "Narzędzia developerskie dla agentów AI: pełny workflow feature (replit-style-workflow — Replit Agent style + Agent Teams + ralph-loop), senior-grade workflow (feature-planner-v3), planning-only (planner-f), orkiestracja zespołów sub-agentów (agent-teams-builder), QA E2E (playwright-test-suite), swarm tmux -CC w iTerm2 z trybem YOLO/goal (swarm-orchestrator). 6 skilli."
     }
   ]
 }

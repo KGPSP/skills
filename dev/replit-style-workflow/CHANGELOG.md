@@ -1,7 +1,37 @@
-# CHANGELOG — feature-planner (v2)
+# CHANGELOG — replit-style-workflow (historycznie feature-planner-v2)
 
 > Wersje przed wprowadzeniem semver zrekonstruowane z historii git (backfill).
-> `v2` to generacja wariantu (Claude Code, wygodny rygor) — koegzystuje z `feature-planner-v3`.
+> Wariant **wygodny** Claude Code workflow — koegzystuje z `feature-planner-v3` (senior-grade) i `planner-f` (planning-only).
+> **Rename 2026-05-25:** `feature-planner` → `replit-style-workflow` (folder + frontmatter `name:`). Trigger keywords zachowane.
+
+## [v2.3.0] — 2026-05-25 — Rename: feature-planner → replit-style-workflow
+
+### Changed
+
+- **Folder:** `dev/feature-planner/` → `dev/replit-style-workflow/` (`git mv`, rename detected przez gita — historia plików zachowana).
+- **Frontmatter SKILL.md:** `name: feature-planner-v2` → `name: replit-style-workflow`. Description rozszerzona o pozycjonowanie ("wygodny rygor, lighter niż feature-planner-v3, domyślny dla typowych zadań").
+- **`parent:`** w `references/testing-map.md` zsynchronizowane: `feature-planner-v2` → `replit-style-workflow`.
+
+### Why
+
+Nazwa `feature-planner` sugerowała wyłącznie planowanie, ale skill robi pełny workflow (plan → implementacja → 7 test scopes → live preview → code review → ADR). Myliło się też z [`planner-f`](../planner-f/) (który JEST planning-only). Dodatkowo `feature-planner-v2` w frontmatterze vs `feature-planner` jako folder = niezgrabna inkonsystencja. Nowa nazwa odzwierciedla unikalną wartość — **Replit Agent style** workflow z auto-routingiem (Sequential/Teams/Ralph) i deep research.
+
+### Co NIE zmienia się
+
+- **Trigger keywords** — `"dodaj feature v2"`, `"zaimplementuj"`, `"zrób żeby"`, `"implement"`, `"build feature"`, `"ralph"`, `"ralph-loop"`, `"iteruj aż zielono"` zachowane bez zmian. Skill aktywuje się tak samo.
+- **Zawartość SKILL.md + references/** — bez zmian funkcjonalnych. Pure rename refactor.
+- **Cross-references** w `feature-planner-v3` (`extends:`), `agent-teams-builder`, `planner-f`, README — zsynchronizowane (5 plików).
+
+### Migracja dla użytkownika
+
+Jeśli wywoływałeś po nazwie skilla bezpośrednio (`/replit-style-workflow` lub przez router → `name:`), aktualizuj. Wywoływanie przez trigger phrasy (`"dodaj feature"`, `"ralph"`, etc.) działa nadal.
+
+### Sources
+
+- DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md §4 (nazwa skilla: kebab-case, opisowa, niemyląca) — `feature-planner` myli się z `planner-f`.
+- DOC/material_skill.md §6 (Architektura operacyjna — Meta-Skill Router) — `name:` jest identyfikatorem aktywacji, powinien jednoznacznie wskazywać funkcjonalność.
+
+---
 
 ## [v2.2.0] — 2026-05-25 — Test Discipline (dokumentacja stanu + pryncypium retrofittingu)
 

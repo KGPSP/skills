@@ -8,7 +8,7 @@ Trzy warianty pokrywają różne kombinacje **rygoru** (wygodny vs senior-grade)
 
 | Skill | Wariant | Wersja | Rygor | Zakres | Wielkość |
 |---|---|---|---|---|---|
-| [`feature-planner`](feature-planner/) | **v2** | `v2.1.0` | wygodny | plan + implementacja | ~2200 linii SKILL.md |
+| [`replit-style-workflow`](replit-style-workflow/) | **wygodny** (historycznie v2) | `v2.3.0` | wygodny | plan + implementacja | ~2200 linii SKILL.md |
 | [`feature-planner-v3`](feature-planner-v3/) | **v3** | `v3.1.0` | senior-grade | plan + implementacja | 344 linii SKILL.md + 12 refs + 5 scripts |
 | [`planner-f`](planner-f/) | **planning-only** | `v1.0.0` | senior-grade | **tylko plan + analiza + ADR** | 256 linii SKILL.md + 8 refs + 2 scripts |
 

@@ -1,16 +1,16 @@
 ---
 name: testing-map
 type: reference
-parent: feature-planner-v2
+parent: replit-style-workflow
 sources:
   - DOC/material_skill.md §4 — Definition of Done (dowód zamiast deklaracji)
   - DOC/material_skill.md §5 — Beyoncé Rule, DAMP over DRY, piramida 80/15/5
   - DOC/since_skill.md §5 — TDD RED-GREEN-REFACTOR + Prove-It Pattern (regresja)
   - DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md §9 — Checklist gotowości
-description: Mapa testów (unit / integration / regression) dla skilla feature-planner-v2. v2 jest prose-heavy i NIE ma własnych skryptów-bramek — mapa dokumentuje ten stan i wymusza dyscyplinę „każda nowa funkcjonalność w v2 = nowy skrypt walidatora + meta-test".
+description: Mapa testów (unit / integration / regression) dla skilla replit-style-workflow (historycznie feature-planner-v2). Skill jest prose-heavy i NIE ma własnych skryptów-bramek — mapa dokumentuje ten stan i wymusza dyscyplinę „każda nowa funkcjonalność = nowy skrypt walidatora + meta-test".
 ---
 
-# Test Discipline — feature-planner (v2)
+# Test Discipline — replit-style-workflow (historycznie feature-planner-v2)
 
 > **Zakres:** meta-testy skryptów-bramek **samego skilla** v2.
 > **NIE w zakresie:** testy aplikacji, którą skill buduje (Phase 7 — 7 scopes × S/M/L, patrz [`testing-protocol.md`](testing-protocol.md)).
@@ -69,7 +69,7 @@ description: Mapa testów (unit / integration / regression) dla skilla feature-p
 2. **Decyzja: czy da się wyrazić deterministycznie?**
    - **TAK** (np. „każdy plan ma ≥N sekcji", „artefakt X istnieje i jest niepusty") → przejdź do kroku 3.
    - **NIE** (np. „agent przeanalizuje uważnie") → przemyśl ponownie. **Pryncypium Process over Prose**: jeśli nie ma deterministycznego artefaktu, krok jest za miękki.
-3. **Utwórz skrypt** `dev/feature-planner/scripts/<nazwa>.sh` (POSIX, `#!/bin/sh`, `set -eu`). Jeśli `scripts/` nie istnieje — utwórz (`mkdir -p`).
+3. **Utwórz skrypt** `dev/replit-style-workflow/scripts/<nazwa>.sh` (POSIX, `#!/bin/sh`, `set -eu`). Jeśli `scripts/` nie istnieje — utwórz (`mkdir -p`).
 4. **RED** — `tests/fixtures/<komponent>-good.<ext>` + `<komponent>-bad-<typ>.<ext>`. Jeśli `tests/` nie istnieje — utwórz `tests/run-meta-tests.sh` (skopiuj wzorzec z `dev/agent-teams-builder/tests/run-meta-tests.sh`).
 5. **Implementacja** skryptu → **GREEN** `bash tests/run-meta-tests.sh` → wszystkie cases passed.
 6. **Integration** — jeśli skrypt łączy się z innym walidatorem v2: scena z `setup_*`.

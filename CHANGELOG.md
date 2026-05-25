@@ -2,6 +2,32 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-25] dev/feature-planner → dev/replit-style-workflow — rename skilla (v2.3.0)
+
+### Changed
+
+- **`dev/feature-planner/` → `dev/replit-style-workflow/`** — pełny rename skilla (folder + frontmatter `name: feature-planner-v2` → `name: replit-style-workflow`). `git mv` zachował historię plików (rename detected przez gita).
+- **`dev-tools`** plugin → `v1.3.0`: zaktualizowana lista `skills:` (`./feature-planner` → `./replit-style-workflow`), keywords (+`replit-style`).
+- **`marketplace.json`** root → `v1.3.0`: opis dev-tools odzwierciedla nową nazwę + pozycjonowanie.
+- **`README.md`** (root), **`dev/README.md`**, **`AGENTS.md`** — wszystkie wzmianki o `feature-planner` (jako skill v2) zaktualizowane do `replit-style-workflow` z notą historyczną. Decision tree i tabela pluginu zsynchronizowane.
+- **`dev/feature-planner-v3/SKILL.md`** — `extends: feature-planner-v2` → `extends: replit-style-workflow` + link w indeksie referencji zsynchronizowany.
+- **`dev/feature-planner-v3/README.md`** + **`dev/feature-planner-v3/CHANGELOG.md`** (preambuła) + **`dev/feature-planner-v3/references/testing-map.md`** (Anti-Rat wiersz) — wzmianki o "v2" zsynchronizowane.
+- **`pzp/odpowiedzi-pytania/SKILL.md`** — usunięte stale ref do `feature-planner` (wzmianka „przygotuj SWZ" — to skill PZP, nie dev/, więc reference był błędny od dawna; po renamie skill author'a wzmianka byłaby podwójnie myląca).
+
+### Why
+
+Nazwa `feature-planner` sugerowała wyłącznie planowanie — myliło się z [`planner-f`](dev/planner-f/) który JEST planning-only. Skill robi pełny workflow (plan → impl → 7 test scopes → preview → review → ADR) w "Replit Agent style". Nowa nazwa odzwierciedla unikalną wartość: auto-routing (6-Sequential / 6-Teams / 6-Ralph) + deep research + worktree decision + 7 test scopes. Frontmatter `name: feature-planner-v2` vs folder `feature-planner` był też inkonsystencją od początku — teraz oba zsynchronizowane.
+
+### Co NIE zmienia się
+
+- **Funkcjonalność skilla** — pure rename refactor, zero zmian w SKILL.md content czy references.
+- **Trigger keywords** — `"dodaj feature v2"`, `"zaimplementuj"`, `"implement"`, `"build feature"`, `"ralph"`, etc. zachowane (router description-driven).
+- **22/22 testów `agent-teams-builder/tests/run-meta-tests.sh`** — regresja sprawdzona po wszystkich zmianach.
+
+### Migracja
+
+Wywoływanie przez trigger phrasy → bez zmian. Wywoływanie przez `name:` bezpośrednio → użyj `replit-style-workflow` (nie `feature-planner-v2`).
+
 ## [2026-05-25] dev — Test Discipline (3 skille: a-t-b v1.9.0 + v3 v3.2.0 + v2 v2.2.0)
 
 ### Added

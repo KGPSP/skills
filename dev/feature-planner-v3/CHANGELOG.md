@@ -1,7 +1,7 @@
 # CHANGELOG — feature-planner-v3
 
 > Wersje przed wprowadzeniem semver zrekonstruowane z historii git (backfill).
-> Major `v3` to generacja wariantu (senior-grade) — koegzystuje z `feature-planner` (v2).
+> Major `v3` to generacja wariantu (senior-grade) — koegzystuje z `replit-style-workflow` (wygodny wariant, historycznie `feature-planner-v2`).
 
 ## [v3.2.0] — 2026-05-25 — Test Discipline (mapa unit/integration/regression dla skryptów v3)
 

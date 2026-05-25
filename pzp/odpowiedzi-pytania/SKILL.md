@@ -52,7 +52,7 @@ Systematyczny workflow przygotowania **projektu odpowiedzi Zamawiającego** na p
 
 ## When NOT to Use
 
-- User nie ma jeszcze SWZ — najpierw uruchom skill `feature-planner` lub przygotuj SWZ ręcznie.
+- User nie ma jeszcze SWZ — przygotuj SWZ ręcznie (lub odeślij do zespołu opracowującego SWZ; ten skill nie generuje SWZ od zera).
 - Pytanie nie pochodzi od wykonawcy w trybie art. 135 / art. 284 Pzp (np. zapytanie obywatelskie, pytanie kontrolne UZP, prośba o udostępnienie protokołu) — to wymaga osobnego trybu odpowiedzi.
 - Odpowiedź wymagałaby istotnej zmiany charakteru zamówienia — eskalacja do **decyzji Zamawiającego** (komisja przetargowa + kierownik), nie automatyczna odpowiedź. (Wykrywane w trakcie — Phase 4.5 STOP-gate; dlatego nie jest to negative trigger pre-aktywacyjny.)
 - Postępowania zagraniczne poza polskim Pzp.

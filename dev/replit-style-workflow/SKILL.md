@@ -1,7 +1,7 @@
 ---
-name: feature-planner-v2
-version: v2.2.0
-description: Structured feature workflow (Replit Agent style) with Agent Teams auto-routing, ralph-loop autonomous mode, /effort max, deep research (context7/Explore/defuddle/WebSearch/codex; ZERO Gemini). Use when user describes a feature/change/task and Claude Code should plan + implement end-to-end. Triggers "dodaj feature v2", "zaimplementuj", "zrób żeby", "implement", "build feature", "ralph", "ralph-loop", "iteruj aż zielono". Runs detect env → analysis → hypotheses → plan → APPROVAL → worktree (M+) → ralph decision → implement (6-Sequential / 6-Teams 2–5 / 6-Ralph autonomous) → 7 test scopes (unit/integration/system/acceptance/E2E-playwright-chromium-tier1234/regression/perf+security per S/M/L; opt 7.6 ralph test-fix) → live preview (M+ UI) → code review → ADR. Never skip approval gate or code review.
+name: replit-style-workflow
+version: v2.3.0
+description: Structured feature workflow (Replit Agent style) with Agent Teams auto-routing, ralph-loop autonomous mode, /effort max, deep research (context7/Explore/defuddle/WebSearch/codex; ZERO Gemini). Use when user describes a feature/change/task and Claude Code should plan + implement end-to-end. Triggers "dodaj feature v2", "zaimplementuj", "zrób żeby", "implement", "build feature", "ralph", "ralph-loop", "iteruj aż zielono". Runs detect env → analysis → hypotheses → plan → APPROVAL → worktree (M+) → ralph decision → implement (6-Sequential / 6-Teams 2–5 / 6-Ralph autonomous) → 7 test scopes (unit/integration/system/acceptance/E2E-playwright-chromium-tier1234/regression/perf+security per S/M/L; opt 7.6 ralph test-fix) → live preview (M+ UI) → code review → ADR. Never skip approval gate or code review. Pozycja w decision tree: wygodny rygor (lighter niż feature-planner-v3 senior-grade), domyślny wybór dla typowych zadań.
 ---
 
 # Feature Planner v2 — Replit Agent Style + Auto Agent Teams + Ralph Loop + Deep Research

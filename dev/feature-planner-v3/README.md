@@ -264,7 +264,7 @@ Pełna historia: `git log dev/feature-planner-v3/`.
 - [Plan implementacji /goal mode](../../docs/superpowers/plans/2026-05-13-feature-planner-v3-goal-mode.md)
 - [SKILL.md](SKILL.md) — główny prompt skilla
 - [goal-mode-protocol.md](references/goal-mode-protocol.md) — pełny protokół /goal
-- [v2 (poprzednia wersja)](../feature-planner/) — bez Anti-Rat #11, bez /goal, bez Five-Axis hardening
+- [replit-style-workflow (wygodny wariant)](../replit-style-workflow/) — historycznie feature-planner-v2; bez Anti-Rat #11, bez /goal, bez Five-Axis hardening
 
 ## Filozofia
 
