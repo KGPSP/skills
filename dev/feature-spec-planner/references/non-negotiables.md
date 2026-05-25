@@ -1,15 +1,15 @@
 ---
 name: non-negotiables
 type: reference
-parent: planner-f
+parent: feature-spec-planner
 source: DOC/material_skill.md §8
-description: Pięć zasad nienegocjowalnych dla planner-f — wersja planistyczna. Każda zasada egzekwowana w konkretnych fazach analizy/planu/ADR. Wersja wykonawcza (raw artifacts, build clean) należy do skilla wykonawczego.
+description: Pięć zasad nienegocjowalnych dla feature-spec-planner — wersja planistyczna. Każda zasada egzekwowana w konkretnych fazach analizy/planu/ADR. Wersja wykonawcza (raw artifacts, build clean) należy do skilla wykonawczego.
 ---
 
 # 5 Non-negotiables (wersja planistyczna)
 
 > [!important] Zasada nadrzędna
-> Te 5 punktów to **imperatyw** dla każdego uruchomienia planner-f. Naruszenie któregokolwiek = STOP, eskalacja do użytkownika, nie continue. planner-f egzekwuje je na poziomie **planu i dokumentacji** — nie na poziomie kodu (tego nie produkuje).
+> Te 5 punktów to **imperatyw** dla każdego uruchomienia feature-spec-planner. Naruszenie któregokolwiek = STOP, eskalacja do użytkownika, nie continue. feature-spec-planner egzekwuje je na poziomie **planu i dokumentacji** — nie na poziomie kodu (tego nie produkuje).
 
 ---
 
@@ -63,14 +63,14 @@ description: Pięć zasad nienegocjowalnych dla planner-f — wersja planistyczn
 > [!quote] material_skill.md §8 — Verification is non-negotiable
 > Każdy status „done" musi być podparty logiem, wynikiem testu lub zrzutem ekranu.
 
-**Jak egzekwowane w planner-f:**
+**Jak egzekwowane w feature-spec-planner:**
 
 - Phase 4: matryca AC — każdy AC ma `Test ID` + `Komenda` + `Plik testu` (Beyoncé 1:1, [ac-protocol.md](ac-protocol.md)).
 - Phase 4: DoD — każdy AC ma komendę dowodu + próg sukcesu + lokalizację artefaktu ([dod-evidence-protocol.md](dod-evidence-protocol.md)).
 - Phase 6 (gate): pusty `Test ID`/`Komenda` = specyfikacja niekompletna = bramka blokuje.
 
 > [!note] Różnica wobec wykonawcy
-> planner-f **specyfikuje**, czym AC zostanie udowodniony. **Zebranie** surowego dowodu (raw log, screenshot, trace) i werdykt PASS/FAIL należą do skilla wykonawczego. „Plan deklaruje dowód" ≠ „dowód istnieje".
+> feature-spec-planner **specyfikuje**, czym AC zostanie udowodniony. **Zebranie** surowego dowodu (raw log, screenshot, trace) i werdykt PASS/FAIL należą do skilla wykonawczego. „Plan deklaruje dowód" ≠ „dowód istnieje".
 
 **Anti-pattern:** AC bez przypisanego testu („sprawdzi się ręcznie") — albo planowany test, albo spisana procedura manualna z artefaktem.
 
@@ -91,7 +91,7 @@ description: Pięć zasad nienegocjowalnych dla planner-f — wersja planistyczn
 
 ---
 
-## Anti-Laziness w bramce (planner-f)
+## Anti-Laziness w bramce (feature-spec-planner)
 
 > [!quote] since_skill.md §6
 > Najwyższa waga jakości. **Nie optymalizuj pod szybkość oddania planu.**

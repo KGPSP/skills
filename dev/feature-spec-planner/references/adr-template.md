@@ -1,15 +1,15 @@
 ---
 name: adr-template
 type: reference
-parent: planner-f
+parent: feature-spec-planner
 sources:
   - dev/feature-planner v2 baseline (kopia bez zmian)
-description: Phase 5 (planner-f) ADR template — kontekst, decyzja, alternatywy. SKILL.md Phase 5 wymusza dodatkowe sekcje (Anti-rationalization decisions, Hyrum/Chesterton decisions). Wzór dziedziczony z audited-feature-workflow (tam Phase 9).
+description: Phase 5 (feature-spec-planner) ADR template — kontekst, decyzja, alternatywy. SKILL.md Phase 5 wymusza dodatkowe sekcje (Anti-rationalization decisions, Hyrum/Chesterton decisions). Wzór dziedziczony z audited-feature-workflow (tam Phase 9).
 ---
 
 # references/adr-template.md
 
-Protokół dla Phase 5 (planner-f) — **ADR (Architecture Decision Record)**. Cel: utrwalić decyzję tak,
+Protokół dla Phase 5 (feature-spec-planner) — **ADR (Architecture Decision Record)**. Cel: utrwalić decyzję tak,
 żeby ktoś wracający do tego kodu za 6 miesięcy zrozumiał *dlaczego* tak zostało zrobione,
 a nie tylko *co*.
 
@@ -88,8 +88,8 @@ Wskaż AC-MUST z matrycy AC (Phase 4) lub *Definition of Done* z planu, jeśli t
 - [np. „Dodać index na shelters(powiat_code, dostepnosc) — backlog ticket #123"]
 ```
 
-> [!note] planner-f — brak sekcji wykonawczych
-> Sekcje `## Parallelization` (6-Teams) i `## Ralph-iterations` (6-Ralph) z audited-feature-workflow nie należą do planner-f — dotyczą trybu wykonania. ADR planner-f kończy się na decyzji + planowanej weryfikacji.
+> [!note] feature-spec-planner — brak sekcji wykonawczych
+> Sekcje `## Parallelization` (6-Teams) i `## Ralph-iterations` (6-Ralph) z audited-feature-workflow nie należą do feature-spec-planner — dotyczą trybu wykonania. ADR feature-spec-planner kończy się na decyzji + planowanej weryfikacji.
 
 ---
 

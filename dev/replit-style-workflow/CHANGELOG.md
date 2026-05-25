@@ -1,7 +1,7 @@
 # CHANGELOG — replit-style-workflow (historycznie feature-planner-v2)
 
 > Wersje przed wprowadzeniem semver zrekonstruowane z historii git (backfill).
-> Wariant **wygodny** Claude Code workflow — koegzystuje z `audited-feature-workflow` (senior-grade) i `planner-f` (planning-only).
+> Wariant **wygodny** Claude Code workflow — koegzystuje z `audited-feature-workflow` (senior-grade) i `feature-spec-planner` (planning-only).
 > **Rename 2026-05-25:** `feature-planner` → `replit-style-workflow` (folder + frontmatter `name:`). Trigger keywords zachowane.
 
 ## [v2.3.0] — 2026-05-25 — Rename: feature-planner → replit-style-workflow
@@ -14,13 +14,13 @@
 
 ### Why
 
-Nazwa `feature-planner` sugerowała wyłącznie planowanie, ale skill robi pełny workflow (plan → implementacja → 7 test scopes → live preview → code review → ADR). Myliło się też z [`planner-f`](../planner-f/) (który JEST planning-only). Dodatkowo `feature-planner-v2` w frontmatterze vs `feature-planner` jako folder = niezgrabna inkonsystencja. Nowa nazwa odzwierciedla unikalną wartość — **Replit Agent style** workflow z auto-routingiem (Sequential/Teams/Ralph) i deep research.
+Nazwa `feature-planner` sugerowała wyłącznie planowanie, ale skill robi pełny workflow (plan → implementacja → 7 test scopes → live preview → code review → ADR). Myliło się też z [`feature-spec-planner`](../feature-spec-planner/) (który JEST planning-only). Dodatkowo `feature-planner-v2` w frontmatterze vs `feature-planner` jako folder = niezgrabna inkonsystencja. Nowa nazwa odzwierciedla unikalną wartość — **Replit Agent style** workflow z auto-routingiem (Sequential/Teams/Ralph) i deep research.
 
 ### Co NIE zmienia się
 
 - **Trigger keywords** — `"dodaj feature v2"`, `"zaimplementuj"`, `"zrób żeby"`, `"implement"`, `"build feature"`, `"ralph"`, `"ralph-loop"`, `"iteruj aż zielono"` zachowane bez zmian. Skill aktywuje się tak samo.
 - **Zawartość SKILL.md + references/** — bez zmian funkcjonalnych. Pure rename refactor.
-- **Cross-references** w `audited-feature-workflow` (`extends:`), `agent-teams-builder`, `planner-f`, README — zsynchronizowane (5 plików).
+- **Cross-references** w `audited-feature-workflow` (`extends:`), `agent-teams-builder`, `feature-spec-planner`, README — zsynchronizowane (5 plików).
 
 ### Migracja dla użytkownika
 
@@ -28,7 +28,7 @@ Jeśli wywoływałeś po nazwie skilla bezpośrednio (`/replit-style-workflow` l
 
 ### Sources
 
-- DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md §4 (nazwa skilla: kebab-case, opisowa, niemyląca) — `feature-planner` myli się z `planner-f`.
+- DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md §4 (nazwa skilla: kebab-case, opisowa, niemyląca) — `feature-planner` myli się z `feature-spec-planner`.
 - DOC/material_skill.md §6 (Architektura operacyjna — Meta-Skill Router) — `name:` jest identyfikatorem aktywacji, powinien jednoznacznie wskazywać funkcjonalność.
 
 ---

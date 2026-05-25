@@ -2,6 +2,35 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-25] dev/planner-f → dev/feature-spec-planner — rename skilla (v1.1.0)
+
+### Changed
+
+- **`dev/planner-f/` → `dev/feature-spec-planner/`** — pełny rename skilla (folder + frontmatter `name: planner-f` → `name: feature-spec-planner`). `git mv` zachował historię plików.
+- **`dev-tools`** plugin → `v1.5.0` + **`marketplace.json`** root → `v1.5.0`: opis dev-tools zaktualizowany (planning-only → `feature-spec-planner`).
+- **Trigger keywords:** `"feature-spec-planner"` jako główny + **`"planner-f"` zachowany jako legacy alias** (backward-compat). `/plan-f` slash command nietknięty.
+- **Cross-references zsynchronizowane** (~22 plików): manifesty, READMEs (root + dev/), AGENTS.md, 8× `parent:` w `references/`, komentarze w `scripts/`, cross-refs w `audited-feature-workflow`, `replit-style-workflow`, root CHANGELOG. Globalny `sed` zamienił wszystkie wystąpienia `planner-f` → `feature-spec-planner` poza `.git/`.
+
+### Why
+
+Po wcześniejszych renamach `feature-planner` → `replit-style-workflow` (v2.3.0) i `feature-planner-v3` → `audited-feature-workflow` (v3.3.0) — `planner-f` był jedynym skillem w `dev-tools` plugin ze **skrótowym, niejednoznacznym sufixem `-f`** (czy `final`? `finalize`? `feature`?). Łamało konsystencję naming convention. Nowa nazwa `feature-spec-planner`:
+- **`feature`** — zakres (feature lifecycle)
+- **`spec`** — kluczowy output (AC ↔ Test specification, DoD-spec)
+- **`planner`** — zachowane powiązanie z planowaniem
+
+Trzy `dev` workflow skille mają teraz opisowe nazwy (`replit-style-workflow` / `audited-feature-workflow` / `feature-spec-planner`) — naming convention spójna.
+
+### Co NIE zmienia się
+
+- **Funkcjonalność skilla** — pure rename refactor, zero zmian w SKILL.md content czy references.
+- **Trigger keywords** — wszystkie zachowane: główny + legacy `"planner-f"` alias + `/plan-f` slash.
+- **`derives-from: audited-feature-workflow`** — zachowane.
+- **22/22 testów `agent-teams-builder/tests/run-meta-tests.sh`** — regresja sprawdzona.
+
+### Migracja
+
+Wywoływanie przez trigger phrasy → bez zmian. Wywoływanie przez `name:`: stare `planner-f` nadal działa (legacy trigger w SKILL.md), preferowane nowe `feature-spec-planner`.
+
 ## [2026-05-25] dev/feature-planner-v3 → dev/audited-feature-workflow — rename skilla (v3.3.0)
 
 ### Changed
@@ -9,7 +38,7 @@ Historia zmian na poziomie repozytorium. Per-skill detale → commit history pos
 - **`dev/feature-planner-v3/` → `dev/audited-feature-workflow/`** — pełny rename skilla (folder + frontmatter `name: feature-planner-v3` → `name: audited-feature-workflow`). `git mv` zachował historię plików.
 - **`dev-tools`** plugin → `v1.4.0`: zaktualizowana lista `skills:` + keywords (+`audited-workflow`).
 - **`marketplace.json`** root → `v1.4.0`: opis dev-tools odzwierciedla nową nazwę i pozycjonowanie (audit-trail-ready senior-grade vs replit-style wygodny).
-- **Cross-references zsynchronizowane** (>40 plików, ~53 total z folder rename): manifesty, READMEs (root + dev/), AGENTS.md, wszystkie 13× `parent:` w `references/`, 3× komentarze w `scripts/`, cross-refs w `replit-style-workflow`, `planner-f`, `agent-teams-builder`, `swarm-orchestrator`. Globalny `sed` zamienił wszystkie wystąpienia `feature-planner-v3` → `audited-feature-workflow` poza `.git/`.
+- **Cross-references zsynchronizowane** (>40 plików, ~53 total z folder rename): manifesty, READMEs (root + dev/), AGENTS.md, wszystkie 13× `parent:` w `references/`, 3× komentarze w `scripts/`, cross-refs w `replit-style-workflow`, `feature-spec-planner`, `agent-teams-builder`, `swarm-orchestrator`. Globalny `sed` zamienił wszystkie wystąpienia `feature-planner-v3` → `audited-feature-workflow` poza `.git/`.
 
 ### Why
 
@@ -44,7 +73,7 @@ Globalny `sed` zamienił wszystkie wystąpienia `feature-planner-v3` (włącznie
 
 ### Why
 
-Nazwa `feature-planner` sugerowała wyłącznie planowanie — myliło się z [`planner-f`](dev/planner-f/) który JEST planning-only. Skill robi pełny workflow (plan → impl → 7 test scopes → preview → review → ADR) w "Replit Agent style". Nowa nazwa odzwierciedla unikalną wartość: auto-routing (6-Sequential / 6-Teams / 6-Ralph) + deep research + worktree decision + 7 test scopes. Frontmatter `name: feature-planner-v2` vs folder `feature-planner` był też inkonsystencją od początku — teraz oba zsynchronizowane.
+Nazwa `feature-planner` sugerowała wyłącznie planowanie — myliło się z [`feature-spec-planner`](dev/feature-spec-planner/) który JEST planning-only. Skill robi pełny workflow (plan → impl → 7 test scopes → preview → review → ADR) w "Replit Agent style". Nowa nazwa odzwierciedla unikalną wartość: auto-routing (6-Sequential / 6-Teams / 6-Ralph) + deep research + worktree decision + 7 test scopes. Frontmatter `name: feature-planner-v2` vs folder `feature-planner` był też inkonsystencją od początku — teraz oba zsynchronizowane.
 
 ### Co NIE zmienia się
 
@@ -71,7 +100,7 @@ Wywoływanie przez trigger phrasy → bez zmian. Wywoływanie przez `name:` bezp
 
 ### Why
 
-User pytał czy 3 skille (a-t-b, v2, v3) mają testy unit/integration/regression. Stan na 2026-05-25: a-t-b ma 22/22 testów ale brak mapy → reszta nie była audytowalna. v3 ma 7 skryptów z 0 meta-testami + 2 martwe fixtures (artefakt po refaktorze z v3 do planner-f). v2 jest prose-heavy bez żadnej infrastruktury. Pytanie obnażyło lukę: brak **dokumentu mapującego funkcjonalność → typ testu**. User instrukcja: „jak coś wytwarzasz to tworzysz testy" + „skorzystaj z DOC". Implementacja: 3 × `testing-map.md` zakorzenione w DOC (`material_skill.md §4,§5` + `since_skill.md §5` + `INSTRUKCJA §9,§10`) + minimalne hooki w SKILL.md (Anti-Rat + DoD + reguła ładowania).
+User pytał czy 3 skille (a-t-b, v2, v3) mają testy unit/integration/regression. Stan na 2026-05-25: a-t-b ma 22/22 testów ale brak mapy → reszta nie była audytowalna. v3 ma 7 skryptów z 0 meta-testami + 2 martwe fixtures (artefakt po refaktorze z v3 do feature-spec-planner). v2 jest prose-heavy bez żadnej infrastruktury. Pytanie obnażyło lukę: brak **dokumentu mapującego funkcjonalność → typ testu**. User instrukcja: „jak coś wytwarzasz to tworzysz testy" + „skorzystaj z DOC". Implementacja: 3 × `testing-map.md` zakorzenione w DOC (`material_skill.md §4,§5` + `since_skill.md §5` + `INSTRUKCJA §9,§10`) + minimalne hooki w SKILL.md (Anti-Rat + DoD + reguła ładowania).
 
 ### Test Coverage (surowy snapshot)
 
@@ -96,7 +125,7 @@ DOC (lokalne, gitignored): `DOC/material_skill.md §4 (DoD = dowód), §5 (Beyon
 
 ### Removed
 
-- **`dev/feature-planner-codex/`** — cały skill (8 plików: SKILL.md, CHANGELOG.md, agents/openai.yaml, references/{ac-protocol,adr-template,analysis-protocol,code-review-protocol,testing-protocol}.md). Wariant codex-native (OpenAI Codex CLI) wycofany — repo koncentruje się wyłącznie na Claude Code (3 warianty plannerów: feature-planner v2 · audited-feature-workflow · planner-f).
+- **`dev/feature-planner-codex/`** — cały skill (8 plików: SKILL.md, CHANGELOG.md, agents/openai.yaml, references/{ac-protocol,adr-template,analysis-protocol,code-review-protocol,testing-protocol}.md). Wariant codex-native (OpenAI Codex CLI) wycofany — repo koncentruje się wyłącznie na Claude Code (3 warianty plannerów: feature-planner v2 · audited-feature-workflow · feature-spec-planner).
 
 ### Changed
 
@@ -156,7 +185,7 @@ DOC (lokalne, gitignored): `DOC/material_skill.md §4 (DoD = dowód), §5 (Beyon
 - **`.claude-plugin/marketplace.json`** (root) — manifest marketplace `kgpsp-skills` z 3 pluginami wg domen: `pzp-tools`, `legal-tools`, `dev-tools`.
 - **`pzp/.claude-plugin/plugin.json`** — plugin `pzp-tools` (4 skille: analyzing-pzp-offers, drafting-pzp-letters, odpowiedzi-pytania, weryfikacja-umow-pzp).
 - **`legal/.claude-plugin/plugin.json`** — plugin `legal-tools` (1 skill: opinie-prawne).
-- **`dev/.claude-plugin/plugin.json`** — plugin `dev-tools` (6 skilli: agent-teams-builder, feature-planner-v2, audited-feature-workflow, feature-planner-v2-codex, planner-f, playwright-test-suite).
+- **`dev/.claude-plugin/plugin.json`** — plugin `dev-tools` (6 skilli: agent-teams-builder, feature-planner-v2, audited-feature-workflow, feature-planner-v2-codex, feature-spec-planner, playwright-test-suite).
 - Pole `skills:` w każdym `plugin.json` wskazuje istniejące katalogi skilli wprost (bez przenoszenia plików) — `skills` jest additywne do domyślnego `skills/`. Instalacja: `/plugin marketplace add KGPSP/skills` → `/plugin install <plugin>@kgpsp-skills`. Zwalidowane `claude plugin validate .` (passed).
 
 ## [2026-05-22] weryfikacja-umow-pzp v1.1.0 — domknięcie zgodności z DOC
@@ -234,23 +263,23 @@ DOC (lokalne, gitignored): `DOC/material_skill.md §4 (DoD = dowód), §5 (Beyon
   - **Filar 4** — jawne **reguły ładowania L3** (tabela „załaduj gdy") + **frontmatter referencji** (`type: reference`, `parent`, `sources:` → sekcje DOC z numerem §) w obu plikach `references/` (§10).
   - SKILL.md 464 linie (limit ≤500).
 
-## [2026-05-21] planner-f v1.0.0 — planning-only wariant audited-feature-workflow
+## [2026-05-21] feature-spec-planner v1.0.0 — planning-only wariant audited-feature-workflow
 
 ### Added
 
-- **`dev/planner-f/`** — skill planowania, analizy i dokumentacji feature'a **bez fazy implementacji**. Pochodny od `audited-feature-workflow` (fazy 0–5 + ADR), odcina fazy wykonawcze.
+- **`dev/feature-spec-planner/`** — skill planowania, analizy i dokumentacji feature'a **bez fazy implementacji**. Pochodny od `audited-feature-workflow` (fazy 0–5 + ADR), odcina fazy wykonawcze.
   - **SKILL.md** (256 linii, limit ≤500) — **7 faz + 1 bramka akceptacji** (Phase 6): env-detection → deep analysis (Hyrum+Chesterton) → impact radius → ≥3 hipotezy → recommendation → plan (AC matrix + DoD-spec + Thin Slices + Out-of-scope + Rollback) → ADR → handoff.
-  - **8 referencji** — `non-negotiables` i `anti-rationalization` przepisane w wersji planistycznej; `analysis-protocol`, `ac-protocol` (+ DAMP + piramida 80/15/5), `dod-evidence-protocol`, `incremental-implementation`, `adr-template`, `gotchas` zaadaptowane (numery faz przemapowane na model planner-f).
+  - **8 referencji** — `non-negotiables` i `anti-rationalization` przepisane w wersji planistycznej; `analysis-protocol`, `ac-protocol` (+ DAMP + piramida 80/15/5), `dod-evidence-protocol`, `incremental-implementation`, `adr-template`, `gotchas` zaadaptowane (numery faz przemapowane na model feature-spec-planner).
   - **2 skrypty** — `api-impact-scan.sh` (Hyrum, z v3) + nowy `check-plan-complete.sh` (bramka kompletności pakietu) + 2 fixtures (gate exit 0 / exit 1).
 
 ### Pryncypia (audit DOC)
 
-- **material_skill.md + since_skill.md**: 21/21 pryncypiów obecnych. AC↔Test (Beyoncé), DoD i raw-evidence egzekwowane jako **specyfikacja** (planner-f nie wykonuje); reguły czysto wykonawcze (TDD RED, build clean, Five-Axis, Prove-It) jawnie przekazane wykonawcy.
+- **material_skill.md + since_skill.md**: 21/21 pryncypiów obecnych. AC↔Test (Beyoncé), DoD i raw-evidence egzekwowane jako **specyfikacja** (feature-spec-planner nie wykonuje); reguły czysto wykonawcze (TDD RED, build clean, Five-Axis, Prove-It) jawnie przekazane wykonawcy.
 
 ### Pozycjonowanie
 
-- **planner-f** — wytwarza audytowalny pakiet planistyczny (analiza + plan + ADR), kończy na zatwierdzonym planie.
-- **audited-feature-workflow** — od Phase 6 realizuje plan (implementacja + testy + review). Komplementarne: planner-f planuje, v3 buduje.
+- **feature-spec-planner** — wytwarza audytowalny pakiet planistyczny (analiza + plan + ADR), kończy na zatwierdzonym planie.
+- **audited-feature-workflow** — od Phase 6 realizuje plan (implementacja + testy + review). Komplementarne: feature-spec-planner planuje, v3 buduje.
 
 ---
 

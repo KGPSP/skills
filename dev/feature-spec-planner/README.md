@@ -1,4 +1,4 @@
-# planner-f
+# feature-spec-planner
 
 > Senior-grade workflow **planowania, analizy i dokumentacji** feature-a — **bez fazy implementacji**. 7 faz, 1 bramka akceptacji. Produkuje audytowalny pakiet planistyczny (Analysis Report + Plan z AC/DoD-spec/Thin Slices + ADR) gotowy do przekazania skillowi wykonawczemu.
 
@@ -8,9 +8,9 @@
 
 ## Co to jest
 
-`planner-f` to skill dla Claude Code, który prowadzi agenta przez **audytowalny proces planowania** — od deep analysis, przez ≥3 hipotezy i rekomendację, po kompletny plan z weryfikowalnymi AC oraz ADR. **Tu się zatrzymuje.** Nie pisze kodu produkcyjnego, nie pisze ani nie uruchamia testów, nie robi commitów/buildów/deployów.
+`feature-spec-planner` to skill dla Claude Code, który prowadzi agenta przez **audytowalny proces planowania** — od deep analysis, przez ≥3 hipotezy i rekomendację, po kompletny plan z weryfikowalnymi AC oraz ADR. **Tu się zatrzymuje.** Nie pisze kodu produkcyjnego, nie pisze ani nie uruchamia testów, nie robi commitów/buildów/deployów.
 
-To wariant `audited-feature-workflow` odcięty od faz wykonawczych. Idea: oddzielić **„co i dlaczego budujemy"** (planner-f) od **„budujemy"** (wykonawca). Plan, który powstaje, jest na tyle precyzyjny, że dowolny skill wykonawczy (lub człowiek) może go zrealizować bez zgadywania.
+To wariant `audited-feature-workflow` odcięty od faz wykonawczych. Idea: oddzielić **„co i dlaczego budujemy"** (feature-spec-planner) od **„budujemy"** (wykonawca). Plan, który powstaje, jest na tyle precyzyjny, że dowolny skill wykonawczy (lub człowiek) może go zrealizować bez zgadywania.
 
 ## Kiedy używać
 
@@ -32,7 +32,7 @@ Pełna lista negatywnych triggerów w [SKILL.md `do-not-trigger-for`](SKILL.md).
 W prompcie do Claude Code napisz np.:
 
 ```
-planner-f, zaplanuj <nazwa feature>
+feature-spec-planner, zaplanuj <nazwa feature>
 ```
 
 lub jeden z innych triggerów: `przeanalizuj i zaplanuj`, `przygotuj plan`, `przygotuj specyfikację`, `zaprojektuj rozwiązanie`, `plan bez implementacji`, `napisz ADR`, `/plan-f`.
@@ -54,7 +54,7 @@ Claude rozpozna trigger, wykona Phase 0 (env detection) i poprowadzi przez 7 faz
 
 ## Czym się różni od audited-feature-workflow
 
-| | audited-feature-workflow | planner-f |
+| | audited-feature-workflow | feature-spec-planner |
 |---|---|---|
 | Zakres | analiza + plan + **implementacja + testy + review** | analiza + plan + dokumentacja |
 | Fazy | 16 (+ /goal) | 7 |
@@ -66,16 +66,16 @@ Claude rozpozna trigger, wykona Phase 0 (env detection) i poprowadzi przez 7 faz
 | DoD evidence | zbiera raw artefakty | **specyfikuje** format dowodu |
 | Output końcowy | zmergowany feature + ADR | **pakiet planistyczny do handoffu** |
 
-planner-f i audited-feature-workflow są komplementarne: planner-f wytwarza plan, audited-feature-workflow (od Phase 6) go realizuje.
+feature-spec-planner i audited-feature-workflow są komplementarne: feature-spec-planner wytwarza plan, audited-feature-workflow (od Phase 6) go realizuje.
 
-## Co planner-f świadomie NIE robi
+## Co feature-spec-planner świadomie NIE robi
 
-Reguły wykonawcze dziedziczone z v3 — TDD RED-przed-implementacją, build clean, raw test logs, PR sizing przy commitach, Five-Axis code review, live UI preview, ralph/teams/goal loop — **nie należą do tego skilla**. planner-f je **specyfikuje** w planie (matryca AC, DoD), a egzekwuje skill wykonawczy. Skrypty `extract-raw-log.sh`, `check-ac-coverage.sh`, `verify-build-clean.sh` z v3 nie są tu dołączone (są po stronie wykonawcy).
+Reguły wykonawcze dziedziczone z v3 — TDD RED-przed-implementacją, build clean, raw test logs, PR sizing przy commitach, Five-Axis code review, live UI preview, ralph/teams/goal loop — **nie należą do tego skilla**. feature-spec-planner je **specyfikuje** w planie (matryca AC, DoD), a egzekwuje skill wykonawczy. Skrypty `extract-raw-log.sh`, `check-ac-coverage.sh`, `verify-build-clean.sh` z v3 nie są tu dołączone (są po stronie wykonawcy).
 
 ## Struktura
 
 ```
-planner-f/
+feature-spec-planner/
 ├── SKILL.md                       # 7 faz + bramka akceptacji
 ├── README.md
 ├── CHANGELOG.md

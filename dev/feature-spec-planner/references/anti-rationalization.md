@@ -1,18 +1,18 @@
 ---
 name: anti-rationalization
 type: reference
-parent: planner-f
+parent: feature-spec-planner
 source: DOC/material_skill.md §3
-description: Tabela wymówek agenta AI — wersja planistyczna (planner-f). Tylko wpisy dotyczące analizy, AC, scope, Hyrum/Chesterton i dokumentacji. Wpisy wykonawcze (TDD order, build clean, raw logs, PR sizing przy commitach, Five-Axis) należą do skilla wykonawczego.
+description: Tabela wymówek agenta AI — wersja planistyczna (feature-spec-planner). Tylko wpisy dotyczące analizy, AC, scope, Hyrum/Chesterton i dokumentacji. Wpisy wykonawcze (TDD order, build clean, raw logs, PR sizing przy commitach, Five-Axis) należą do skilla wykonawczego.
 ---
 
-# Anti-Rationalization Tables (planner-f)
+# Anti-Rationalization Tables (feature-spec-planner)
 
 > [!quote] material_skill.md §3
 > LLM są mistrzami racjonalizacji. Potrafią wygenerować logicznie brzmiący esej o tym, dlaczego *akurat w tym zadaniu* można pominąć analizę albo nie zapisać AC. Tabela anty-racjonalizacji to **deterministyczny hamulec** — predefiniowane riposty nadrzędne wobec własnych „dobrych powodów".
 
 > [!important] Zakres
-> Ta wersja dotyczy **planowania i dokumentacji**. Wymówki wykonawcze („testy dopiszę później", „build clean wystarcza", „PR 800 linii ale spójny") egzekwuje skill wykonawczy — w planner-f nie ma kodu do których by się odnosiły.
+> Ta wersja dotyczy **planowania i dokumentacji**. Wymówki wykonawcze („testy dopiszę później", „build clean wystarcza", „PR 800 linii ale spójny") egzekwuje skill wykonawczy — w feature-spec-planner nie ma kodu do których by się odnosiły.
 
 ## Sekcja 1 — Tabela master (planistyczna)
 
@@ -84,7 +84,7 @@ Reguła: **gdy wątpisz, traktuj parafrazę jak standardową wymówkę** i egzek
 
 ## Sekcja 5 — Integracja z fazami
 
-- **Phase 0**: Załaduj ten plik do kontekstu (lazy, tylko gdy planner-f trigger match).
+- **Phase 0**: Załaduj ten plik do kontekstu (lazy, tylko gdy feature-spec-planner trigger match).
 - **Phase 4**: Plan MUSI zawierać inline link do tej tabeli. Quick-check przed zapisaniem planu.
 - **Phase 5**: ADR zawiera sekcję `Anti-rationalization decisions` — które wymówki agent odrzucił.
 - **Phase 6**: Pełny pass przed bramką akceptacji (wpisy #2, #4, #8, #11 szczególnie).

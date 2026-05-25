@@ -9,10 +9,10 @@ Trzy warianty pokrywają różne kombinacje **rygoru** (wygodny vs senior-grade)
 | Skill | Wariant | Wersja | Rygor | Zakres | Wielkość |
 |---|---|---|---|---|---|
 | [`replit-style-workflow`](replit-style-workflow/) | **wygodny** (historycznie v2) | `v2.3.0` | wygodny | plan + implementacja | ~2200 linii SKILL.md |
-| [`audited-feature-workflow`](audited-feature-workflow/) | **v3** | `v3.1.0` | senior-grade | plan + implementacja | 344 linii SKILL.md + 12 refs + 5 scripts |
-| [`planner-f`](planner-f/) | **planning-only** | `v1.0.0` | senior-grade | **tylko plan + analiza + ADR** | 256 linii SKILL.md + 8 refs + 2 scripts |
+| [`audited-feature-workflow`](audited-feature-workflow/) | **senior-grade** (historycznie v3) | `v3.3.0` | senior-grade | plan + implementacja | 420 linii SKILL.md + 14 refs + 7 scripts |
+| [`feature-spec-planner`](feature-spec-planner/) | **planning-only** (historycznie planner-f) | `v1.1.0` | senior-grade | **tylko plan + analiza + ADR** | 256 linii SKILL.md + 8 refs + 2 scripts |
 
-> **`planner-f` vs `audited-feature-workflow`:** ten sam rygor analityczno-planistyczny (fazy 0–5 + ADR), ale planner-f **kończy na zatwierdzonym planie** — nie pisze kodu, nie pisze/uruchamia testów, nie commituje. Reguły wykonawcze (TDD RED, build clean, Five-Axis, Prove-It, PR sizing przy commitach) są **specyfikowane** w planie i przekazywane wykonawcy (handoff do v3 Phase 6+ lub `agent-teams-builder`). Używaj, gdy chcesz oddzielić „co/dlaczego budujemy" od „budujemy".
+> **`feature-spec-planner` vs `audited-feature-workflow`:** ten sam rygor analityczno-planistyczny (fazy 0–5 + ADR), ale feature-spec-planner **kończy na zatwierdzonym planie** — nie pisze kodu, nie pisze/uruchamia testów, nie commituje. Reguły wykonawcze (TDD RED, build clean, Five-Axis, Prove-It, PR sizing przy commitach) są **specyfikowane** w planie i przekazywane wykonawcy (handoff do v3 Phase 6+ lub `agent-teams-builder`). Używaj, gdy chcesz oddzielić „co/dlaczego budujemy" od „budujemy".
 
 ## Orkiestracja i QA
 
@@ -20,10 +20,11 @@ Dla projektów wielosprintowych (zespół agentów) i testów aplikacji webowych
 
 | Skill | Wersja | Rola | Zastosowanie |
 |---|---|---|---|
-| [`agent-teams-builder`](agent-teams-builder/) | **v1.6.0** | orkiestrator | Zespół sub-agentów Generator-Ewaluator (Planner + Generator + Evaluator + specjaliści). 7-fazowa procedura, twarde rubryki, pivot (Plan-Validate-Execute), tryb `/goal`. Meta-testy walidatorów **19/19**. Dla „zbuduj aplikację od zera", projektów >2h. |
+| [`agent-teams-builder`](agent-teams-builder/) | **v1.9.0** | orkiestrator | Zespół sub-agentów Generator-Ewaluator (Planner + Generator + Evaluator + specjaliści). 7-fazowa procedura + **6 HITL approval gates** + tryby `/goal` i `/YOLO`. Twarde rubryki, pivot (Plan-Validate-Execute), Planning Rigor, context7 MCP, Documentation Protocol (10 typów dokumentów), Test Discipline (mapa meta-testów walidatorów). **22/22 cases passed** w runnerze. Dla „zbuduj aplikację od zera", projektów >2h. |
 | [`playwright-test-suite`](playwright-test-suite/) | **v1.2.0** | QA / Evaluator-Runtime | 5-fazowa procedura (smoke → UI → DevTools → a11y → visual) przez Playwright CLI + `@axe-core/playwright` + pixel-diff. Sub-agent `playwright-runner`, QA Report (`state/qa-reports/`), evidence zgodne z DoD agent-teams-builder. Standalone QA lub deleguje z evaluatora. |
+| [`swarm-orchestrator`](swarm-orchestrator/) | **v1.0.0** | multi-agent tmux | Orkiestracja 4 agentów Claude Code w tmux -CC panes (parent / planner / generator / evaluator) w 3 trybach (manual / hybrid / yolo). Komponuje widzialność tmux z rygorem 5 bramek + kontrakty + breadcrumbs (`agent-teams-builder`) i autonomią `/goal` (`audited-feature-workflow` 6-Goal route). Single-sprint per invokacja YOLO, atomic commits, auto-pivot po 3× no-progress. |
 
-### Ewolucja agent-teams-builder (v1.1 → v1.6)
+### Ewolucja agent-teams-builder (v1.1 → v1.9)
 
 | Wersja | Kamień milowy |
 |---|---|
@@ -31,8 +32,12 @@ Dla projektów wielosprintowych (zespół agentów) i testów aplikacji webowych
 | v1.2.0 | Meta-testy walidatorów + 7 fixtures |
 | v1.3.0 | Google DNA compliance (Chesterton / Hyrum / Beyoncé / DAMP) |
 | v1.4.0 | **context7 MCP** — Library Currency Protocol (eliminacja halucynacji API), 4-poziomowy fallback chain |
-| v1.5.0 | **Planning Rigor** (transfer z v3) — 3 hipotezy/sprint, 11 sekcji planu, Hyrum Impact, `verify-plan-rigor.sh` |
+| v1.5.0 | **Planning Rigor** (transfer z `audited-feature-workflow`) — 3 hipotezy/sprint, 11 sekcji planu, Hyrum Impact, `verify-plan-rigor.sh` |
 | v1.6.0 | **Documentation Protocol** — pełen audit trail (10 typów dokumentów: PRD/ADR/retro/Five-Axis CR/QA/sessions), `verify-documentation.sh` |
+| v1.7.0 | **6 HITL Approval Gates** (transfer z `audited-feature-workflow`) — `verify-approval-gates.sh` + `references/approval-gates-protocol.md`. `/goal` respektuje wszystkie bramki. |
+| v1.7.1 | Planning = effort max (ultrathink) — Planner spawn z najwyższym budżetem rozumowania |
+| v1.8.0 | **Tryb `/YOLO`** — jawny opt-in autonomii bez bramek (przywraca pętlę „odpal i zostaw" sprzed v1.7); twarde rails destruktywne zachowane |
+| v1.9.0 | **Test Discipline** — `references/testing-map.md` mapuje unit/integration/regression dla każdego walidatora (10/19 unit ✅, 3/19 integration ✅, 22/22 cases passed) |
 
 > **Relacja:** `agent-teams-builder` Evaluator deleguje pełne QA do sub-agenta `playwright-runner` z `playwright-test-suite` (`Task(subagent_type: "playwright-runner")`), zamiast wywoływać Playwright inline. Runner produkuje `state/qa-reports/sprint-N.md` zgodny z Documentation Protocol. Oba respektują Google DNA (Hyrum / Chesterton / Beyoncé / DAMP) i context7 MCP (currency check) — patrz audit w głównym [`CHANGELOG.md`](../CHANGELOG.md).
 
@@ -44,7 +49,7 @@ Dla projektów wielosprintowych (zespół agentów) i testów aplikacji webowych
 START
   │
   ├── Chcesz TYLKO plan/analizę/ADR (kod napisze ktoś inny / później)?
-  │     └── YES → planner-f  (kończy na zatwierdzonym planie, handoff)
+  │     └── YES → feature-spec-planner  (kończy na zatwierdzonym planie, handoff)
   │
   ├── Zadanie dotyka fragile zone (DB migration, auth core, infra, secrets)?
   │     └── YES → audited-feature-workflow (Plan-Validate-Execute reżim)
@@ -59,14 +64,14 @@ START
   │     └── YES → audited-feature-workflow (Prove-It Pattern w Phase 6.5)
   │
   └── Typowy feature, mid-size, niska wrażliwość?
-        └── feature-planner (v2)
+        └── replit-style-workflow (historycznie feature-planner-v2)
 ```
 
 ---
 
-## Porównanie szczegółowe v2 vs v3
+## Porównanie szczegółowe replit-style-workflow vs audited-feature-workflow
 
-### Co wspólne (v3 dziedziczy z v2)
+### Co wspólne (audited dziedziczy z replit-style)
 
 - 11 baz faz (Phase 0–9 + 5.5 worktree + 5.7 ralph decision)
 - Agent Teams routing (6-Sequential / 6-Teams 2–5 / 6-Ralph autonomous)
@@ -76,9 +81,9 @@ START
 - ADR generation (Phase 9)
 - ZERO Gemini (deep-research przez context7 / Explore / WebSearch / codex)
 
-### Co dokleja v3
+### Co dokleja audited-feature-workflow
 
-| Obszar | Wzmocnienie v3 |
+| Obszar | Wzmocnienie audited |
 |---|---|
 | **Wymówki agenta** | 15-wpisowa Anti-Rationalization Table + per-faza redirects + osobne wpisy dla ralph-loop |
 | **Definition of Done** | Surowe artefakty (raw log, screenshot, trace) — bez parafraz modelu |
@@ -92,7 +97,7 @@ START
 | **Code Review** | Five-Axis Review (Correctness/Readability/Architecture/Security/Performance) z severity Critical/Optional/Nit/FYI |
 | **Konstrukcja skilla** | HARD limit SKILL.md ≤500 linii, imperatywny tryb, kebab-case, `{baseDir}`, scripts/ deterministyczne |
 
-### Struktura plików v3
+### Struktura plików audited-feature-workflow
 
 ```
 audited-feature-workflow/
@@ -122,33 +127,33 @@ audited-feature-workflow/
 
 ## Trigger keywords
 
-### feature-planner (v2)
+### replit-style-workflow (historycznie feature-planner-v2)
 
 ```
 "dodaj feature v2", "zaimplementuj", "zrób żeby", "implement",
 "build feature", "ralph", "ralph-loop", "iteruj aż zielono"
 ```
 
-### audited-feature-workflow
+### audited-feature-workflow (historycznie feature-planner-v3)
 
 ```
 "feature-planner v3", "dodaj feature v3", "senior-grade feature",
-"implement v3", "zaimplementuj v3", "ralph v3"
+"implement v3", "zaimplementuj v3", "ralph v3", "/goal", "goal mode"
 ```
 
-### planner-f
+### feature-spec-planner (historycznie planner-f)
 
 ```
-"planner-f", "zaplanuj feature", "przeanalizuj i zaplanuj",
-"przygotuj plan", "przygotuj specyfikację", "zaprojektuj rozwiązanie",
-"plan bez implementacji", "napisz ADR", "/plan-f"
+"feature-spec-planner", "planner-f" (legacy alias), "zaplanuj feature",
+"przeanalizuj i zaplanuj", "przygotuj plan", "przygotuj specyfikację",
+"zaprojektuj rozwiązanie", "plan bez implementacji", "napisz ADR", "/plan-f"
 ```
 
 ---
 
-## Negative triggers (v3)
+## Negative triggers (audited-feature-workflow)
 
-v3 jest *targeted skill* — nie aktywuje się dla:
+`audited-feature-workflow` jest *targeted skill* — nie aktywuje się dla:
 
 - „przeczytaj plik X"
 - „wytłumacz co robi ten kod"
@@ -163,13 +168,13 @@ Dla tych zadań — bez skilla lub bezpośrednie wywołanie narzędzi.
 
 ## Koegzystencja
 
-v2 i v3 koegzystują — żadnych zmian w plikach v2 podczas wdrożenia v3. Wybór świadomy przez trigger lub manualnie. Brak automatycznego routera v2/v3 (intentional — user decyduje na podstawie kontekstu zadania).
+`replit-style-workflow`, `audited-feature-workflow` i `feature-spec-planner` koegzystują — żadnych zmian w `replit-style-workflow` podczas pracy w `audited-feature-workflow`. Wybór świadomy przez trigger lub manualnie. Brak automatycznego routera (intentional — user decyduje na podstawie kontekstu zadania).
 
-## Anty-pattern: nie używaj v3 dla wszystkiego
+## Anty-pattern: nie używaj `audited-feature-workflow` dla wszystkiego
 
-v3 ma wysoki overhead (15 wpisów anti-rationalization, raw artifacts, PR sizing gate, Hyrum scan). Dla zadań typu *„dodaj prosty getter do klasy"* to przesada — użyj v2 lub bez skilla. v3 zwraca się przy zadaniach o realnym ryzyku (compliance, fragile ops, publiczne API, duże diffy).
+`audited-feature-workflow` ma wysoki overhead (15 wpisów anti-rationalization, raw artifacts, PR sizing gate, Hyrum scan, 6 HITL gates). Dla zadań typu *„dodaj prosty getter do klasy"* to przesada — użyj `replit-style-workflow` lub bez skilla. `audited-feature-workflow` zwraca się przy zadaniach o realnym ryzyku (compliance, fragile ops, publiczne API, duże diffy).
 
-## Źródła pryncypiów v3
+## Źródła pryncypiów audited-feature-workflow
 
 - [Addy Osmani — Agent Skills](https://addyosmani.com/blog/agent-skills/) (Engineering Director, Google Chrome)
 - [addyosmani/agent-skills — GitHub](https://github.com/addyosmani/agent-skills) (MIT, 39K+ ⭐)

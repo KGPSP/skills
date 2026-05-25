@@ -1,11 +1,11 @@
 ---
 name: analysis-protocol
 type: reference
-parent: planner-f
+parent: feature-spec-planner
 sources:
   - dev/feature-planner v2 baseline
   - DOC/material_skill.md §5 (Hyrum's Law, Chesterton's Fence)
-description: Phase 1 deep analysis — stack detection, architecture walk, analog feature, PRIMARY TEMPLATE. planner-f zachowuje Hyrum Impact Analysis i Chesterton's Fence dla deletion (dziedziczone z audited-feature-workflow).
+description: Phase 1 deep analysis — stack detection, architecture walk, analog feature, PRIMARY TEMPLATE. feature-spec-planner zachowuje Hyrum Impact Analysis i Chesterton's Fence dla deletion (dziedziczone z audited-feature-workflow).
 ---
 
 # references/analysis-protocol.md
@@ -456,7 +456,7 @@ Każde obserwowalne zachowanie publicznego API ma użytkownika — nawet to nieu
 
 3. **Dla `breaking` — uruchom skan callerów**:
    ```bash
-   bash {baseDir}/dev/planner-f/scripts/api-impact-scan.sh <symbol> <repo-root>
+   bash {baseDir}/dev/feature-spec-planner/scripts/api-impact-scan.sh <symbol> <repo-root>
    ```
    Output musi zawierać: ścieżka:linia każdego wywołania w monorepo + tag czy caller jest w scope tej zmiany.
 

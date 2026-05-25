@@ -119,4 +119,4 @@ description: Mapa testów (unit / integration / regression) dla skilla replit-st
 
 ## Long-term: czy v2 ma sens utrzymywać?
 
-Jeśli **żadna** nowa funkcjonalność v2 nie wejdzie w najbliższych 6 miesiącach, a v3 + planner-f pokrywają wszystkie use cases v2 → rozważ deprecation v2 w przyszłej wersji marketplace (analogicznie do usunięcia `feature-planner-codex` w `2026-05-25`). To decyzja produktowa, nie testowa — ale brak testów meta jest sygnałem, że skill stoi w miejscu.
+Jeśli **żadna** nowa funkcjonalność v2 nie wejdzie w najbliższych 6 miesiącach, a v3 + feature-spec-planner pokrywają wszystkie use cases v2 → rozważ deprecation v2 w przyszłej wersji marketplace (analogicznie do usunięcia `feature-planner-codex` w `2026-05-25`). To decyzja produktowa, nie testowa — ale brak testów meta jest sygnałem, że skill stoi w miejscu.

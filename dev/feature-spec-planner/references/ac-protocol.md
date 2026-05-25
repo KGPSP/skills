@@ -1,17 +1,17 @@
 ---
 name: ac-protocol
 type: reference
-parent: planner-f
+parent: feature-spec-planner
 sources:
   - dev/feature-planner v2 baseline
   - DOC/material_skill.md §5 (Beyoncé Rule — 1:1 AC↔Test mapping)
-description: Acceptance Criteria derivation (F/N/C), AC↔DoD mapping, SMART rules, Trace matrix. W planner-f AC powstają w Phase 4 jako specyfikacja; Beyoncé Rule 1:1 (każdy AC ma planowany test) egzekwowana jako kompletność matrycy.
+description: Acceptance Criteria derivation (F/N/C), AC↔DoD mapping, SMART rules, Trace matrix. W feature-spec-planner AC powstają w Phase 4 jako specyfikacja; Beyoncé Rule 1:1 (każdy AC ma planowany test) egzekwowana jako kompletność matrycy.
 ---
 
 # references/ac-protocol.md
 
-> [!important] Zakres w planner-f
-> AC powstają w **Phase 4 (Plan Document)** jako **specyfikacja**, nie jako wynik wykonania. „Test ID / Komenda / Plik testu" w matrycy AC opisują, czym AC **zostanie** zweryfikowany przez skill wykonawczy — testów jeszcze nie ma. planner-f egzekwuje tylko **kompletność specyfikacji** (każdy AC ma niepusty Test ID + Komenda — sprawdza `check-plan-complete.sh`). Faktyczne uruchomienie testów, coverage check i werdykt PASS/FAIL należą do wykonawcy (np. audited-feature-workflow Phase 7–8). Numery faz „Phase 6/7/8" w tym pliku odnoszą się do tego **downstream** wykonawcy.
+> [!important] Zakres w feature-spec-planner
+> AC powstają w **Phase 4 (Plan Document)** jako **specyfikacja**, nie jako wynik wykonania. „Test ID / Komenda / Plik testu" w matrycy AC opisują, czym AC **zostanie** zweryfikowany przez skill wykonawczy — testów jeszcze nie ma. feature-spec-planner egzekwuje tylko **kompletność specyfikacji** (każdy AC ma niepusty Test ID + Komenda — sprawdza `check-plan-complete.sh`). Faktyczne uruchomienie testów, coverage check i werdykt PASS/FAIL należą do wykonawcy (np. audited-feature-workflow Phase 7–8). Numery faz „Phase 6/7/8" w tym pliku odnoszą się do tego **downstream** wykonawcy.
 
 Cel protokołu: zamienić cel biznesowy i „Definition of Done" na **binarnie weryfikowalne** warunki
 odbioru — kontrakt, na podstawie którego wykonawca później wyda werdykt.
@@ -326,8 +326,8 @@ Legenda: ⏳ pending · ✅ PASS · ❌ FAIL · ⚠️ PARTIAL
 
 ## Sign-off protocol (u wykonawcy, po wykonaniu)
 
-> [!note] Poza zakresem planner-f
-> planner-f nie wydaje werdyktu PASS/FAIL — to robi wykonawca po uruchomieniu testów. Sekcja opisuje, jak zaplanowana trace matrix zostanie domknięta downstream, żeby kryteria zamknięcia były jasne już w planie.
+> [!note] Poza zakresem feature-spec-planner
+> feature-spec-planner nie wydaje werdyktu PASS/FAIL — to robi wykonawca po uruchomieniu testów. Sekcja opisuje, jak zaplanowana trace matrix zostanie domknięta downstream, żeby kryteria zamknięcia były jasne już w planie.
 
 Po code review trace matrix dostaje werdykt per AC. Warunki zamknięcia:
 
@@ -379,10 +379,10 @@ Każdy AC z planu (Phase 4) MUSI mieć przypisany konkretny test. Brak testu = b
 
 ### Specyfikacja testów: piramida 80/15/5 + DAMP (`since_skill.md` §5, `material_skill.md` §5)
 
-planner-f nie pisze testów — ale projektuje ich **rozkład i styl**, aby wykonawca nie musiał zgadywać. Wypełniając matrycę AC, kieruj się dwiema regułami:
+feature-spec-planner nie pisze testów — ale projektuje ich **rozkład i styl**, aby wykonawca nie musiał zgadywać. Wypełniając matrycę AC, kieruj się dwiema regułami:
 
 - **Piramida testów 80/15/5** — większość AC weryfikuj na poziomie **unit** (~80%, szybkie, izolowane), część jako **integration** (~15%), minimum jako **E2E/UI** (~5%). Jeśli plan wymusza odwrotną proporcję (np. większość AC tylko przez E2E) — to sygnał, że logika jest źle warstwowana; zgłoś w `Open questions`. W kolumnie `Typ`/`Plik testu` widać, na jakim poziomie ląduje każdy AC.
-- **DAMP over DRY** — *Descriptive And Meaningful Phrases*. `Test ID` zapisuj jako **czytelne zdanie-spec** (`"returns 503 when DB down"`), nie jako kryptonim (`"test_3"`). Test ma czytać się jak specyfikacja; planner-f to przesądza już na etapie nazewnictwa w matrycy, żeby wykonawca nie ukrywał stanu w „sprytnych" helperach.
+- **DAMP over DRY** — *Descriptive And Meaningful Phrases*. `Test ID` zapisuj jako **czytelne zdanie-spec** (`"returns 503 when DB down"`), nie jako kryptonim (`"test_3"`). Test ma czytać się jak specyfikacja; feature-spec-planner to przesądza już na etapie nazewnictwa w matrycy, żeby wykonawca nie ukrywał stanu w „sprytnych" helperach.
 
 > [!note] Anty-pattern
 > ❌ Wszystkie AC mapowane na jeden E2E „happy path" (piramida odwrócona). ❌ `Test ID` = `t1, t2, t3` (łamie DAMP — wykonawca nie wie, co test ma dowodzić).
@@ -411,19 +411,19 @@ Kolumny obowiązkowe:
 - **Plik testu** — absolutna ścieżka z `{baseDir}` + linia (gdy test jednostkowy).
 - **Komenda** — komenda dokładnie wpisywana w terminalu (kopiowalna).
 
-### Coverage — co sprawdza planner-f, a co wykonawca
+### Coverage — co sprawdza feature-spec-planner, a co wykonawca
 
-**W planner-f (Phase 6 gate):** matryca AC musi być **kompletna jako specyfikacja** — każdy AC ma niepusty `Test ID` + `Komenda` + `Plik testu`. Weryfikuje to:
+**W feature-spec-planner (Phase 6 gate):** matryca AC musi być **kompletna jako specyfikacja** — każdy AC ma niepusty `Test ID` + `Komenda` + `Plik testu`. Weryfikuje to:
 
 ```bash
-sh {baseDir}/dev/planner-f/scripts/check-plan-complete.sh --plan {baseDir}/plans/PLAN_NUM-*.md
+sh {baseDir}/dev/feature-spec-planner/scripts/check-plan-complete.sh --plan {baseDir}/plans/PLAN_NUM-*.md
 ```
 
-Output: ❌ przy pustej komórce w wierszu AC → STOP, uzupełnij specyfikację. planner-f **nie** sprawdza, czy testy istnieją/przechodzą — testów jeszcze nie ma.
+Output: ❌ przy pustej komórce w wierszu AC → STOP, uzupełnij specyfikację. feature-spec-planner **nie** sprawdza, czy testy istnieją/przechodzą — testów jeszcze nie ma.
 
-**U wykonawcy (downstream, np. audited-feature-workflow Phase 7):** osobny skrypt `check-ac-coverage.sh` weryfikuje, że zadeklarowane testy realnie istnieją i są wykonywalne (`AC-F-01 → tests/health.test.ts:42 — found`), a brak testu na MUST AC zamyka jego gate. To poza zakresem planner-f.
+**U wykonawcy (downstream, np. audited-feature-workflow Phase 7):** osobny skrypt `check-ac-coverage.sh` weryfikuje, że zadeklarowane testy realnie istnieją i są wykonywalne (`AC-F-01 → tests/health.test.ts:42 — found`), a brak testu na MUST AC zamyka jego gate. To poza zakresem feature-spec-planner.
 
-**Hard rule planner-f**: pusty `Test ID`/`Komenda` w matrycy = specyfikacja niekompletna = gate akceptacji zamknięty. Jeśli nie wiesz, jakim testem zweryfikujesz AC — AC jest źle zdefiniowany, dopracuj go w Phase 4.
+**Hard rule feature-spec-planner**: pusty `Test ID`/`Komenda` w matrycy = specyfikacja niekompletna = gate akceptacji zamknięty. Jeśli nie wiesz, jakim testem zweryfikujesz AC — AC jest źle zdefiniowany, dopracuj go w Phase 4.
 
 ### Edge case — AC-N (non-functional) bez testu
 

@@ -1,8 +1,9 @@
 ---
-name: planner-f
+name: feature-spec-planner
 description: Senior-grade workflow planowania, analizy i dokumentacji feature'a — BEZ fazy implementacji. Produkuje audytowalny pakiet planistyczny (Analysis Report + Plan z AC/DoD-spec/Thin Slices + ADR) gotowy do przekazania (handoff) skillowi wykonawczemu. Dziedziczy twarde reguły z audited-feature-workflow — Anti-Rationalization, Hyrum's Law, Chesterton's Fence, Beyoncé Rule (1:1 AC↔Test jako specyfikacja), DAMP over DRY, Thin Vertical Slices, 5 Non-negotiables. Używaj gdy zadanie brzmi „zaplanuj", „przeanalizuj i zaprojektuj", „przygotuj plan/specyfikację/ADR", „rozpisz feature przed implementacją", lub gdy user chce dokumentację decyzji bez pisania kodu. NIE używaj gdy user prosi o napisanie/zmianę kodu, testy, build, deploy lub uruchomienie.
 trigger:
-  - "planner-f"
+  - "feature-spec-planner"
+  - "planner-f" # legacy alias (backward-compat po renamie 2026-05-25)
   - "zaplanuj feature"
   - "przeanalizuj i zaplanuj"
   - "przygotuj plan"
@@ -26,15 +27,15 @@ sources:
   - dev/audited-feature-workflow (baseline — fazy 0–5 + 9)
   - DOC/material_skill.md
   - DOC/since_skill.md
-version: v1.0.0
+version: v1.1.0
 derives-from: audited-feature-workflow
 size-limit: 500-lines-hard
 ---
 
-# planner-f — planowanie, analiza i dokumentacja (bez implementacji)
+# feature-spec-planner — planowanie, analiza i dokumentacja (bez implementacji) (historycznie planner-f)
 
 > [!important] Zakres skilla
-> planner-f **planuje i dokumentuje, nie wykonuje**. Nie pisze kodu produkcyjnego, nie pisze ani nie uruchamia testów, nie robi commitów/buildów/deployów. Jedyne pliki, które tworzy/edytuje, to **artefakty planistyczne** (analiza, plan, ADR, gotchas). Gdy planowanie się kończy, pakiet jest gotowy do przekazania skillowi wykonawczemu (np. `audited-feature-workflow`, `agent-teams-builder`).
+> feature-spec-planner **planuje i dokumentuje, nie wykonuje**. Nie pisze kodu produkcyjnego, nie pisze ani nie uruchamia testów, nie robi commitów/buildów/deployów. Jedyne pliki, które tworzy/edytuje, to **artefakty planistyczne** (analiza, plan, ADR, gotchas). Gdy planowanie się kończy, pakiet jest gotowy do przekazania skillowi wykonawczemu (np. `audited-feature-workflow`, `agent-teams-builder`).
 
 > [!quote] Anti-Laziness preamble (since_skill.md §6)
 > Najwyższa waga jakości analizy i planu. **Nie optymalizuj pod „szybko oddać plan".** Plan, który pomija analizę zależności albo nie ma weryfikowalnych AC, generuje rework w fazie wykonania. Każdy artefakt i każda bramka jest nienegocjowalna.
@@ -63,8 +64,8 @@ Przed zapisaniem planu (Phase 4) i przed bramką akceptacji (Phase 6) — przejd
 | 7 | „Plan gotowy, pomijam ADR — to formalność" | Decyzja z realnym tradeoffem (Phase 2/3) wymaga ADR. Bez ADR → Phase 6 blokuje. |
 | 8 | „Anti-rationalization quick-table to formalność" | **Ta tabela to też wymówka.** Przejdź ją jawnie, cytuj numer wpisu. |
 
-> [!note] Czego planner-f świadomie NIE egzekwuje
-> Reguły wykonawcze (TDD RED-przed-implementacją, build clean, raw test logs, PR sizing przy commitach, Five-Axis code review) **nie należą do tego skilla** — egzekwuje je skill wykonawczy. planner-f je **specyfikuje** (w DoD i AC matrix), nie wykonuje.
+> [!note] Czego feature-spec-planner świadomie NIE egzekwuje
+> Reguły wykonawcze (TDD RED-przed-implementacją, build clean, raw test logs, PR sizing przy commitach, Five-Axis code review) **nie należą do tego skilla** — egzekwuje je skill wykonawczy. feature-spec-planner je **specyfikuje** (w DoD i AC matrix), nie wykonuje.
 
 ---
 
@@ -82,7 +83,7 @@ Przed zapisaniem planu (Phase 4) i przed bramką akceptacji (Phase 6) — przejd
 | 6 | Pakiet planistyczny + handoff | **APPROVAL** |
 
 > [!important] Jedyna bramka jest na końcu
-> planner-f kończy się jedną twardą bramką akceptacji całego pakietu (analiza + plan + ADR). Bez jawnej zgody użytkownika („zatwierdzam" / „proceed" / „ok") pakiet nie jest oznaczany jako gotowy do handoffu.
+> feature-spec-planner kończy się jedną twardą bramką akceptacji całego pakietu (analiza + plan + ADR). Bez jawnej zgody użytkownika („zatwierdzam" / „proceed" / „ok") pakiet nie jest oznaczany jako gotowy do handoffu.
 
 ---
 
@@ -90,12 +91,12 @@ Przed zapisaniem planu (Phase 4) i przed bramką akceptacji (Phase 6) — przejd
 
 1. Sprawdź **Negative Triggers** (frontmatter `do-not-trigger-for`). Match → exit, zasugeruj właściwy tryb (np. wykonanie = `audited-feature-workflow`).
 2. Wykryj **stack**: `package.json` (Node), `pyproject.toml` (Python), `Cargo.toml` (Rust), `go.mod` (Go), `pom.xml`/`build.gradle` (JVM).
-3. Wykryj **rozmiar** (S/M/L): `find . -type f \( -name "*.ts" -o -name "*.py" -o -name "*.rs" -o -name "*.go" \) | wc -l` + szacowany zakres zmian. Rozmiar steruje głębią analizy i liczbą slices — **nie** trybem wykonania (planner-f nie wykonuje).
+3. Wykryj **rozmiar** (S/M/L): `find . -type f \( -name "*.ts" -o -name "*.py" -o -name "*.rs" -o -name "*.go" \) | wc -l` + szacowany zakres zmian. Rozmiar steruje głębią analizy i liczbą slices — **nie** trybem wykonania (feature-spec-planner nie wykonuje).
 4. Wykryj **Fragile Zone** — ścieżki `migrations/`, `terraform/`, `k8s/`, `auth/`, `Dockerfile`, `.github/workflows/`. Match → flag `--fragile` → plan MUSI zawierać sekcję **Rollback + Plan-Validate-Execute** (procedura dla wykonawcy).
 5. Numeruj plan: `find {baseDir}/plans -name "*.md" 2>/dev/null | wc -l` + 1.
 
 > [!warning] Output Phase 0
-> `env-detection.md` z polami: stack, size, fragile, plan-number. Brak triggerów wykonawczych (ralph/teams/goal) — planner-f ich nie używa.
+> `env-detection.md` z polami: stack, size, fragile, plan-number. Brak triggerów wykonawczych (ralph/teams/goal) — feature-spec-planner ich nie używa.
 
 ---
 
@@ -118,7 +119,7 @@ Wywołaj [analysis-protocol.md](references/analysis-protocol.md). Wymagane outpu
 
 ## Phase 1.5 — Dependency Impact Radius + API klasyfikacja
 
-1. Uruchom `sh {baseDir}/dev/planner-f/scripts/api-impact-scan.sh --base main`.
+1. Uruchom `sh {baseDir}/dev/feature-spec-planner/scripts/api-impact-scan.sh --base main`.
 2. Sklasyfikuj każdy eksport: `breaking` / `additive` / `internal` (tabela w [analysis-protocol.md](references/analysis-protocol.md) §Hyrum).
 3. Reverse search callerów: `git grep <symbol> -- ':!*test*'`.
 4. Dla `breaking`: plan migracji callerów lub uzasadnienie w ADR.
@@ -196,7 +197,7 @@ Lokalizacja: `docs/adr/ADR-<plan-id>-<slug>.md`. Długość ≤ 1 strona.
 
 > [!important] Approval checklist
 > Zweryfikuj kompletność pakietu skryptem:
-> `sh {baseDir}/dev/planner-f/scripts/check-plan-complete.sh --plan "$PLAN_FILE"`
+> `sh {baseDir}/dev/feature-spec-planner/scripts/check-plan-complete.sh --plan "$PLAN_FILE"`
 >
 > - [ ] `analysis/<plan-id>.md` istnieje i niepusty, `Open questions` puste.
 > - [ ] `plans/<N>-<slug>.md` niepusty, wszystkie 10 sekcji obecne.
@@ -221,7 +222,7 @@ Pakiet planistyczny gotowy:
 - API impact: analysis/<plan-id>-api-impact.md  [jeśli dotyczy]
 
 Sugerowany wykonawca: audited-feature-workflow (Phase 6+) / agent-teams-builder.
-planner-f NIE implementuje — przekaż plan do wykonania.
+feature-spec-planner NIE implementuje — przekaż plan do wykonania.
 ```
 
 ---
@@ -251,6 +252,6 @@ planner-f NIE implementuje — przekaż plan do wykonania.
 
 ## Sources
 
-- [dev/audited-feature-workflow/SKILL.md](../audited-feature-workflow/SKILL.md) — baseline (fazy 0–5 analizy/planu + Phase 9 ADR). planner-f odcina fazy wykonawcze (6 implementacja, 6.5 Prove-It, 7 testy, 7.8 preview, 8 review, /goal loop).
+- [dev/audited-feature-workflow/SKILL.md](../audited-feature-workflow/SKILL.md) — baseline (fazy 0–5 analizy/planu + Phase 9 ADR). feature-spec-planner odcina fazy wykonawcze (6 implementacja, 6.5 Prove-It, 7 testy, 7.8 preview, 8 review, /goal loop).
 - [DOC/material_skill.md](../../DOC/material_skill.md) — pryncypia procesowe (Anti-rationalization, DoD, Scope Discipline, Hyrum, Chesterton, Beyoncé).
 - [DOC/since_skill.md](../../DOC/since_skill.md) — pryncypia projektowe (token budget, kebab-case, imperatyw, scripts/, Negative Triggers, Anti-Laziness, Thin Vertical Slices).

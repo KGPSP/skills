@@ -1,7 +1,7 @@
 # CHANGELOG — audited-feature-workflow (historycznie feature-planner-v3)
 
 > Wersje przed wprowadzeniem semver zrekonstruowane z historii git (backfill).
-> Wariant **senior-grade** Claude Code workflow — koegzystuje z `replit-style-workflow` (wygodny, historycznie `feature-planner-v2`) i `planner-f` (planning-only).
+> Wariant **senior-grade** Claude Code workflow — koegzystuje z `replit-style-workflow` (wygodny, historycznie `feature-planner-v2`) i `feature-spec-planner` (planning-only).
 > **Rename 2026-05-25:** `feature-planner-v3` → `audited-feature-workflow` (folder + frontmatter `name:`). Trigger keywords zachowane (`/goal`, `senior-grade feature`, `dodaj feature v3`).
 
 ## [v3.3.0] — 2026-05-25 — Rename: feature-planner-v3 → audited-feature-workflow
@@ -12,7 +12,7 @@
 - **Frontmatter SKILL.md:** `name: feature-planner-v3` → `name: audited-feature-workflow`. Heading H1 zaktualizowany z notą historyczną.
 - **`parent:` w 13× references/*.md** — wszystkie zsynchronizowane na `audited-feature-workflow`.
 - **Komentarze w scripts/** (3 wystąpienia: `check-pr-size.sh`, `derive-goal-from-ac.sh`) — zsynchronizowane.
-- **Cross-refs w pozostałych skillach** (replit-style-workflow, planner-f, agent-teams-builder, swarm-orchestrator) — wszystkie `feature-planner-v3` → `audited-feature-workflow` zsynchronizowane przez globalny sed.
+- **Cross-refs w pozostałych skillach** (replit-style-workflow, feature-spec-planner, agent-teams-builder, swarm-orchestrator) — wszystkie `feature-planner-v3` → `audited-feature-workflow` zsynchronizowane przez globalny sed.
 
 ### Why
 

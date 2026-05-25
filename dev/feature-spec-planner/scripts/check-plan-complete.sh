@@ -1,5 +1,5 @@
 #!/bin/sh
-# check-plan-complete.sh — planner-f Phase 6 approval gate.
+# check-plan-complete.sh — feature-spec-planner Phase 6 approval gate.
 # Verifies the planning package is complete BEFORE asking the user to approve.
 # Checks the plan document for the 10 required sections, AC table completeness
 # (no empty Test ID / Komenda), Out-of-scope presence, and slice presence.

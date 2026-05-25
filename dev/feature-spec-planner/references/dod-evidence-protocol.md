@@ -1,15 +1,15 @@
 ---
 name: dod-evidence-protocol
 type: reference
-parent: planner-f
+parent: feature-spec-planner
 source: DOC/material_skill.md §4
-description: Formaty akceptowanych dowodów per typ AC (Functional / Non-functional / Constraint). W planner-f deklarowane w Phase 4 (plan musi podać format) i sprawdzane na kompletność w Phase 6 (bramka). Zebranie surowego artefaktu należy do wykonawcy.
+description: Formaty akceptowanych dowodów per typ AC (Functional / Non-functional / Constraint). W feature-spec-planner deklarowane w Phase 4 (plan musi podać format) i sprawdzane na kompletność w Phase 6 (bramka). Zebranie surowego artefaktu należy do wykonawcy.
 ---
 
 # Definition of Done — Evidence Protocol
 
-> [!important] Zakres w planner-f
-> planner-f **specyfikuje dowód, nie zbiera go**. W Phase 4 dla każdego AC deklarujesz: **komendę dowodu + próg sukcesu + lokalizację artefaktu** — to kontrakt dla wykonawcy. planner-f **nie uruchamia** testów, buildów ani nie generuje raw logów. Wzorce dowodów poniżej są **wzorcami docelowymi**, które wykonawca (np. audited-feature-workflow Phase 7) wypełni surowym outputem. Skrypty `extract-raw-log.sh` / `check-ac-coverage.sh` / `verify-build-clean.sh` należą do wykonawcy — w planner-f ich nie ma.
+> [!important] Zakres w feature-spec-planner
+> feature-spec-planner **specyfikuje dowód, nie zbiera go**. W Phase 4 dla każdego AC deklarujesz: **komendę dowodu + próg sukcesu + lokalizację artefaktu** — to kontrakt dla wykonawcy. feature-spec-planner **nie uruchamia** testów, buildów ani nie generuje raw logów. Wzorce dowodów poniżej są **wzorcami docelowymi**, które wykonawca (np. audited-feature-workflow Phase 7) wypełni surowym outputem. Skrypty `extract-raw-log.sh` / `check-ac-coverage.sh` / `verify-build-clean.sh` należą do wykonawcy — w feature-spec-planner ich nie ma.
 
 > [!quote] material_skill.md §4
 > Status „Gotowe" bez artefaktu jest traktowany jako **błąd systemu**, a nie zakończenie zadania.
@@ -145,17 +145,17 @@ type UserId = string & { readonly __brand: 'UserId' };  // AC-C-01: branded type
 
 ---
 
-## Sekcja 4 — Komendy: planner-f vs wykonawca
+## Sekcja 4 — Komendy: feature-spec-planner vs wykonawca
 
-**planner-f** weryfikuje tylko kompletność specyfikacji DoD w planie:
+**feature-spec-planner** weryfikuje tylko kompletność specyfikacji DoD w planie:
 
 ```bash
-sh {baseDir}/dev/planner-f/scripts/check-plan-complete.sh --plan {baseDir}/plans/<N>-<slug>.md
+sh {baseDir}/dev/feature-spec-planner/scripts/check-plan-complete.sh --plan {baseDir}/plans/<N>-<slug>.md
 ```
 
 Sprawdza, że każdy AC ma niepuste `Komenda` / `Test ID` / `Plik testu`. Nie uruchamia żadnej komendy dowodu.
 
-**Wykonawca** (downstream, np. audited-feature-workflow) używa narzędzi, których planner-f nie zawiera:
+**Wykonawca** (downstream, np. audited-feature-workflow) używa narzędzi, których feature-spec-planner nie zawiera:
 `extract-raw-log.sh` (generuje blok Markdown z `Status: PASSED|FAILED` + exit code) oraz
 `check-ac-coverage.sh` (JSON `{"total_ac", "covered", "missing", "status"}`). To one zbierają realny dowód.
 
@@ -192,17 +192,17 @@ DoD section MUSI mieć dla każdego AC:
 | AC-C-01 | `tsc --noEmit` | `Exit 0` | `plans/<N>-evidence/AC-C-01.log` |
 ```
 
-### Phase 6 (approval gate planner-f) — TU kończy się planner-f
+### Phase 6 (approval gate feature-spec-planner) — TU kończy się feature-spec-planner
 
 - [ ] Każdy AC w planie ma kolumnę `Komenda dowodu`.
 - [ ] Każdy AC ma `Próg sukcesu`.
 - [ ] Każdy AC ma deklarowaną lokalizację artefaktu.
 
-Brak → bramka akceptacji blokuje. planner-f **nie** uruchamia komend i **nie** zbiera artefaktów.
+Brak → bramka akceptacji blokuje. feature-spec-planner **nie** uruchamia komend i **nie** zbiera artefaktów.
 
-### Downstream (wykonawca, poza planner-f)
+### Downstream (wykonawca, poza feature-spec-planner)
 
-Po przekazaniu planu wykonawca: (1) uruchamia każdą `Komenda dowodu`, (2) wkleja raw output przez `extract-raw-log.sh`, (3) porównuje z `Próg sukcesu`, (4) zapisuje artefakt do deklarowanej lokalizacji, (5) sprawdza coverage, a w ADR linkuje folder `evidence/`. Cała ta sekwencja należy do wykonawcy — planner-f tylko ją **zaprojektował**.
+Po przekazaniu planu wykonawca: (1) uruchamia każdą `Komenda dowodu`, (2) wkleja raw output przez `extract-raw-log.sh`, (3) porównuje z `Próg sukcesu`, (4) zapisuje artefakt do deklarowanej lokalizacji, (5) sprawdza coverage, a w ADR linkuje folder `evidence/`. Cała ta sekwencja należy do wykonawcy — feature-spec-planner tylko ją **zaprojektował**.
 
 ---
 

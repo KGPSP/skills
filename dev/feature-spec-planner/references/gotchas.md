@@ -2,7 +2,7 @@
 name: gotchas
 description: Auto-populating baza wiedzy projektowych anomalii (Grounding in Real Expertise). Phase 1 wykrywa, Phase 5 (ADR) deduplikuje.
 type: reference
-parent: planner-f
+parent: feature-spec-planner
 source: 'since_skill.md §6 (Grounding in Real Expertise)'
 auto-populated: true
 ---
@@ -10,7 +10,7 @@ auto-populated: true
 # Project Gotchas
 
 > [!important] Plik samonarastający
-> Ten plik **rośnie z czasem**. Każde uruchomienie planner-f w Phase 1 dokleja anomalia odkryte w analizie kodu. Phase 5 (ADR) dedupuje. Po >100 wpisach — split per moduł (`gotchas-api.md`, `gotchas-ui.md`, `gotchas-db.md`).
+> Ten plik **rośnie z czasem**. Każde uruchomienie feature-spec-planner w Phase 1 dokleja anomalia odkryte w analizie kodu. Phase 5 (ADR) dedupuje. Po >100 wpisach — split per moduł (`gotchas-api.md`, `gotchas-ui.md`, `gotchas-db.md`).
 
 ---
 
@@ -89,20 +89,20 @@ LLM-y mają domyślną wiedzę o typowych wzorcach (REST, JWT, TypeScript). Brak
 
 ```bash
 # Liczba wpisów
-grep -c '^## ' {baseDir}/dev/planner-f/references/gotchas.md
+grep -c '^## ' {baseDir}/dev/feature-spec-planner/references/gotchas.md
 
 # Sortowanie alfabetyczne (manual review przed apply)
-awk '/^## /{print NR":"$0}' {baseDir}/dev/planner-f/references/gotchas.md
+awk '/^## /{print NR":"$0}' {baseDir}/dev/feature-spec-planner/references/gotchas.md
 
 # Stale check (wpisy >12 miesięcy)
-grep -E '\*\*Wykryto:\*\* 202[0-4]-' {baseDir}/dev/planner-f/references/gotchas.md
+grep -E '\*\*Wykryto:\*\* 202[0-4]-' {baseDir}/dev/feature-spec-planner/references/gotchas.md
 ```
 
 ---
 
 ## 5. Przykładowe wpisy (placeholders)
 
-> [!important] Poniższe 3 wpisy są szablonowe — Phase 1 planner-f zastępuje je realnymi anomalia z projektu.
+> [!important] Poniższe 3 wpisy są szablonowe — Phase 1 feature-spec-planner zastępuje je realnymi anomalia z projektu.
 
 ## Soft-delete via deleted_at (PLACEHOLDER)
 **Wykryto:** 2026-05-11
@@ -131,7 +131,7 @@ grep -E '\*\*Wykryto:\*\* 202[0-4]-' {baseDir}/dev/planner-f/references/gotchas.
 
 | Faza | Co robi z gotchas.md |
 |---|---|
-| **Phase 1 (planner-f)** | **Add pass** — po analizie kodu/struktury projektu wykrywa nowe anomalia i dopisuje wpisy (sekcja 2 template). Lokalizacje weryfikowane (`test -e`). |
-| **Phase 4 (planner-f)** | Plan referencyjnie wskazuje gotchas relewantne dla feature'a (sekcja `Relevant gotchas`, np. „dotyczy soft-delete — patrz gotchas.md#soft-delete-via-deleted_at"). |
-| **Phase 5 (planner-f, ADR)** | **Dedup pass** — sekcja 4 reguły utrzymania. Sortowanie, merge duplikatów, flag stale, ewentualny split per moduł przy >100 wpisach. |
-| **Wykonawca** | Anti-rationalization quick-check przed commitem oraz review (oś Architecture) sprawdzają, czy implementacja respektuje gotchas wymienione w planie — poza zakresem planner-f. |
+| **Phase 1 (feature-spec-planner)** | **Add pass** — po analizie kodu/struktury projektu wykrywa nowe anomalia i dopisuje wpisy (sekcja 2 template). Lokalizacje weryfikowane (`test -e`). |
+| **Phase 4 (feature-spec-planner)** | Plan referencyjnie wskazuje gotchas relewantne dla feature'a (sekcja `Relevant gotchas`, np. „dotyczy soft-delete — patrz gotchas.md#soft-delete-via-deleted_at"). |
+| **Phase 5 (feature-spec-planner, ADR)** | **Dedup pass** — sekcja 4 reguły utrzymania. Sortowanie, merge duplikatów, flag stale, ewentualny split per moduł przy >100 wpisach. |
+| **Wykonawca** | Anti-rationalization quick-check przed commitem oraz review (oś Architecture) sprawdzają, czy implementacja respektuje gotchas wymienione w planie — poza zakresem feature-spec-planner. |

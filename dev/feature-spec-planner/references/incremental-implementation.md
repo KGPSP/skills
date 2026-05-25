@@ -2,7 +2,7 @@
 name: incremental-implementation
 description: Thin Vertical Slices + 5-step incremental rule. Wymusza budowanie end-to-end odnogami zamiast warstwa-po-warstwie.
 type: reference
-parent: planner-f
+parent: feature-spec-planner
 source: 'since_skill.md §5 (Incremental Implementation + TDD)'
 ---
 
@@ -145,7 +145,7 @@ Rozbicie na slices (każda mergowalna niezależnie):
 
 1. STOP implementacji bieżącej slice.
 2. Zapis w `{baseDir}/docs/plans/<plan-id>/out-of-scope.md` z uzasadnieniem.
-3. Nowy plan / nowe uruchomienie planner-f dla rozszerzenia.
+3. Nowy plan / nowe uruchomienie feature-spec-planner dla rozszerzenia.
 
 **Wykrywanie podczas wykonania (u wykonawcy):**
 
@@ -157,13 +157,13 @@ Rozbicie na slices (każda mergowalna niezależnie):
 
 ## 7. Integracja z fazami
 
-> [!important] W planner-f slices to artefakt PLANU, nie wykonania
-> planner-f produkuje **listę slices** (rozbicie + kolejność + PR size target). 5-step rule (sekcja 3) i feature-flag code (sekcja 4) opisują, **jak wykonawca** zrealizuje każdą slice — to materiał referencyjny dla downstream, nie czynność planner-f.
+> [!important] W feature-spec-planner slices to artefakt PLANU, nie wykonania
+> feature-spec-planner produkuje **listę slices** (rozbicie + kolejność + PR size target). 5-step rule (sekcja 3) i feature-flag code (sekcja 4) opisują, **jak wykonawca** zrealizuje każdą slice — to materiał referencyjny dla downstream, nie czynność feature-spec-planner.
 
 | Faza | Co robi z incremental rule |
 |---|---|
-| **Phase 4 (planner-f)** | Plan rozbija feature na **listę thin vertical slices** (sekcja 5 wzorzec). Każda slice ma: opis, DB/API/UI komponenty, listę planowanych testów, PR size target, ew. nazwę feature flagi. |
-| **Phase 6 gate (planner-f)** | `check-plan-complete.sh` odrzuca plan bez ≥1 slice lub ze slice'em >300 linii target bez uzasadnienia. |
+| **Phase 4 (feature-spec-planner)** | Plan rozbija feature na **listę thin vertical slices** (sekcja 5 wzorzec). Każda slice ma: opis, DB/API/UI komponenty, listę planowanych testów, PR size target, ew. nazwę feature flagi. |
+| **Phase 6 gate (feature-spec-planner)** | `check-plan-complete.sh` odrzuca plan bez ≥1 slice lub ze slice'em >300 linii target bez uzasadnienia. |
 | **Wykonawca — egzekucja** | 5-step rule per slice (sekcja 3): logika bazowa → failing test (RED) → build clean → commit atomic. Anti-rationalization przeciw „extending goals" (sekcja 6). |
 | **Wykonawca — bugfix** | Prove-It Pattern: RED test reprodukujący buga → GREEN po fixie. |
 | **Wykonawca — test gate** | Każda slice ≥1 zielony test w odpowiednim scope. Niedokończona slice za feature flagą (sekcja 4). |
