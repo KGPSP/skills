@@ -1,7 +1,7 @@
 ---
 name: planowanie-wydatkow-it-psp
-version: v1.0.1
-description: Use when przygotowanie wniosku finansowego / uzasadnienia wydatku / kosztorysu TCO dla systemu IT KG PSP (CEOZO, CEZOL, SOiA, inne) w jednym z trzech trybów — A POLiOC cz. 42 obronne 752/75282 (domyślny), B POLiOC podstawowy 754/75414, C środki własne KG PSP 754/75409. Produkuje raport.md z metryczką, kosztorysem TCO w PLN BRUTTO (VAT/reverse charge/kurs NBP), pełną klasyfikacją UFP, 8-punktowym uzasadnieniem per pozycja (4-pkt dla trybu C) i tabelą markdown w układzie kolumn XLSX 1:1 z `Propozycja zadań do POLiOC 2027-2031 cz.42.xlsx`. Walidator (`scripts/check-cost-plan.sh`) wymusza § ≠ 4000, kurs NBP z datą, kompletny schemat uzasadnienia, opinię MSWiA dla pozycji > 100 000 zł brutto, plan utrzymania ≥ 5 lat dla ŚT, sumę alokacji G..L = F.
+version: v1.1.0
+description: Use when przygotowanie wniosku finansowego / uzasadnienia wydatku / kosztorysu TCO dla systemu IT KG PSP (CEOZO, CEZOL, SOiA, inne) z klasyfikacją UFP wg **nowej klasyfikacji budżetowej 2027+** (Dz.U. 2026 poz. 582 — rozp. MFiG z 20.04.2026, paragrafy 3-cyfrowe, bez progu 10 000 zł, załącznik nr 4 dla PSP) w jednym z trzech trybów — A POLiOC cz. 42 obronne 752/75282 (domyślny), B POLiOC podstawowy 754/75414, C środki własne KG PSP 754/75409. Produkuje raport.md z metryczką, kosztorysem TCO w PLN BRUTTO (VAT/reverse charge/kurs NBP), pełną klasyfikacją UFP 2027+, 8-punktowym uzasadnieniem per pozycja (4-pkt dla trybu C) i tabelą markdown w układzie XLSX 1:1. Walidator (`scripts/check-cost-plan.sh`) wymusza brak paragrafów 4-cyfrowych (legacy), uzasadnienie operacyjne dla § 704 (specjalistyczny sprzęt PSP), kurs NBP z datą, kompletny schemat uzasadnienia, opinię MSWiA dla pozycji > 100 000 zł brutto, plan utrzymania ≥ 5 lat dla ŚT (paragrafy 700–769), sumę alokacji G..L = F.
 trigger:
   - "wniosek POLiOC"
   - "wniosek do POLiOC cz. 42"
@@ -87,8 +87,8 @@ Pełna mapa decyzyjna i konsekwencje: załaduj `references/polioc-ramy.md`.
 2. **Wybierz tryb** A/B/C (tabela powyżej). Jeśli niejasne — zapytaj usera o źródło finansowania.
 3. **Uzupełnij metryczkę systemu** wg szablonu `templates/raport-skeleton.md` (pola: nazwa, akronim, właściciel biznesowy/techniczny, klasyfikacja informacji jawne/wewn./zastrzeżone, model utrzymania, okres finansowania, walutowość = PLN BRUTTO).
 4. **Zidentyfikuj podstawę prawną** — minimum:
-   - Ustawa o finansach publicznych: **Dz.U. 2025 poz. 1483** (tekst jednolity).
-   - Rozporządzenie klasyfikacja dochodów/wydatków: **Dz.U. 2026 poz. 582**.
+   - Ustawa o finansach publicznych: **Dz.U. 2025 poz. 1483** (tekst jednolity) + **Dz.U. 2026 poz. 426** (ustawa zmieniająca z 27.02.2026 — nowa delegacja w art. 39 ust. 4–5 ufp).
+   - **Rozporządzenie MFiG z 20.04.2026 w sprawie szczegółowej klasyfikacji** dochodów, wydatków, przychodów i rozchodów: **Dz.U. 2026 poz. 582** — stosowane do planowania budżetu 2027+, paragrafy 3-cyfrowe.
    - Rozporządzenie klasyfikacja części budżetowych: **Dz.U. 2025 poz. 1185**.
    - Ustawa OLiOC z 5.12.2024 r. — wskaż konkretny artykuł (np. dla CEOZO: art. 108 + art. 112; dla wniosku obronnego: art. 155 ust. 2 pkt 3 + art. 156).
    - Program OLiOC 2027–2031 (projekt v17, MSWiA — w uzgodnieniach na dzień 2026-05-25).
@@ -136,41 +136,54 @@ Pełna mapa decyzyjna i konsekwencje: załaduj `references/polioc-ramy.md`.
 
 ---
 
-### Faza 4 — Classify (część → dział → rozdział → § → B/M)
+### Faza 4 — Classify (część → dział → rozdział → § 2027+ → B/M → grupa BP)
 
 > **Pomyłka w klasyfikacji = ryzyko zarzutu naruszenia dyscypliny finansów publicznych** (art. 5–18a ustawy z 17.12.2004 r. o odpowiedzialności za naruszenie DFP). Trzymaj się matrycy.
+>
+> **❗ KLASYFIKACJA 2027+** wg Dz.U. 2026 poz. 582 (rozp. MFiG z 20.04.2026). Paragrafy **3-cyfrowe** (struktura 3+1: 3 cyfry przedmiot + 4. cyfra źródło/przeznaczenie). **Próg 10 000 zł zlikwidowany** — polityka rachunkowości decyduje. **Załącznik nr 4** dla PSP — większa szczegółowość bezpieczeństwa wewnętrznego.
 
-1. **Załaduj `references/klasyfikacja-budzetowa.md`** — pełna matryca część/dział/rozdział/§ + pułapki klasyfikacyjne (próg ŚT, subskrypcja vs WNiP, drobna rozbudowa vs § 6050).
+1. **Załaduj `references/klasyfikacja-budzetowa.md`** — pełna matryca część/dział/rozdział/§ 2027+, pułapki klasyfikacyjne (subskrypcja vs WNiP, drobna rozbudowa vs § 720, § 704 vs § 702, klucz przejścia z 4xxx/6xxx).
 2. **Dla każdej pozycji z F3 wpisz pełną ścieżkę** w tabeli III.B:
    - **Część budżetowa:** wg trybu z F1 (A/B/C — patrz tabela na początku).
-   - **Dział:** 752 (tryb A) lub 754 (tryb B/C).
-   - **Rozdział:** 75282 (A) / 75414 (B) / 75409 (C).
-   - **Paragraf:** wg matrycy Cz. IV.5 — patrz tabela niżej (skrócona).
-   - **Typ wydatku:** B (bieżący) lub M (majątkowy).
-3. **Skrócona matryca paragrafów** (pełna w `references/klasyfikacja-budzetowa.md`):
+   - **Dział:** 752 (tryb A) lub 754 (tryb B/C) — **bez zmian w reformie**.
+   - **Rozdział:** 75282 (A) / 75414 (B) / 75409 (C) — **bez zmian**.
+   - **Paragraf 3-cyfrowy:** wg matrycy niżej.
+   - **Typ wydatku:** B (bieżący — grupa BP 3) lub M (majątkowy — grupa BP 4).
+   - **Pozycja zał. nr 4** (jeśli dotyczy): np. 704001, 702002, 634003, 778009.
+3. **Skrócona matryca paragrafów 2027+** (pełna w `references/klasyfikacja-budzetowa.md` §5–7):
 
-| Co kupujesz | § | Typ |
-|---|---|---|
-| Hosting / SaaS / PaaS / API / service desk / backup / monitoring | **4300** | B |
-| Łącze Internet (podstawowe, zapasowe) | **4350** | B |
-| Telekom (telefonia, GSM/LTE, APN M2M, SMS API, WAN telekomunikacyjny) | **4360** | B |
-| Pentest cykliczny / audyt bezpieczeństwa / ekspertyza techniczna / DPIA zewn. / WCAG zewn. | **4390** | B |
-| Sprzęt < 10 000 zł NETTO (akcesoria, materiały eksploatacyjne) | **4210** | B |
-| Energia elektryczna (kolokacja) | **4260** | B |
-| Szkolenia administratorów (pracownicy NIE SC) | **4700** | B |
-| Sprzęt ≥ 10 000 zł NETTO i okres > 1 rok (serwer, stacja, sprzęt sieciowy) | **6060** | **M** |
-| Licencja wieczysta ≥ 10 000 zł netto, okres > 1 rok = WNiP | **6060** | **M** |
-| Budowa nowego modułu / istotna modernizacja / wytworzenie nowego systemu od zera | **6050** | **M** |
-| Rezerwy (gdy wydzielone jako odrębna pozycja) | 4810 | B |
+| Co kupujesz | § | Typ | Grupa BP |
+|---|---|---|---|
+| Hosting / SaaS / PaaS / IaaS / API / service desk / backup / monitoring / utrzymanie / aktualizacje | **682** | B | 3 |
+| Łącze Internet, transmisja danych, telefonia, GSM/LTE, APN M2M | **681** | B | 3 |
+| Dzierżawa ciemnego włókna / kanalizacji teletechnicznej / traktów | **631** (631003) | B | 3 |
+| Pentest cykliczny / audyt bezpieczeństwa / ekspertyza techniczna / DPIA zewn. / WCAG zewn. | **677** | B | 3 |
+| Naprawa sprzętu informatycznego | **634** (634004) | B | 3 |
+| Naprawa sprzętu łączności / masztów / anten | **634** (634003) | B | 3 |
+| Materiały IT / akcesoria / kable (nietworzące ŚT) | **778** (778009 info / 778008 łącz / 778005 wyposażenie) | B | 3 |
+| Energia (serwerownia, kolokacja) | **770** | B | 3 |
+| Woda (chłodzenie) | **771** | B | 3 |
+| Szkolenia administratorów (zewnętrzne) | **638** | B | 3 |
+| Umowa zlecenia / dzieło osoba fizyczna | **670** (670001) | B | 3 |
+| Usługi pozostałe (gdy NIE pasuje 682/634/681/631/677/670) | **687** | B | 3 |
+| Montaż / instalacja sprzętu łącznościowego (samodzielna usługa) | **687** (687011) | B | 3 |
+| ŚT amortyzowany jednorazowo (laptop/stacja jako ŚT jednorazowy) | **701** | **M** | **4** |
+| ŚT amortyzowany wieloletnio — sprzęt IT (serwery, macierze, sprzęt sieciowy biurowy) | **702** (702002) | **M** | **4** |
+| **Specjalistyczny sprzęt IT/łączności dla zadań operacyjnych PSP** (dyspozytorski, łączność krytyczna, zintegrowany z systemami ratowniczymi) | **704** (704001) — **WYMAGA uzasadnienia operacyjnego** | **M** | **4** |
+| WNiP amortyzowany jednorazowo (licencja bezterminowa jednorazowa) | **711** | **M** | **4** |
+| WNiP — licencja bezterminowa / przeniesienie praw | **712** (712001 B+R / 712002 wdrożenia) | **M** | **4** |
+| **Inwestycje** — wytworzenie nowego systemu/modułu/funkcjonalności jako aktywa | **720** | **M** | **4** |
+| Rezerwy (gdy wydzielone jako odrębna pozycja) | **810** | B | 3 |
 
-4. **Sprawdź pułapki klasyfikacyjne** (Cz. IV.3.c):
-   - Próg 10 000 zł dotyczy **wartości NETTO** dla CIT — komputer brutto 12 054 / netto 9 800 → § 4210 (NIE § 6060).
-   - **Subskrypcja roczna ≠ WNiP** — zawsze § 4300, niezależnie od wartości.
-   - **Drobne poprawki / usuwanie błędów** → OPEX § 4300. Tylko **budowa nowego modułu** / **istotna modernizacja** → § 6050.
-   - **§ 4000 jest placeholderem** — w klasyfikacji Dz.U. 2026 poz. 582 nie ma czterocyfrowego § „4000". Zastąp szczegółowym.
-   - **Pentest przedwdrożeniowy** (przed odbiorem nowego systemu) może być częścią § 6050 jako koszt wytworzenia. Cykliczny → § 4390.
+4. **Sprawdź pułapki klasyfikacyjne 2027+** (`references/klasyfikacja-budzetowa.md` §8):
+   - **Próg 10 000 zł ZLIKWIDOWANY** — polityka rachunkowości KG PSP decyduje. Laptop 5 000 zł → § 701 lub § 702 lub § 778 zależnie od decyzji rachunkowej.
+   - **Subskrypcja roczna ≠ WNiP** — zawsze § 682, niezależnie od wartości. Test: czy KG PSP zachowa prawo po wygaśnięciu? NIE → § 682.
+   - **Drobne poprawki / usuwanie błędów** → § 682 (Usługi informatyczne). Tylko **wytworzenie nowego aktywa lub ulepszenie istniejącego** → § 720.
+   - **§ 4000 nadal placeholder** w plikach XLSX wzorcowych — zastąp paragrafem 3-cyfrowym 2027+.
+   - **Pentest przedwdrożeniowy** (przed odbiorem nowego systemu) → § 720 jako koszt wytworzenia. Cykliczny → § 677.
+   - **§ 704 wymaga uzasadnienia operacyjnego** — sprzęt administracyjny → § 702, NIE § 704. BIŁ ostrzega: serwer administracyjny w 704001 bez uzasadnienia = typowy błąd kontrolny.
 
-**Exit criterion F4:** każda pozycja w tabeli III.B ma 5 kolumn klasyfikacji: część, dział, rozdział, §, B/M. Żadna pozycja nie ma `§ 4000` ani `§ [do uzupełnienia]`. Każda pozycja > 10 000 zł netto ma świadomy wybór 4210 vs 6060 vs 6050 (komentarz w kolumnie „Uwagi").
+**Exit criterion F4:** każda pozycja w tabeli III.B ma 6 kolumn klasyfikacji: część, dział, rozdział, § (3-cyfrowy), B/M, grupa BP. **Żadna pozycja nie ma paragrafu 4-cyfrowego (4xxx/6xxx legacy)** ani `§ [do uzupełnienia]`. Pozycje z § 704 mają w sekcji uzasadnienia frazę „zadanie operacyjne" / „sprzęt specjalistyczny" / „dyspozytorski" / „łączność krytyczna".
 
 ---
 
@@ -264,7 +277,7 @@ Pełna mapa decyzyjna i konsekwencje: załaduj `references/polioc-ramy.md`.
 
 ---
 
-## Anti-Rationalization quick-table (top 8; pełna: [anti-rationalization.md](references/anti-rationalization.md))
+## Anti-Rationalization quick-table (top 9; pełna 21 wymówek: [anti-rationalization.md](references/anti-rationalization.md))
 
 Przed F6 i przed deklaracją „done" przejdź przez tabelę. Każda wymówka = stop + powrót do właściwej fazy.
 
@@ -274,10 +287,11 @@ Przed F6 i przed deklaracją „done" przejdź przez tabelę. Każda wymówka = 
 | 2 | „Cloudflare/Google bez VAT na fakturze → wpiszę netto + 0 VAT" | **Reverse charge** (art. 17 ust. 1 pkt 4 VAT) — KG PSP samonalicza 23%. Brutto = netto × kurs × 1,23. Cz. III.0.C. | F3 |
 | 3 | „USD zostawię, księgowość przeliczy" | **Wszystkie kwoty w PLN.** Wpisz kurs planistyczny NBP z datą + rezerwę kursową 10–15% (Cz. III.0.B). Bez tego pozycja nie wejdzie do XLSX. | F3 |
 | 4 | „754/75409 jak normalnie KG PSP" | Dla POLiOC cz. 42 obronnych (tryb A) → **752/75282** (art. 155 ust. 2 pkt 3 OLiOC + pkt 41 Programu). 754 tylko dla trybu B/C. | F4 |
-| 5 | „§ 4000 jak w pliku wzorcowym" | **§ 4000 to placeholder/zbiór 4xxx, NIE pozycja klasyfikacji.** Zastąp szczegółowym (4210/4260/4300/4350/4360/4390/4700) wg matrycy Cz. IV.5. | F4 |
-| 6 | „Brutto > 10k → § 6060 (środek trwały)" | Próg 10 000 zł dotyczy **wartości NETTO** (art. 16d CIT). Brutto 12 054 zł / netto 9 800 zł → **§ 4210** (materiał). Cz. IV.3.c #4. | F4 |
-| 7 | „Subskrypcja roczna SaaS → § 6060 (WNiP)" | Subskrypcja roczna ≠ WNiP (nie daje trwałego prawa). **Zawsze § 4300**, niezależnie od wartości. Tylko licencje wieczyste lub > 1r ≥ 10k → § 6060. Cz. IV.3.c #1–2. | F4 |
-| 8 | „Uzasadnienie 1 akapit, MSWiA zrozumie" | **8-PUNKTOWY schemat obowiązkowy per pozycja** (Cz. X.2). Brak punktu = pozycja niekompletna, walidator zwraca exit 1. | F5 |
+| 5 | „§ 4000 / 4300 / 6060 jak w pliku wzorcowym XLSX" | **Paragrafy 4-cyfrowe (4xxx/6xxx) to LEGACY klasyfikacja do 2026** — nieaktualna dla planów 2027+. Zastąp paragrafem **3-cyfrowym 2027+** wg Dz.U. 2026 poz. 582: **682** (usługi IT), **681** (telekom), **631** (dzierżawa), **677** (ekspertyzy), **638** (szkolenia), **670** (zlecenia osoby fizyczne), **770/771** (energia/woda), **778** (materiały), **701/702/704** (ŚT), **711/712** (WNiP), **720** (inwestycje). | F4 |
+| 6 | „Brutto > 10k → § 702 (środek trwały)" lub „Netto < 10k → § 778 (materiał)" | **❗ PRÓG 10 000 zł ZLIKWIDOWANY od 2027** (Dz.U. 2026 poz. 582). Polityka rachunkowości KG PSP decyduje, NIE kwota. Laptop 5 000 zł → § 701 (jeśli ŚT amort. jednorazowo), § 702 (jeśli ŚT wieloletni), § 778 (jeśli wyposażenie). Sprawdź politykę u BF-I. | F4 |
+| 7 | „Subskrypcja roczna SaaS → § 712 (WNiP)" | Subskrypcja roczna ≠ WNiP (nie daje trwałego prawa). **Zawsze § 682** (Usługi informatyczne), niezależnie od wartości. Test: czy KG PSP zachowa prawo po wygaśnięciu umowy? NIE → § 682. Tylko licencje bezterminowe z przeniesieniem praw → § 711/712. | F4 |
+| 8 | „Sprzęt CEZOL/CEOZO → § 704 (specjalistyczny bezpieczeństwa)" | **§ 704 wymaga uzasadnienia operacyjnego per pozycja.** Sprzęt administracyjny (serwery aplikacyjne, stacje robocze, sprzęt sieciowy biurowy) → § 702 (702002). § 704 zarezerwowane dla sprzętu do **zadań operacyjnych PSP** (dyspozytorski, łączność krytyczna, zintegrowany z systemami ratowniczymi). Walidator wymaga frazy „zadanie operacyjne"/„sprzęt specjalistyczny"/„dyspozytorski"/„łączność krytyczna" w uzasadnieniu. | F4 → F5 |
+| 9 | „Uzasadnienie 1 akapit, MSWiA zrozumie" | **8-PUNKTOWY schemat obowiązkowy per pozycja** (Cz. X.2). Brak punktu = pozycja niekompletna, walidator zwraca exit 1. | F5 |
 
 ---
 
@@ -289,10 +303,11 @@ Przed F6 i przed deklaracją „done" przejdź przez tabelę. Każda wymówka = 
 - [ ] Kurs planistyczny NBP z datą wpisany w raport.md (F3).
 - [ ] Każda pozycja walutowa: netto × kurs × VAT/RC = brutto PLN (F3).
 - [ ] Rezerwy utrzymaniowa/kursowa/overage jako osobne pozycje (F3).
-- [ ] Każda pozycja ma 5 kolumn klasyfikacji UFP (część/dział/rozdział/§/B/M), żadna `§ 4000` (F4).
+- [ ] Każda pozycja ma 6 kolumn klasyfikacji UFP 2027+ (część/dział/rozdział/§ 3-cyfrowy/B/M/grupa BP), żaden paragraf 4-cyfrowy legacy (4xxx/6xxx) (F4).
+- [ ] Pozycje z § 704 mają uzasadnienie operacyjne (frazy „zadanie operacyjne"/„sprzęt specjalistyczny"/„dyspozytorski"/„łączność krytyczna") (F4 → F5).
 - [ ] Każda pozycja XLSX ma 8 punktów uzasadnienia (Cz. X.2); konkretna delta wskaźnika 0→4+ (F5).
 - [ ] Pozycje > 100 000 zł brutto: załączony osobny wniosek o opinię MSWiA (F6).
-- [ ] Pozycje w § 6050/6060: plan utrzymania ≥ 5 lat (F6).
+- [ ] Pozycje majątkowe (paragrafy 700–769: § 701/702/703/704/711/712/720): plan utrzymania ≥ 5 lat (F6).
 - [ ] Tabela markdown w układzie XLSX A–L w sekcji 7; suma G..L = kol. F dla każdego wiersza (F6).
 - [ ] **Walidator** `scripts/check-cost-plan.sh` zwraca exit 0; surowy output wklejony do sekcji 8 raport.md (F6).
 - [ ] Stopka źródeł — wszystkie akty prawne z dat weryfikacji (sekcja 9).
@@ -308,7 +323,12 @@ Przed F6 i przed deklaracją „done" przejdź przez tabelę. Każda wymówka = 
 - **Materiał źródłowy:** `now_skille/materialy_polioc/material_przeliczanie_kosztow.md` (11 części: szablon karty, katalog kosztów, klasyfikacja UFP, POLiOC 2027–2031, szablon XLSX cz. 42, audit log). **Uwaga:** `now_skille/` jest **gitignored** (local-only — analogicznie do `DOC/`), więc nie pojawia się w `git ls-files` ani po instalacji marketplace; istnieje wyłącznie lokalnie jako kanoniczne źródło autorskie. Treść materiału jest przetworzona do tego skilla (`references/*.md` mają `source:` wskazujący sekcję materiału z numerem §) — runtime skilla nie zależy od `now_skille/`.
 - **Akty prawne** (weryfikacja Sejm ELI API, stan 2026-05-25):
   - Ustawa o finansach publicznych — tekst jednolity **Dz.U. 2025 poz. 1483**.
-  - Rozporządzenie klasyfikacja dochodów/wydatków — **Dz.U. 2026 poz. 582**.
+  - **Ustawa z 27.02.2026 o zmianie ustawy o finansach publicznych** i niektórych innych ustaw — **Dz.U. 2026 poz. 426** (nowa delegacja art. 39 ust. 4–5 ufp).
+  - **Rozporządzenie MFiG z 20.04.2026 w sprawie szczegółowej klasyfikacji dochodów, wydatków, przychodów i rozchodów oraz środków pochodzących ze źródeł zagranicznych** — **Dz.U. 2026 poz. 582** (stosowane do planowania budżetu 2027+, paragrafy 3-cyfrowe + załącznik nr 4 PSP).
   - Rozporządzenie klasyfikacja części budżetowych — **Dz.U. 2025 poz. 1185**.
   - Ustawa OLiOC z 5.12.2024 r. — **Dz.U. 2024 poz. 1907** + zmiany.
   - Projekt Programu OLiOC 2027–2031 v17 (MSWiA, w uzgodnieniach).
+- **Materiały BIŁ KG PSP** (`now_skille/materialy_polioc/FINANSOWANIE/`):
+  - `Analiza_klasyfikacji_IT_KG_PSP_2027_BIL.docx` — mapowanie kategorii IT na paragrafy 2027+.
+  - `Material_edukacyjny_Finanse_publiczne_2026_BIL_KG_PSP.docx` — kompendium reformy klasyfikacji.
+  - `ezd_359297-bf-i-rozporzadzenie-klasyfikacja-budzetowa/` — pismo BF-I.0754.12.2026 + uwagi BIŁ + PDF rozporządzenia.

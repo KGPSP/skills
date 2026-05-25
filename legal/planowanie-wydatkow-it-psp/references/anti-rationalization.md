@@ -5,12 +5,14 @@ parent: planowanie-wydatkow-it-psp
 sources:
   - DOC/material_skill.md §3
   - now_skille/materialy_polioc/material_przeliczanie_kosztow.md §XI (audit log)
-description: Pełna tabela 20 wymówek agenta przy przygotowywaniu wniosku finansowego (5 wycena / 7 klasyfikacja UFP / 4 uzasadnienie / 4 walidacja) — z ripostami i wskazaniem fazy, do której wrócić. Egzekwowana przed F6 (Verify) i przed deklaracją „done". Source: DOC §3 (Process over Prose) + audit log Cz. XI materiału.
+description: Pełna tabela 21 wymówek agenta przy przygotowywaniu wniosku finansowego (5 wycena / 8 klasyfikacja UFP 2027+ / 4 uzasadnienie / 4 walidacja) — z ripostami i wskazaniem fazy, do której wrócić. Egzekwowana przed F6 (Verify) i przed deklaracją „done". Source: DOC §3 (Process over Prose) + audit log Cz. XI materiału + Dz.U. 2026 poz. 582 (nowa klasyfikacja).
 ---
 
-# Anti-Rationalization — pełna tabela wymówek
+# Anti-Rationalization — pełna tabela 21 wymówek (klasyfikacja 2027+)
 
 > Przejdź przez tabelę przed F6 (Verify+Ship) i przed deklaracją „done". Każda wymówka = **stop** + powrót do właściwej fazy. Nie ma „wyjątku dla tej sytuacji".
+>
+> **Reforma klasyfikacji 2027+:** rozporządzenie MFiG z 20.04.2026 (Dz.U. 2026 poz. 582) zmieniło numerację paragrafów z 4xxx/6xxx na 3-cyfrowe (682, 702, 704, 711, 712, 720, 778 itd.) i **zlikwidowało próg 10 000 zł** dla wydatków majątkowych. Stare paragrafy są **nieaktualne** dla planowania 2027+.
 
 ## 1. Wymówki dotyczące wyceny (faza F3)
 
@@ -22,17 +24,20 @@ description: Pełna tabela 20 wymówek agenta przy przygotowywaniu wniosku finan
 | 4 | „Rezerwa kursowa jest opcjonalna — kurs się ustabilizuje" | **Obowiązkowa rezerwa 10–15% pozycji walutowych** (Cz. O katalogu). USD/EUR wahają się historycznie ±20% w cyklu 5-letnim. Bez rezerwy = ryzyko niedofinansowania = wstrzymanie usługi w trakcie roku budżetowego. | F3 |
 | 5 | „Pomyłka skali ×1000 — chyba miało być więcej, dorzucę zero" | **Stop. Eskaluj.** Cz. XI.5: „pomyłka skali ×1000 to najczęstsza przyczyna odrzucenia wniosku". Najpierw weryfikacja u autora danych (czy 90 zł/m-c, czy 90 000 zł/m-c?), dopiero potem wpis do wniosku. Nigdy „chyba". | F3 |
 
-## 2. Wymówki dotyczące klasyfikacji UFP (faza F4)
+## 2. Wymówki dotyczące klasyfikacji UFP 2027+ (faza F4)
+
+> **Reforma klasyfikacji od planowania 2027:** Dz.U. 2026 poz. 582 (rozp. MFiG z 20.04.2026) wprowadza nowe paragrafy 3-cyfrowe (682, 702, 704, 711, 712, 720, 778 itd.) zamiast starych 4xxx/6xxx. Stare paragrafy są **nieaktualne** dla planowania 2027–2031.
 
 | # | Wymówka agenta | Riposta (blokada) | Powrót do |
 |---|---|---|---|
 | 6 | „754/75409 jak normalnie KG PSP" | Dla **POLiOC cz. 42 obronnych (tryb A) → 752/75282**. Art. 155 ust. 2 pkt 3 OLiOC + art. 40 ust. 1 pkt 2 ustawy o Obronie Ojczyzny + pkt 41 Projektu Programu. 754 tylko dla trybu B (środki podstawowe OLiOC poza 0,15%) lub C (środki własne KG PSP poza POLiOC). Cz. IX.2, XI.1. | F1 → F4 |
-| 7 | „§ 4000 jak w pliku wzorcowym XLSX" | **§ 4000 to placeholder/zbiór 4xxx, NIE pozycja klasyfikacji.** W rozporządzeniu Dz.U. 2026 poz. 582 nie ma takiego paragrafu szczegółowego. Cz. X.4, XI.4 #1. Zastąp szczegółowym wg matrycy: 4210 (sprzęt < 10k), 4260 (energia), 4300 (usługi), 4350 (Internet), 4360 (telekom), 4390 (ekspertyzy), 4700 (szkolenia NIE SC). | F4 |
-| 8 | „Brutto > 10 000 zł → § 6060 (środek trwały)" | **Próg 10 000 zł dotyczy WARTOŚCI NETTO** (art. 16d CIT). Cz. IV.3.c #4. Komputer brutto 12 054 zł / netto 9 800 zł → **§ 4210** (materiał). Sprawdź netto każdego ŚT, nie brutto. | F4 |
-| 9 | „Subskrypcja roczna 30k zł → § 6060 (WNiP, bo licencja)" | **Subskrypcja roczna ≠ WNiP.** Nie daje trwałego prawa majątkowego. Zawsze **§ 4300**, niezależnie od wartości. Tylko **licencje wieczyste** (lub > 1 r. z opłaceniem z góry) i ≥ 10k netto → § 6060. Cz. IV.3.c #1–2. | F4 |
-| 10 | „Drobna rozbudowa → § 6050 (inwestycja)" | **§ 6050 tylko dla:** budowy nowego modułu, istotnej modernizacji, rozbudowy funkcjonalnej o znaczącej wartości, wytworzenia nowego systemu. **Drobne poprawki / usuwanie błędów → OPEX § 4300.** Cz. IV.3.c #3. Sprawdź: czy to nowy moduł, czy poprawka? | F4 |
-| 11 | „Hosting + drobna rozbudowa wpiszę w jednej pozycji" | **Rozdziel pozycje.** Hosting → § 4300 (bieżący). Rozbudowa → § 6050 (majątkowy) — jeśli to istotne wytworzenie. Cz. IV.3.c #5. Mieszanie B i M w jednym wierszu = błąd klasyfikacji = ryzyko zarzutu DFP. | F4 |
-| 12 | „Klasyfikacja: tylko paragraf wystarczy" | **Pełna ścieżka część → dział → rozdział → § → typ B/M** jest WYMAGANA. Niepełna klasyfikacja = ryzyko zarzutu naruszenia DFP (art. 5–18a ustawy z 17.12.2004 r.). Cz. IV.1–4. | F4 |
+| 7 | „§ 4000 jak w pliku wzorcowym XLSX" | **§ 4000 to placeholder ze starej klasyfikacji** (do 2026). Plik XLSX wzorcowy POLiOC nie został zaktualizowany. Zastąp **paragrafem 3-cyfrowym 2027+** wg `references/klasyfikacja-budzetowa.md` §5–7: **682** (usługi IT), **681** (telekom), **631003** (dzierżawa), **677** (ekspertyzy), **678** (ubezpieczenia), **638** (szkolenia), **670** (zlecenia osoby fizyczne), **770/771** (energia/woda), **778** (materiały), **701/702/704** (ŚT), **711/712** (WNiP), **720** (inwestycje). | F4 |
+| 8 | „Brutto > 10 000 zł → § 702 (środek trwały)" lub „Netto < 10k → § 778 (materiał)" | **❗ PRÓG 10 000 zł ZLIKWIDOWANY od 2027** (Dz.U. 2026 poz. 582). O kwalifikacji do wydatku majątkowego decyduje **polityka rachunkowości KG PSP** (czy zakup ujmowany jako ŚT czy materiał), NIE wartość. Laptop 5 000 zł → § 701/702 (jeśli ujęty jako ŚT) ALBO § 778 (jeśli wyposażenie nietworzące ŚT). Sprawdź politykę rachunkowości u BF-I przed klasyfikacją. `references/klasyfikacja-budzetowa.md` Pułapka 4. | F4 |
+| 9 | „Subskrypcja roczna 30k zł → § 711/712 (WNiP, bo licencja)" | **Subskrypcja roczna ≠ WNiP.** Nie daje trwałego prawa majątkowego. Zawsze **§ 682** (Usługi informatyczne), niezależnie od wartości. **Test rozstrzygający:** czy po wygaśnięciu umowy KG PSP zachowuje prawo majątkowe do oprogramowania? Jeśli NIE → § 682. Tylko **licencje bezterminowe** z przeniesieniem praw → § 711/712. `references/klasyfikacja-budzetowa.md` Pułapka 1/2. | F4 |
+| 10 | „Drobna rozbudowa → § 720 (inwestycja)" | **§ 720 (Inwestycje) tylko dla:** budowy nowego modułu, istotnej modernizacji zwiększającej wartość ŚT/WNiP, wytworzenia nowego systemu jako aktywa jednostki. **Drobne poprawki / aktualizacje / wsparcie → § 682 (Usługi informatyczne).** Test: czy efektem prac jest odrębne aktywo lub ulepszenie istniejącego ŚT/WNiP? `references/klasyfikacja-budzetowa.md` Pułapka 3. | F4 |
+| 11 | „Hosting + drobna rozbudowa wpiszę w jednej pozycji § 682" | **Rozdziel pozycje.** Hosting → § 682 (bieżący). Rozbudowa → § 720 (majątkowy) — jeśli to istotne wytworzenie aktywa. Mieszanie B i M w jednym wierszu = błąd klasyfikacji = ryzyko zarzutu DFP. `references/klasyfikacja-budzetowa.md` Pułapka 5. | F4 |
+| 12 | „Klasyfikacja: tylko paragraf wystarczy" | **Pełna ścieżka część → dział → rozdział → § → typ B/M → grupa BP** jest WYMAGANA. Niepełna klasyfikacja = ryzyko zarzutu naruszenia DFP (art. 5–18a ustawy z 17.12.2004 r.). Grupa BP: 3 (bieżące, paragrafy 600–699/770–799) albo 4 (majątkowe, paragrafy 700–769). Cz. IV.1–4. | F4 |
+| 21 | „Sprzęt CEZOL/CEOZO operacyjny → § 704 (specjalistyczny bezpieczeństwa)" | **§ 704 wymaga uzasadnienia operacyjnego per pozycja.** BIŁ KG PSP ostrzega: *„Serwer administracyjny ujęty w 704001 bez uzasadnienia operacyjnego"* — to typowy błąd kontrolny. **§ 704 zarezerwowany dla sprzętu do zadań operacyjnych PSP** (dyspozytorski, łączność krytyczna, sprzęt zintegrowany z systemami ratowniczymi). Sprzęt administracyjny (serwery aplikacyjne, stacje robocze biurowe) → § 702. **Walidator wymaga: jeśli § 704, sekcja uzasadnienia musi zawierać frazę „zadanie operacyjne"/„sprzęt specjalistyczny"/„dyspozytorski"/„łączność krytyczna".** `references/klasyfikacja-budzetowa.md` Pułapka 8. | F4 → F5 |
 
 ## 3. Wymówki dotyczące uzasadnienia (faza F5)
 
@@ -58,15 +63,16 @@ description: Pełna tabela 20 wymówek agenta przy przygotowywaniu wniosku finan
 >
 > **Każda kwota w raport.md musi mieć dowód** (netto, kurs, VAT/RC, podstawę klasyfikacji, podstawę prawną). Bez dowodu = pozycja nie istnieje. Cz. III.0 + Cz. IV.3.c + Cz. X.2.
 
-## 6. Wzorcowe sytuacje „spirit vs letter"
+## 6. Wzorcowe sytuacje „spirit vs letter" (klasyfikacja 2027+)
 
 | Sytuacja | „Spirit" (intencja) | „Letter" (forma) | Decyzja |
 |---|---|---|---|
 | Pozycja 99 999 zł brutto | Próg 100k nie przekroczony | Praktycznie 100k | **Załącz opinię MSWiA proaktywnie** (bezpieczna interpretacja). |
-| Subskrypcja 3-letnia 50k zł netto/rok | Wieloletnia → przypomina WNiP | Każdy rok osobno fakturowany | **§ 4300 dla każdego roku.** Nie § 6060. |
-| Pentest po dużym update + cykl roczny | Dwa pentesty w roku | Charakter ten sam (cykliczny) | **Obie pozycje § 4390** (cykliczne). § 6050 tylko dla pentestu PRZED odbiorem nowego systemu. |
-| Stacja robocza 9 990 zł netto | Bardzo blisko progu 10k | Netto < 10k | **§ 4210** (materiał). Nie § 6060. Trzymaj się litery progu. |
-| LLM API 100 zł/m-c bazowo + szacowane 500 zł/m-c overage | Bazowe drobne | Rzeczywiste znaczne | **Wpisz obie pozycje:** bazową (4300, 1 200 zł/rok) + rezerwa overage (4300, 6 000 zł/rok). |
+| Subskrypcja 3-letnia 50k zł netto/rok | Wieloletnia → przypomina WNiP | Każdy rok osobno fakturowany, bez przeniesienia praw | **§ 682 (Usługi informatyczne) dla każdego roku.** Nie § 711/712. Test: czy KG PSP zachowa prawo po wygaśnięciu umowy? NIE → § 682. |
+| Pentest po dużym update + cykl roczny | Dwa pentesty w roku | Charakter ten sam (cykliczny) | **Obie pozycje § 677** (ekspertyzy/analizy/opinie). **§ 720 (Inwestycje) tylko dla pentestu PRZED odbiorem nowego systemu** jako koszt wytworzenia. |
+| Laptop 5 000 zł netto — co z klasyfikacją? | Wartość niska — pewnie materiał | Polityka rachunkowości KG PSP decyduje | **Sprawdź politykę rachunkowości u BF-I.** Trzy scenariusze 2027+: ŚT amort. jednorazowo → § 701; ŚT amort. wieloletnio → § 702 (702002); wyposażenie nietworzące ŚT → § 778 (778005/778009). **Próg 10k zlikwidowany** (Dz.U. 2026 poz. 582). |
+| LLM API 100 zł/m-c bazowo + szacowane 500 zł/m-c overage | Bazowe drobne | Rzeczywiste znaczne | **Wpisz obie pozycje:** bazową (§ 682, 1 200 zł/rok) + rezerwa overage (§ 682, 6 000 zł/rok). |
+| Serwer rack 80 000 zł — sprzęt CEZOL operacyjny | Operacyjny PSP → § 704? | Czy faktycznie zadanie operacyjne? | **Jeśli serwer aplikacyjny administracyjny (nawet CEZOL) → § 702 (702002).** § 704001 tylko gdy sprzęt **zintegrowany z systemami ratowniczymi / dyspozytorski / łączność krytyczna**. Uzasadnij operacyjność w opisie pozycji. |
 
 ## 7. Stop-list — co zatrzymuje cały proces
 

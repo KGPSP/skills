@@ -8,10 +8,10 @@ Przekształca surowe dane wejściowe o systemie IT (faktury, subskrypcje, plany 
 
 1. **Metryczka systemu** (Cz. I materiału).
 2. **Pełny kosztorys TCO** w PLN BRUTTO (Cz. III) — z VAT, reverse charge dla usług zagranicznych, kursem NBP, rezerwami.
-3. **Klasyfikacja UFP** (Cz. IV) — część → dział → rozdział → § → typ B/M.
+3. **Klasyfikacja UFP 2027+** (Dz.U. 2026 poz. 582) — część → dział → rozdział → § 3-cyfrowy → typ B/M → grupa BP. **Stosowana od planowania budżetu 2027** (rozp. MFiG z 20.04.2026: paragrafy 3-cyfrowe 631/634/638/670/677/681/682/687/770/771/778 bieżące + 701/702/703/704/711/712/720 majątkowe, **bez progu 10 000 zł**, załącznik nr 4 dla PSP).
 4. **8-punktowe uzasadnienie per pozycja** (Cz. X.2) — wymóg MSWiA do POLiOC.
 5. **Tabela markdown w układzie XLSX 1:1** z `Propozycja zadań do POLiOC 2027-2031 cz.42.xlsx` (Cz. X.1).
-6. **Walidacja** automatycznym skryptem (`scripts/check-cost-plan.sh`).
+6. **Walidacja** automatycznym skryptem (`scripts/check-cost-plan.sh`) — 9 sprawdzeń, w tym egzekwowanie uzasadnienia operacyjnego dla § 704 (specjalistyczny sprzęt bezpieczeństwa publicznego).
 
 Główny deliverable: **raport.md** (`raport-<system>-<RRRR-MM-DD>.md`) — kopiujesz sekcję 7 (tabela) do Excela i załączasz raport jako uzasadnienie.
 
@@ -50,9 +50,9 @@ planowanie-wydatkow-it-psp/
 │   ├── raport-skeleton.md                # szkielet raport.md (sekcje 1-9)
 │   └── tabela-xlsx-uklad.md              # wzór tabeli XLSX A-L (kopiowanie 1:1 do Excela)
 └── tests/fixtures/
-    ├── good-plan.md                      # tryb A, kompletny → exit 0 (8 ✔)
-    ├── good-plan-tryb-c.md               # tryb C (4-pkt schemat) → exit 0 (6 ✔)
-    └── bad-plan.md                       # 8 zaprojektowanych błędów → exit 1 (10 wykrytych)
+    ├── good-plan.md                      # tryb A, CEOZO 2027+, kompletny → exit 0 (8 ✔)
+    ├── good-plan-tryb-c.md               # tryb C, Service Desk 2027+ → exit 0 (6 ✔)
+    └── bad-plan.md                       # CEZOL 2027+ z błędami → exit 1 (12 wykrytych)
 ```
 
 ## Test walidatora
@@ -65,7 +65,7 @@ sh scripts/check-cost-plan.sh --plan tests/fixtures/good-plan-tryb-c.md --tryb C
 # Exit 0 — ✔ all checks passed (6 ✔)
 
 sh scripts/check-cost-plan.sh --plan tests/fixtures/bad-plan.md --tryb A
-# Exit 1 — ✘ FAILED: 10 błędów
+# Exit 1 — ✘ FAILED: 12 błędów (legacy 4xxx, brak uzasadnienia § 704, kurs, MSWiA, plan utrzymania, RC, suma G..L, brak punktów uzasadnienia)
 ```
 
 ## Workflow (skrót)
@@ -85,4 +85,4 @@ sh scripts/check-cost-plan.sh --plan tests/fixtures/bad-plan.md --tryb A
 
 ## Wersja
 
-v1.0.1 (2026-05-25)
+v1.1.0 (2026-05-25) — **migracja na klasyfikację UFP 2027+** (Dz.U. 2026 poz. 582)

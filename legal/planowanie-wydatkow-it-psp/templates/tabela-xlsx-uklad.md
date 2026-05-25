@@ -12,7 +12,7 @@
 | B | **Nazwa zadania** | Nazwa funkcjonalna (agregat) | `Utrzymanie CEOZO` |
 | C | **Dział** | 752 (tryb A) / 754 (tryb B/C) | `752` |
 | D | **Rozdział** | 75282 (A) / 75414 (B) / 75409 (C) | `75282` |
-| E | **§** | Paragraf (4210/4260/4300/4350/4360/4390/4700/6050/6060) — **nigdy 4000** | `4300` |
+| E | **§** | Paragraf 3-cyfrowy 2027+ (Dz.U. 2026 poz. 582): 631/634/638/670/677/681/682/687/770/771/778 (bieżące, grupa BP 3) lub 701/702/703/704/711/712/720 (majątkowe, grupa BP 4) — **nigdy 4-cyfrowy legacy (4xxx/6xxx)**, **§ 704 wymaga uzasadnienia operacyjnego** | `682` lub `702` lub `720` |
 | F | **Kwota brutto [zł]** | Suma roczna w PLN brutto (z VAT/RC, z rezerwami jeśli wliczone) | `1 080 000` |
 | G | **KG PSP** | Alokacja KG PSP | `1 080 000` |
 | H | **Akademia** | Akademia PSP | `0` |
@@ -37,21 +37,21 @@
 **Walidacja:** sum(G..L) = F dla każdego wiersza? [TAK/NIE]
 ```
 
-## Przykład wypełnienia — CEOZO (tryb A)
+## Przykład wypełnienia — CEOZO (tryb A, klasyfikacja 2027+)
 
 | Pod-obszar | Nazwa zadania | Dział | Rozdział | § | Kwota brutto [zł] | KG PSP | Akademia | CS Czstch | SA Krk | SA Pzn | SP Bdg |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 5E | Utrzymanie CEOZO | 752 | 75282 | 4300 | 1 080 000 | 1 080 000 | 0 | 0 | 0 | 0 | 0 |
-| 5E | Budowa, rozbudowa CEOZO | 752 | 75282 | 6060 | 1 500 000 | 1 500 000 | 0 | 0 | 0 | 0 | 0 |
+| 5E | Utrzymanie CEOZO | 752 | 75282 | 682 | 1 080 000 | 1 080 000 | 0 | 0 | 0 | 0 | 0 |
+| 5E | Budowa, rozbudowa CEOZO (wytworzenie WNiP) | 752 | 75282 | 720 | 1 500 000 | 1 500 000 | 0 | 0 | 0 | 0 | 0 |
 
 **Suma F razem:** 2 580 000 zł
 **Walidacja:** sum(G..L) = F dla każdego wiersza? **TAK** (oba wiersze: 1 080 000 = 1 080 000; 1 500 000 = 1 500 000).
 
-## Przykład wypełnienia — alokacja rozproszona (gdy zadanie obejmuje szkoły)
+## Przykład wypełnienia — alokacja rozproszona (gdy zadanie obejmuje szkoły, 2027+)
 
 | Pod-obszar | Nazwa zadania | Dział | Rozdział | § | Kwota brutto [zł] | KG PSP | Akademia | CS Czstch | SA Krk | SA Pzn | SP Bdg |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 6E | Platforma e-learning portfela PSP | 752 | 75282 | 4300 | 600 000 | 200 000 | 100 000 | 100 000 | 100 000 | 50 000 | 50 000 |
+| 6E | Platforma e-learning portfela PSP | 752 | 75282 | 682 | 600 000 | 200 000 | 100 000 | 100 000 | 100 000 | 50 000 | 50 000 |
 
 **Walidacja:** 200 000 + 100 000 + 100 000 + 100 000 + 50 000 + 50 000 = 600 000 ✔
 

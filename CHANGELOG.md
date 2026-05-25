@@ -2,6 +2,28 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-25] legal/planowanie-wydatkow-it-psp — **migracja na klasyfikację UFP 2027+** (v1.1.0)
+
+### Changed (BREAKING)
+
+- **Pełna migracja klasyfikacji UFP** na nową klasyfikację stosowaną od planowania budżetu 2027 wg **rozporządzenia MFiG z 20.04.2026 (Dz.U. 2026 poz. 582)** i ustawy z 27.02.2026 (Dz.U. 2026 poz. 426). Paragrafy 3-cyfrowe (631/634/638/670/677/681/682/687/770/771/778 bieżące + 701/702/703/704/711/712/720 majątkowe) zamiast 4-cyfrowych legacy (4xxx/6xxx).
+- **Próg 10 000 zł zlikwidowany** — polityka rachunkowości jednostki decyduje o kwalifikacji wydatku majątkowego, nie kwota.
+- **Załącznik nr 4** (szczegółowość bezpieczeństwa wewnętrznego PSP): 631003, 634003/4, 670001, 687011, 702001/2, 704001, 712001/2, 778005/8/9.
+- Pełny rewrite `references/klasyfikacja-budzetowa.md`: nowe matryce paragrafów (§5/§6), załącznik nr 4 (§7), 9 pułapek klasyfikacyjnych, klucz przejścia stara→nowa (§10).
+- Migracja wszystkich pozostałych `references/`: katalog kosztów (15 sekcji A–O), przeliczenia walut/VAT, uzasadnienie 8-pkt (przykłady CEOZO § 682/720), polioc-ramy, anti-rationalization (nowa wymówka #21 dla § 704).
+
+### Added
+
+- **Walidator `check-cost-plan.sh` sprawdzenie 9 (nowe)** — egzekwowanie uzasadnienia operacyjnego dla pozycji w § 704 (specjalistyczny sprzęt bezpieczeństwa publicznego). Wymagane frazy w raport.md: „zadanie operacyjne" / „sprzęt specjalistyczny" / „dyspozytorski" / „łączność krytyczna" / „system ratowniczy" / „operacyjne PSP" (zgodnie z decyzją z dialogu: walidator egzekwuje uzasadnienie per pozycja).
+- **Walidator — rozszerzona detekcja legacy** (sprawdzenie 1): paragrafy 4-cyfrowe (4xxx/6xxx) zamiast tylko § 4000.
+- **Walidator — plan utrzymania ≥ 5 lat** (sprawdzenie 5): rozszerzone na nowe paragrafy majątkowe 2027+ (700–729).
+- Wszystkie 3 fixtures zmigrowane na klasyfikację 2027+: GOOD A → exit 0/8✔, GOOD C → exit 0/6✔, BAD → exit 1/12 błędów.
+- `legal-tools` plugin → **v1.3.0**, `marketplace.json` root → **v1.7.0**.
+
+### Why
+
+POLiOC 2027–2031 obejmuje cały okres **nowej klasyfikacji** stosowanej od planowania budżetu 2027 (Dz.U. 2026 poz. 582 wszedł w życie 29.04.2026). Skill v1.0.1 używał starej klasyfikacji (4xxx/6xxx z art. 16d CIT, próg 10k) — był nieaktualny dla okresu planowania, do którego jest przeznaczony. Migracja oparta na analizie BIŁ KG PSP (`Analiza_klasyfikacji_IT_KG_PSP_2027_BIL.docx`) i materiale edukacyjnym (`Material_edukacyjny_Finanse_publiczne_2026_BIL_KG_PSP.docx`) — stan 21.05.2026, wersja 1.0.
+
 ## [2026-05-25] legal/planowanie-wydatkow-it-psp — code review fixes (v1.0.1)
 
 ### Fixed (z code review)

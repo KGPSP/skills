@@ -43,24 +43,30 @@
 - **Obszar POLiOC (tryb A/B):** [4 Łączność/wykrywanie/alarmowanie / 5 Infrastruktura ochronna / 6 Edukacja / ...]
 - **Podobszar POLiOC:** [4e Bezpieczeństwo teleinformatyczne / 5e Pozostałe infrastruktury ochronnej / ...]
 
-## 4. Lista pozycji per sekcja katalogu (z alokacją A/B/C)
+## 4. Lista pozycji per sekcja katalogu (z alokacją A/B/C, klasyfikacja 2027+)
 
-| Pozycja | Sekcja katalogu | A/B/C | Typ (CAPEX/OPEX) | § | Uwagi |
+| Pozycja | Sekcja katalogu | A/B/C | Typ (CAPEX/OPEX) | § (2027+) | Uwagi |
 |---|---|---|---|---|---|
-| [np. Hosting niejawny NASK] | B | A | OPEX | 4300 | warstwa niejawna |
-| [np. Cloudflare WAF/CDN] | D | C | OPEX | 4300 | platformowy — klucz alokacji: ruch |
-| [np. Pentest cykliczny] | I/D | A | OPEX | 4390 | rocznie |
+| [np. Hosting niejawny NASK] | B | A | OPEX | 682 | warstwa niejawna |
+| [np. Cloudflare WAF/CDN] | D | C | OPEX | 682 | platformowy — klucz alokacji: ruch |
+| [np. Pentest cykliczny] | I/D | A | OPEX | 677 | rocznie |
+| [np. Serwer rack jako ŚT] | B | A | CAPEX | 702 | sprzęt IT administracyjny |
+| [np. Specjalistyczny sprzęt łączności krytycznej] | C/D | A | CAPEX | 704 | **WYMAGA uzasadnienia operacyjnego** |
+| [np. Wytworzenie nowego modułu] | H/L | A | CAPEX | 720 | inwestycja |
 | ... | ... | ... | ... | ... | ... |
 
 **Małe koszty — checklist** (`references/male-koszty-checklist.md` §1): przejrzane, status każdej z 19 pozycji [TAK/NIE/N/D].
 
-## 5. Tabela kosztorysu szczegółowa III.B (PLN BRUTTO)
+## 5. Tabela kosztorysu szczegółowa III.B (PLN BRUTTO, klasyfikacja 2027+)
 
-| Pozycja (z Cz. II) | Sekcja | C/O | Jednostka | Liczba | Koszt netto PLN | Kurs | VAT/RC | Koszt mies. brutto | **Koszt roczny brutto** | Część | Dział | Rozdz. | § | B/M | Uwagi |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| [np. Hosting niejawny NASK] | B | O | mies. | 1 | [wartość] | — | 23% | [obl.] | **[obl.]** | 42 | 752 | 75282 | 4300 | B | [komentarz] |
-| [np. Google Maps] | G | O | rok | 1 | [waluta] | 4,00 NBP RRRR-MM-DD | RC 23% | — | **[obl.]** | 42 | 752 | 75282 | 4300 | B | usługa zagraniczna |
-| ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... |
+| Pozycja (z Cz. II) | Sekcja | C/O | Jednostka | Liczba | Koszt netto PLN | Kurs | VAT/RC | Koszt mies. brutto | **Koszt roczny brutto** | Część | Dział | Rozdz. | § (2027+) | B/M | Grupa BP | Uwagi |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| [np. Hosting niejawny NASK] | B | O | mies. | 1 | [wartość] | — | 23% | [obl.] | **[obl.]** | 42 | 752 | 75282 | 682 | B | 3 | usługi informatyczne |
+| [np. Google Maps] | G | O | rok | 1 | [waluta] | 4,00 NBP RRRR-MM-DD | RC 23% | — | **[obl.]** | 42 | 752 | 75282 | 682 | B | 3 | usługa zagraniczna RC |
+| [np. Pentest cykliczny] | I | O | rok | 1 | [wartość] | — | 23% | — | **[obl.]** | 42 | 752 | 75282 | 677 | B | 3 | ekspertyza/analiza |
+| [np. Serwer rack ŚT wieloletni] | B | C | szt. | N | [wartość] | — | 23% | — | **[obl.]** | 42 | 752 | 75282 | 702 | M | 4 | 702002 sprzęt informatyczny |
+| [np. Wytworzenie nowego modułu] | H | C | pakiet | 1 | [wartość] | — | 23% | — | **[obl.]** | 42 | 752 | 75282 | 720 | M | 4 | inwestycja — WNiP |
+| ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... | ... |
 
 ## 6. Uzasadnienia 8-punktowe per pozycja
 
@@ -128,8 +134,8 @@
 
 | Podobszar | Nazwa zadania | Dział | Rozdział | § | Kwota brutto [zł] | KG PSP | Akademia | CS Czstch | SA Krk | SA Pzn | SP Bdg |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| [5E] | [np. Utrzymanie CEOZO] | 752 | 75282 | 4300 | 1 080 000 | 1 080 000 | 0 | 0 | 0 | 0 | 0 |
-| [5E] | [np. Budowa CEOZO] | 752 | 75282 | 6060 | 1 500 000 | 1 500 000 | 0 | 0 | 0 | 0 | 0 |
+| [5E] | [np. Utrzymanie CEOZO] | 752 | 75282 | 682 | 1 080 000 | 1 080 000 | 0 | 0 | 0 | 0 | 0 |
+| [5E] | [np. Budowa CEOZO (wytworzenie WNiP)] | 752 | 75282 | 720 | 1 500 000 | 1 500 000 | 0 | 0 | 0 | 0 | 0 |
 
 **Suma F razem:** [suma w zł]
 **Walidacja:** sum(G..L) = F dla każdego wiersza? [TAK/NIE]
@@ -162,7 +168,8 @@ DoD checklist (zaznacz ✔):
 | Akt | ELI / Cytowanie | Status |
 |---|---|---|
 | Ustawa o finansach publicznych — tekst jednolity | DU/2025/1483 | obowiązujący |
-| Rozporządzenie klasyfikacja dochodów/wydatków | DU/2026/582 | obowiązujący (IN_FORCE od 29.04.2026) |
+| **Ustawa z 27.02.2026 o zmianie ufp** (nowa delegacja art. 39 ust. 4–5 ufp) | **DU/2026/426** | **obowiązujący od 14.04.2026** |
+| **Rozporządzenie MFiG z 20.04.2026 — klasyfikacja szczegółowa (paragrafy 3-cyfrowe)** | **DU/2026/582** | **obowiązujący od 29.04.2026 (stosowanie do planowania 2027+)** |
 | Rozporządzenie klasyfikacja części budżetowych | DU/2025/1185 | obowiązujący |
 | Ustawa OLiOC | DU/2024/1907 + DU/2025/1705 | obowiązujący od 1.01.2025 |
 | Projekt Programu OLiOC 2027–2031 v17 | MSWiA, w uzgodnieniach (RRRR-MM-DD) | projekt |

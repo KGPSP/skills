@@ -88,12 +88,12 @@ Kwota_PLN_brutto = (Cena_netto × Kurs) × (1 + Stawka_VAT)
 
 ## E. Rezerwy — trzy kategorie (Cz. O katalogu)
 
-| Rezerwa | Wysokość | Charakter | § |
+| Rezerwa | Wysokość | Charakter | § (2027+) |
 |---|---|---|---|
-| **Utrzymaniowa** | 10–20% OPEX | Pokrycie wzrostu cen, dodatkowych zgłoszeń, awarii | macierzysty (np. 4300) lub 4810 |
-| **Kursowa** | 10–15% pozycji walutowych | Wahania kursu USD/EUR (różnice kursowe) | macierzysty (np. 4300) |
-| **Overage API** | 10–20% bazowych zapytań | Przekroczenia limitów (mapy, LLM, SMS, e-mail transakcyjny) | 4300 |
-| Rozwojowa | 5–15% CAPEX | Zmiany prawne/funkcjonalne | 6050 lub 4810 |
+| **Utrzymaniowa** | 10–20% OPEX | Pokrycie wzrostu cen, dodatkowych zgłoszeń, awarii | macierzysty (najczęściej **682**) lub **810** |
+| **Kursowa** | 10–15% pozycji walutowych | Wahania kursu USD/EUR (różnice kursowe) | macierzysty (najczęściej **682**) |
+| **Overage API** | 10–20% bazowych zapytań | Przekroczenia limitów (mapy, LLM, SMS, e-mail transakcyjny) | **682** |
+| Rozwojowa | 5–15% CAPEX | Zmiany prawne/funkcjonalne | **720** lub **810** |
 
 > **Rezerwa = osobna pozycja**, nie wliczaj w cenę bazową. Wtedy w sprawozdaniu widać rzeczywiste wykorzystanie.
 
@@ -131,25 +131,34 @@ Kwota_PLN_brutto = (Cena_netto × Kurs) × (1 + Stawka_VAT)
 | Rezerwa overage 30% (osobna pozycja) | 7 380 × 0,30 | **2 214 PLN brutto** |
 | **Suma do wniosku** | | **9 594 PLN brutto** |
 
-### Przykład 4 — stacja robocza ≥ 10k netto
+### Przykład 4 — stacja robocza ujęta jako ŚT amortyzowany wieloletnio (2027+)
 
-**Wejście:** Stacja robocza 15 000 zł netto / sztuka, polski dostawca, VAT 23%.
+**Wejście:** Stacja robocza 15 000 zł netto / sztuka, polski dostawca, VAT 23%, polityka rachunkowości KG PSP: ujmowana jako ŚT amortyzowany wieloletnio.
 
 | Krok | Obliczenie | Wynik |
 |---|---|---|
 | Brutto | 15 000 × 1,23 | **18 450 PLN brutto** |
-| Klasyfikacja | netto ≥ 10k, okres > 1r | **§ 6060 (środek trwały, majątkowy)** |
+| Klasyfikacja | ŚT amortyzowany wieloletnio | **§ 702 (702002 — Sprzęt informatyczny)** — wydatek majątkowy, grupa BP 4 |
 
-### Przykład 5 — stacja robocza < 10k netto
+### Przykład 5 — laptop ujęty jako ŚT amortyzowany jednorazowo (2027+)
 
-**Wejście:** Stacja robocza 8 000 zł netto / sztuka, polski dostawca, VAT 23%.
+**Wejście:** Laptop 5 000 zł netto / sztuka, polski dostawca, VAT 23%, polityka rachunkowości KG PSP: ujmowany jako ŚT amortyzowany jednorazowo.
 
 | Krok | Obliczenie | Wynik |
 |---|---|---|
-| Brutto | 8 000 × 1,23 | **9 840 PLN brutto** |
-| Klasyfikacja | netto < 10k | **§ 4210 (materiał, bieżący)** |
+| Brutto | 5 000 × 1,23 | **6 150 PLN brutto** |
+| Klasyfikacja | ŚT amortyzowany jednorazowo | **§ 701 (Środki trwałe amortyzowane jednorazowo)** — wydatek majątkowy, grupa BP 4 |
 
-> **Uwaga:** brutto > 10k nie zmienia klasyfikacji — próg dotyczy netto.
+### Przykład 6 — laptop ujęty jako wyposażenie nietworzące ŚT (2027+)
+
+**Wejście:** Laptop 5 000 zł netto / sztuka, polski dostawca, VAT 23%, polityka rachunkowości KG PSP: ujmowany jako wyposażenie nietworzące ŚT.
+
+| Krok | Obliczenie | Wynik |
+|---|---|---|
+| Brutto | 5 000 × 1,23 | **6 150 PLN brutto** |
+| Klasyfikacja | Wyposażenie nietworzące ŚT | **§ 778 (778005 lub 778009)** — wydatek bieżący, grupa BP 3 |
+
+> **❗ KLUCZOWA ZMIANA 2027+ (Dz.U. 2026 poz. 582):** Próg 10 000 zł zlikwidowany. Klasyfikacja zależy od **polityki rachunkowości jednostki**, nie kwoty. Patrz `references/klasyfikacja-budzetowa.md` Pułapka 4. Te same 5 000 zł netto → § 701, § 702 albo § 778 zależnie od decyzji rachunkowej.
 
 ## G. Checklist przed F4 (Classify)
 

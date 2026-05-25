@@ -6,7 +6,7 @@
     "email": "claude@kg.straz.gov.pl"
   },
   "description": "Katalog skilli Claude Code KG PSP: Prawo Zamówień Publicznych (PZP), opinie prawne oraz narzędzia developerskie dla agentów AI.",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "plugins": [
     {
       "name": "pzp-tools",
@@ -16,7 +16,7 @@
     {
       "name": "legal-tools",
       "source": "./legal",
-      "description": "Narzędzia prawne i finansowe: opinie prawne z cytowaniem źródeł (opinie-prawne), komunikacja z urzędowym źródłem prawa RP przez Sejm ELI API (sejm-eli-api), planowanie wydatków IT KG PSP z 8-punktowym uzasadnieniem POLiOC i pełną klasyfikacją UFP (planowanie-wydatkow-it-psp). 3 skille."
+      "description": "Narzędzia prawne i finansowe: opinie prawne z cytowaniem źródeł (opinie-prawne), komunikacja z urzędowym źródłem prawa RP przez Sejm ELI API (sejm-eli-api), planowanie wydatków IT KG PSP z klasyfikacją UFP 2027+ (Dz.U. 2026 poz. 582 — paragrafy 3-cyfrowe + załącznik nr 4 PSP, bez progu 10k) i 8-punktowym uzasadnieniem POLiOC (planowanie-wydatkow-it-psp). 3 skille."
     },
     {
       "name": "dev-tools",

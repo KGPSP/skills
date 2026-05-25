@@ -14,6 +14,8 @@ description: Ramy Programu Ochrony Ludności i Obrony Cywilnej 2027–2031 — f
 > **Źródło:** Projekt POLiOC 2027–2031 v17 (MSWiA, w uzgodnieniach na 2026-05-25). Plik: `now_skille/materialy_polioc/Projekt-Programu-OLiOC-2027-2031-v17.DOCX`.
 >
 > **Status:** Projekt w procesie uzgodnieniowym (MON + KW Rządu i ST). Wartości i klasyfikacje wiążące dla danego roku budżetowego; dla kolejnych lat — prognozy.
+>
+> **Klasyfikacja UFP:** POLiOC 2027–2031 dotyczy planowania budżetu **2027+**, więc **wszystkie wnioski używają NOWEJ klasyfikacji** wg Dz.U. 2026 poz. 582 (rozporządzenie MFiG z 20.04.2026). Paragrafy 3-cyfrowe (682, 702, 704, 711, 712, 720, 778 itd.), bez progu 10 000 zł, z załącznikiem nr 4 dla bezpieczeństwa wewnętrznego PSP. Szczegóły: `references/klasyfikacja-budzetowa.md`.
 
 ## 1. Podstawa i mechanizm finansowania
 
@@ -155,6 +157,7 @@ Zawartość:
 ## 9. Stan na 2026-05-25 — co śledzić
 
 - **Projekt POLiOC v17** jest w uzgodnieniach (MON + KW Rządu i ST). Wartości mogą się zmienić przed uchwałą RM.
-- **Plik źródłowy XLSX** `Propozycja zadań do POLiOC 2027-2031 cz.42.xlsx` używa `§ 4000` (placeholder) — zastąp szczegółowym przed złożeniem.
+- **Reforma klasyfikacji UFP**: Dz.U. 2026 poz. 582 (rozp. MFiG z 20.04.2026) wprowadza nową klasyfikację stosowaną **od planowania budżetu 2027** — wszystkie wnioski POLiOC 2027–2031 muszą używać nowych paragrafów 3-cyfrowych.
+- **Plik źródłowy XLSX** `Propozycja zadań do POLiOC 2027-2031 cz.42.xlsx` używa `§ 4000` (placeholder dla starej klasyfikacji) — **zastąp paragrafem 3-cyfrowym 2027+** (682/702/704/711/712/720/778/...) przed złożeniem. Klucz przejścia: `references/klasyfikacja-budzetowa.md` §10.
 - **Ścieżka uchwalenia** — uchwała Rady Ministrów (kompetencja z art. 156 OLiOC). Po uchwale: roczne aktualizacje przez MSWiA.
-- **Sprawdzaj zmiany w projekcie** — śledź wersje DOCX w `now_skille/materialy_polioc/`.
+- **Sprawdzaj zmiany w projekcie** — śledź wersje DOCX w `now_skille/materialy_polioc/` oraz materiały reformy klasyfikacji w `now_skille/materialy_polioc/FINANSOWANIE/`.

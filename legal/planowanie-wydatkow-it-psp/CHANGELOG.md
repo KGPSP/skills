@@ -4,6 +4,51 @@ Wszystkie istotne zmiany w tym skillu są dokumentowane w tym pliku.
 
 Format wzorowany na [Keep a Changelog](https://keepachangelog.com/pl/1.1.0/).
 
+## [v1.1.0] — 2026-05-25 — **MIGRACJA NA KLASYFIKACJĘ 2027+**
+
+### Changed (BREAKING — pełna migracja klasyfikacji UFP)
+
+- **Klasyfikacja UFP — pełna migracja na stan 2027+** wg rozporządzenia MFiG z 20.04.2026 (Dz.U. 2026 poz. 582) i ustawy z 27.02.2026 (Dz.U. 2026 poz. 426).
+- **Paragrafy 3-cyfrowe** (struktura 3+1: 3 cyfry przedmiot + 4. cyfra źródło/przeznaczenie) zamiast 4-cyfrowych legacy (4xxx/6xxx). Migracja zgodnie z analizą BIŁ KG PSP (`Analiza_klasyfikacji_IT_KG_PSP_2027_BIL.docx`).
+- **Próg 10 000 zł ZLIKWIDOWANY** dla wydatków majątkowych. O kwalifikacji decyduje **polityka rachunkowości jednostki**, nie kwota. Pułapka 4 w `references/klasyfikacja-budzetowa.md` całkowicie przebudowana.
+- **Załącznik nr 4** (większa szczegółowość bezpieczeństwa wewnętrznego PSP) — dodano pozycje 631003, 634003/4, 670001, 687011, 702001/2, 704001, 712001/2, 778005/8/9.
+- **5 grup wydatków BP** (art. 124 ufp po zmianie) zamiast 7 — grupa 3 (bieżące, paragrafy 600–699/770–799) i grupa 4 (majątkowe, paragrafy 700–769) dla IT.
+- Pełny rewrite `references/klasyfikacja-budzetowa.md` (208 → ~250 linii): nowe matryce paragrafów (§5/§6), załącznik nr 4 (§7), 9 pułapek klasyfikacyjnych (§8), klucz przejścia stara→nowa (§10), cheatsheet BIŁ (§12).
+- Aktualizacja `references/katalog-kosztow.md`: kolumna `§` we wszystkich 15 sekcjach A–O zmigrowana na paragrafy 2027+ (np. hosting 4300 → 682, ŚT 6060 → 702/701/704/711/712, wytworzenie 6050 → 720, materiały 4210 → 778, telekom 4350/4360 → 681/631003, ekspertyzy 4390 → 677, szkolenia 4700 → 638, zlecenia 4170 → 670).
+- Aktualizacja `references/przeliczenia-walut-vat.md`: przykłady stacji roboczych z trzema scenariuszami (§ 701/702/778 zależnie od polityki rachunkowości), rezerwy w § 682/810.
+- Aktualizacja `references/uzasadnienie-8pkt.md`: przykłady CEOZO (§ 682 utrzymanie, § 720 budowa), punkt 7 (okres używania) rozszerzony z § 6050/6060 na paragrafy 700–769.
+- Aktualizacja `references/anti-rationalization.md`: wymówki #5/6/7/8 zmigrowane na 2027+, **nowa wymówka #21** „Sprzęt CEZOL/CEOZO → § 704 (specjalistyczny) bez uzasadnienia operacyjnego" (BIŁ ostrzega: serwer administracyjny w 704001 bez uzasadnienia = błąd kontrolny). Tabela 6 (spirit vs letter) przebudowana — 5 sytuacji z nową klasyfikacją.
+- Aktualizacja `references/polioc-ramy.md`: adnotacja o stosowaniu nowej klasyfikacji do POLiOC 2027–2031, § 4000 nadal placeholder w XLSX (do zastąpienia 3-cyfrowym).
+- Aktualizacja `SKILL.md`: F4 (Classify) — nowa skrócona matryca paragrafów 2027+ (16 wierszy: 682/681/631/677/634/778/770/771/638/670/687 bieżące + 701/702/704/711/712/720 majątkowe), Anti-Rationalization quick-table — wymówki #5/6/7/8/9 zaktualizowane, DoD checklist — 6 kolumn klasyfikacji (część/dział/rozdział/§ 3-cyfrowy/B/M/grupa BP), nowa pozycja DoD dla § 704 (uzasadnienie operacyjne).
+- Aktualizacja `templates/raport-skeleton.md` + `templates/tabela-xlsx-uklad.md`: przykłady z paragrafami 2027+ (682, 702, 720), kolumna „§" w tabeli III.B opisana jako 3-cyfrowa, nowa kolumna „Grupa BP" (3/4).
+
+### Added
+
+- **`scripts/check-cost-plan.sh` (sprawdzenie 9 — nowe)** — egzekwowanie uzasadnienia operacyjnego dla pozycji w § 704 (specjalistyczny sprzęt bezpieczeństwa publicznego). Wymagane frazy w raport.md: „zadanie operacyjne" / „sprzęt specjalistyczny" / „dyspozytorski" / „łączność krytyczna" / „system ratowniczy" / „operacyjne PSP". Realizuje decyzję z code review: „walidator wymaga uzasadnienia per pozycja".
+- **`scripts/check-cost-plan.sh` (sprawdzenie 1 — rozszerzone)** — detekcja paragrafów 4-cyfrowych legacy (4xxx/6xxx) zamiast tylko § 4000. Regex `§[[:space:]]*[46][0-9]{3}\b` + awk per kolumna tabeli. Każdy paragraf 4-cyfrowy = błąd legacy, plan musi używać 3-cyfrowego 2027+.
+- **`scripts/check-cost-plan.sh` (sprawdzenie 5 — rozszerzone)** — plan utrzymania ≥ 5 lat dla pozycji w paragrafach majątkowych 2027+ (700–729: 701/702/703/704/711/712/720) zamiast tylko § 6050/6060.
+- Aktualizacja wszystkich 3 fixtures na klasyfikację 2027+:
+  - `good-plan.md` (tryb A, CEOZO) → exit 0, 8 ✔
+  - `good-plan-tryb-c.md` (tryb C, Service Desk) → exit 0, 6 ✔
+  - `bad-plan.md` (tryb A) → exit 1, 12 błędów (4 nowe vs v1.0.1: legacy 4-cyfrowy, brak uzasadnienia operacyjnego § 704, plus zachowane stare błędy)
+- Adnotacja w `references/polioc-ramy.md` o reformie klasyfikacji oraz w `SKILL.md` o materiałach BIŁ KG PSP (`now_skille/materialy_polioc/FINANSOWANIE/`).
+
+### Why
+
+Rozporządzenie MFiG z 20.04.2026 (Dz.U. 2026 poz. 582) **stosuje się po raz pierwszy do planowania ustawy budżetowej na 2027 r. i lata kolejne**. POLiOC 2027–2031 obejmuje cały okres nowej klasyfikacji — wszystkie wnioski składane w skillu muszą używać paragrafów 3-cyfrowych. Skill v1.0.1 używał starej klasyfikacji (4xxx/6xxx z art. 16d CIT, próg 10 000 zł) — był nieaktualny dla okresu planowania, do którego jest przeznaczony.
+
+### Decisions (z dialogu z user)
+
+- **Stara klasyfikacja usunięta całkowicie** (decyzja: „Usuń całkowicie" — Q1 dialogu) — skill obsługuje wyłącznie 2027+. Klucz przejścia 4xxx/6xxx → 3-cyfrowy zachowany jako pomoc referencyjna w `klasyfikacja-budzetowa.md` §10 dla interpretacji danych historycznych, ale matryca skilla = wyłącznie 2027+.
+- **Walidator egzekwuje uzasadnienie operacyjne dla § 704** (decyzja: „Decyzja per pozycja — walidator wymaga uzasadnienia 704" — Q2 dialogu) — sprawdzenie 9 w `check-cost-plan.sh`.
+
+### Materiał źródłowy
+
+`now_skille/materialy_polioc/FINANSOWANIE/` (gitignored, local-only):
+- `Analiza_klasyfikacji_IT_KG_PSP_2027_BIL.docx` — analiza dziedzinowa BIŁ KG PSP (stan 21.05.2026, wersja 1.0): mapowanie kategorii IT na paragrafy 2027+, schematy decyzyjne dla usług developerskich/subskrypcji/sprzętu 702 vs 704, 9 reguł szybkich decyzyjnych.
+- `Material_edukacyjny_Finanse_publiczne_2026_BIL_KG_PSP.docx` — materiał edukacyjny BIŁ KG PSP (stan 21.05.2026, wersja 1.0): kompletne kompendium reformy ustawowej + rozporządzeniowej, 5 grup wydatków BP, klucze przejścia, checklista wdrożeniowa, mini-test.
+- `ezd_359297-bf-i-rozporzadzenie-klasyfikacja-budzetowa/`: pismo BF-I.0754.12.2026 z 13.05.2026 (Zastępca KG PSP nadbryg. Paweł Frysztak) + uwagi BIŁ KG PSP do klasyfikacji 2027 + PDF rozporządzenia.
+
 ## [v1.0.1] — 2026-05-25
 
 ### Fixed (z code review)

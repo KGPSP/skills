@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "legal-tools",
-  "description": "Narzędzia prawne i finansowe: opinie prawne z cytowaniem źródeł, komunikacja z Sejm ELI API, planowanie wydatków IT KG PSP z 8-punktowym uzasadnieniem POLiOC.",
-  "version": "1.2.1",
+  "description": "Narzędzia prawne i finansowe: opinie prawne z cytowaniem źródeł, komunikacja z Sejm ELI API, planowanie wydatków IT KG PSP z klasyfikacją UFP 2027+ (Dz.U. 2026 poz. 582) i 8-punktowym uzasadnieniem POLiOC.",
+  "version": "1.3.0",
   "author": {
     "name": "Komenda Główna PSP",
     "email": "claude@kg.straz.gov.pl"

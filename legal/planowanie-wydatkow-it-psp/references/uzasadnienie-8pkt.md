@@ -96,7 +96,7 @@ System 6-stopniowy:
 
 > **OBOWIĄZKOWE: konkretna delta numeryczna.** Sformułowania typu „zwiększy zdolność" / „poprawi efektywność" są niewystarczające — wniosek wraca do uzupełnienia.
 
-### 7. OKRES UŻYWANIA (tylko dla pozycji § 6050/6060)
+### 7. OKRES UŻYWANIA (tylko dla pozycji majątkowych — grupa BP 4, paragrafy 700–769: § 701/702/703/704/711/712/720)
 
 - **Planowany okres używania:** ≥ 5 lat (wymóg pkt 184 Projektu Programu OLiOC 2027–2031)
 - **Plan utrzymania:**
@@ -124,20 +124,20 @@ Dla trybu C (754/75409, finansowanie z budżetu KG PSP, poza POLiOC) **punkty 1,
 
 - **2. Celowość** — luka, ryzyko, rezultat (zawsze).
 - **5. Kosztorys** — netto/VAT/kurs/rezerwy (zawsze).
-- **7. Okres używania** — gdy § 6050/6060 (zawsze, choć bez wymogu 5-letniego z OLiOC).
+- **7. Okres używania** — gdy pozycja majątkowa (§ 701/702/703/704/711/712/720) — zawsze, choć bez wymogu 5-letniego z OLiOC.
 - **8. Próg MSWiA** — 100k brutto (zawsze, jeśli z budżetu MSWiA).
 
 ## Przykłady wypełnienia
 
-### Przykład 1 — Utrzymanie CEOZO (OPEX, tryb A)
+### Przykład 1 — Utrzymanie CEOZO (OPEX, tryb A, klasyfikacja 2027+)
 
 ```markdown
 ## Pozycja: 5E – Utrzymanie i eksploatacja CEOZO
 
-**Klasyfikacja:** część 42 / dział 752 / rozdział 75282 / § 4300 / typ B
+**Klasyfikacja:** część 42 / dział 752 / rozdział 75282 / § 682 / typ B / grupa BP 3
 **Kwota brutto PLN:** 1 080 000 zł
 **Alokacja:** KG PSP 1 080 000, Akademia 0, CS Czstch 0, SA Krk 0, SA Pzn 0, SP Bdg 0
-**Charakter:** OPEX bieżący
+**Charakter:** OPEX bieżący — usługi informatyczne (Dz.U. 2026 poz. 582)
 
 ### 1. KWALIFIKOWALNOŚĆ DO PROGRAMU
 - Obszar: 5 — Infrastruktura ochronna
@@ -180,15 +180,15 @@ Dla trybu C (754/75409, finansowanie z budżetu KG PSP, poza POLiOC) **punkty 1,
 - Załączony osobny wniosek o opinię MSWiA: `wniosek-opinii-CEOZO-utrzymanie-2026-05-25.md`.
 ```
 
-### Przykład 2 — Budowa, rozbudowa CEOZO (CAPEX § 6060, tryb A)
+### Przykład 2 — Budowa, rozbudowa CEOZO (CAPEX § 720, tryb A, klasyfikacja 2027+)
 
 ```markdown
 ## Pozycja: 5E – Budowa, rozbudowa i rozwój CEOZO
 
-**Klasyfikacja:** część 42 / dział 752 / rozdział 75282 / § 6060 / typ M
+**Klasyfikacja:** część 42 / dział 752 / rozdział 75282 / § 720 / typ M / grupa BP 4
 **Kwota brutto PLN:** 1 500 000 zł
 **Alokacja:** KG PSP 1 500 000, pozostałe 0
-**Charakter:** CAPEX majątkowy — wytworzenie nowych modułów + zakup WNiP
+**Charakter:** CAPEX majątkowy — Inwestycje (wytworzenie nowych modułów CEOZO jako WNiP). Gdy część zakresu obejmuje zakup gotowych licencji bezterminowych → wydziel jako § 712 (lub § 711 jeśli amort. jednorazowo).
 
 (...punkty 1–6 jak w Przykładzie 1, dostosowane do CAPEX...)
 

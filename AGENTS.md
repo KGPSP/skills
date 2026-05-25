@@ -24,7 +24,7 @@ Katalog **Codex Skills** dla Komendy Głównej PSP. Repo **nie zawiera aplikacji
 
 Trzy domeny (każdy skill = jeden samodzielny folder):
 - `pzp/` — Prawo Zamówień Publicznych (4 skille operacyjne, generują `.md`/`.docx` w Obsidian Flavored Markdown)
-- `legal/` — opinie prawne, retrieval z Sejm ELI API, planowanie wydatków IT KG PSP z 8-pkt uzasadnieniem POLiOC i klasyfikacją UFP (3 skille)
+- `legal/` — opinie prawne, retrieval z Sejm ELI API, planowanie wydatków IT KG PSP z klasyfikacją UFP 2027+ (Dz.U. 2026 poz. 582) i 8-pkt uzasadnieniem POLiOC (3 skille)
 - `dev/` — narzędzia developerskie dla agentów AI (planowanie feature'a, orkiestracja zespołów sub-agentów, QA) — to tu jest najwięcej rygoru inżynieryjnego
 
 ## Marketplace pluginów (Codex)

@@ -1,6 +1,6 @@
 # Raport finansowy — Service Desk KG PSP — 2026-05-25
 
-> Tryb C — środki własne KG PSP poza POLiOC (754/75409)
+> Tryb C — środki własne KG PSP poza POLiOC (754/75409, klasyfikacja 2027+)
 >
 > **Walutowość:** PLN BRUTTO (wszystkie pozycje krajowe — brak pozycji walutowych, kurs planistyczny niewymagany).
 
@@ -12,22 +12,23 @@
 | Akronim | SD-KGPSP |
 | Walutowość | PLN BRUTTO |
 | Źródło finansowania | część 42, dział 754, rozdział 75409 |
+| Klasyfikacja UFP | 2027+ wg Dz.U. 2026 poz. 582 |
 
 ## 5. Tabela III.B
 
-| Pozycja | § | Koszt roczny brutto | Część | Dział | Rozdział | B/M |
-|---|---|---|---|---|---|---|
-| Subskrypcja Jira Service Management (PL, VAT 23%) | 4300 | 73 800 | 42 | 754 | 75409 | B |
-| Stacja robocza service desk (12 szt × 15 000 zł netto, VAT 23%) | 6060 | 221 400 | 42 | 754 | 75409 | M |
+| Pozycja | § | Koszt roczny brutto | Część | Dział | Rozdział | B/M | Grupa BP |
+|---|---|---|---|---|---|---|---|
+| Subskrypcja Jira Service Management (PL, VAT 23%) | 682 | 73 800 | 42 | 754 | 75409 | B | 3 |
+| Stacja robocza service desk (12 szt × 15 000 zł netto, ujęte jako ŚT) | 702 | 221 400 | 42 | 754 | 75409 | M | 4 |
 
 ## 6. Uzasadnienia (schemat 4-punktowy dla trybu C — pkt 2, 5, 7, 8)
 
 ## Pozycja: SD-001 – Subskrypcja Jira Service Management
 
-**Klasyfikacja:** część 42 / dział 754 / rozdział 75409 / § 4300 / typ B
+**Klasyfikacja:** część 42 / dział 754 / rozdział 75409 / § 682 / typ B / grupa BP 3
 **Kwota brutto PLN:** 73 800 zł
 **Alokacja:** KG PSP 73 800, Akademia 0, CS Czstch 0, SA Krk 0, SA Pzn 0, SP Bdg 0
-**Charakter:** OPEX bieżący
+**Charakter:** OPEX bieżący — usługi informatyczne (subskrypcja SaaS, dostęp czasowy — nie WNiP)
 
 ### 2. CELOWOŚĆ Z UWZGLĘDNIENIEM POSIADANYCH ZASOBÓW
 - Stan aktualny: service desk obsługiwany aktualnie przez arkusze Excel + skrzynka e-mail.
@@ -42,7 +43,7 @@
 - Kwota brutto razem: 73 800 zł.
 
 ### 7. OKRES UŻYWANIA
-- Nie dotyczy — pozycja OPEX (§ 4300, subskrypcja roczna).
+- Nie dotyczy — pozycja OPEX (§ 682, subskrypcja roczna SaaS bez nabycia WNiP).
 
 ### 8. PRÓG OPINIOWANIA MSWiA
 - Kwota brutto > 100 000 zł: nie (73 800 zł < 100 000 zł).
@@ -52,10 +53,10 @@
 
 ## Pozycja: SD-002 – Stacje robocze service desk
 
-**Klasyfikacja:** część 42 / dział 754 / rozdział 75409 / § 6060 / typ M
+**Klasyfikacja:** część 42 / dział 754 / rozdział 75409 / § 702 (702002) / typ M / grupa BP 4
 **Kwota brutto PLN:** 221 400 zł
 **Alokacja:** KG PSP 221 400, Akademia 0, CS Czstch 0, SA Krk 0, SA Pzn 0, SP Bdg 0
-**Charakter:** CAPEX majątkowy (12 szt × 15 000 zł netto = 180 000 netto, > 10k netto/szt, > 1 rok → § 6060)
+**Charakter:** CAPEX majątkowy — 12 szt stacji roboczych ujętych w polityce rachunkowości KG PSP jako środki trwałe amortyzowane wieloletnio. Klasyfikacja § 702 (702002 — zwykły sprzęt informatyczny administracyjny, nie zadania operacyjne PSP).
 
 ### 2. CELOWOŚĆ Z UWZGLĘDNIENIEM POSIADANYCH ZASOBÓW
 - Stan aktualny: stacje robocze service desku — modele z 2018 r., kończy się wsparcie OS i bezpieczeństwa.
@@ -69,7 +70,7 @@
 - Kwota brutto razem: 221 400 zł.
 
 ### 7. OKRES UŻYWANIA
-- Planowany okres używania: ≥ 5 lat (zgodnie z polityką wymiany sprzętu KG PSP; nie jest wymóg pkt 184 OLiOC, ale dobra praktyka).
+- Planowany okres używania: ≥ 5 lat (zgodnie z polityką wymiany sprzętu KG PSP).
 - Plan utrzymania:
   - Gwarancja producenta: 3 lata on-site + 2 lata extended.
   - Wymiana baterii: po 3 latach (rezerwa wpisana w plan utrzymania KG PSP, poza tym wnioskiem).
@@ -83,8 +84,8 @@
 
 | Pod-obszar | Nazwa zadania | Dział | Rozdział | § | Kwota brutto [zł] | KG PSP | Akademia | CS Czstch | SA Krk | SA Pzn | SP Bdg |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| C-OPEX | Subskrypcja Jira Service Management | 754 | 75409 | 4300 | 73 800 | 73 800 | 0 | 0 | 0 | 0 | 0 |
-| C-CAPEX | Stacje robocze service desk (12 szt) | 754 | 75409 | 6060 | 221 400 | 221 400 | 0 | 0 | 0 | 0 | 0 |
+| C-OPEX | Subskrypcja Jira Service Management | 754 | 75409 | 682 | 73 800 | 73 800 | 0 | 0 | 0 | 0 | 0 |
+| C-CAPEX | Stacje robocze service desk (12 szt) | 754 | 75409 | 702 | 221 400 | 221 400 | 0 | 0 | 0 | 0 | 0 |
 
 **Suma F razem:** 295 200 zł
 **Walidacja:** sum(G..L) = F dla każdego wiersza? **TAK**.
