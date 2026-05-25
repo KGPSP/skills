@@ -7,7 +7,7 @@ Zbiór wyspecjalizowanych **Claude Code Skills** używanych w Komendzie Główne
 ```
 skills/
 ├── pzp/      # Prawo Zamówień Publicznych
-├── legal/    # Opinie prawne i analizy normatywne
+├── legal/    # Opinie prawne, retrieval ELI, planowanie wydatków IT
 └── dev/      # Narzędzia developerskie (planowanie, orkiestracja agentów, QA)
 ```
 
@@ -22,12 +22,13 @@ skills/
 | [`weryfikacja-umow-pzp`](pzp/weryfikacja-umow-pzp/) | Audyt projektu umowy / PPU przed podpisaniem — z parą **cytat obecnego brzmienia + proponowane brzmienie** dla każdej wykrytej wady. |
 | [`odpowiedzi-pytania`](pzp/odpowiedzi-pytania/) | Odpowiedzi Zamawiającego na pytania wykonawców (wyjaśnienia/modyfikacje SWZ) — model 3 hipotez, finalne odpowiedzi do publikacji, raport ryzyk. |
 
-### `legal/` — Opinie prawne
+### `legal/` — Opinie prawne, retrieval ELI, planowanie wydatków IT
 
-| Skill | Zastosowanie |
-|-------|--------------|
-| [`opinie-prawne`](legal/opinie-prawne/) | Sporządzanie opinii prawnych w polskim porządku prawnym (effort max, deep research po isap.sejm.gov.pl, eli.gov.pl, orzecznictwo SN/NSA/TK). |
-| [`sejm-eli-api`](legal/sejm-eli-api/) | Komunikacja z urzędowym źródłem prawa RP przez Sejm ELI API (`api.sejm.gov.pl/eli`): metadane, status, daty, relacje, spis treści i treść HTML/PDF aktów Dz.U./M.P., wyszukiwanie po tytule, import do Obsidian. Warstwa retrieval/grounding dla `opinie-prawne`. |
+| Skill | Wersja | Zastosowanie |
+|-------|--------|--------------|
+| [`opinie-prawne`](legal/opinie-prawne/) | `v1.0.0` | Sporządzanie opinii prawnych w polskim porządku prawnym (effort max, deep research po isap.sejm.gov.pl, eli.gov.pl, orzecznictwo SN/NSA/TK). |
+| [`sejm-eli-api`](legal/sejm-eli-api/) | `v1.0.0` | Komunikacja z urzędowym źródłem prawa RP przez Sejm ELI API (`api.sejm.gov.pl/eli`): metadane, status, daty, relacje, spis treści i treść HTML/PDF aktów Dz.U./M.P., wyszukiwanie po tytule, import do Obsidian. Warstwa retrieval/grounding dla `opinie-prawne`. |
+| [`planowanie-wydatkow-it-psp`](legal/planowanie-wydatkow-it-psp/) | **`v1.0.1`** | Wniosek finansowy / uzasadnienie wydatku / kosztorys TCO dla systemu IT KG PSP (CEOZO, CEZOL, SOiA, inne) w 3 trybach: A POLiOC cz. 42 obronne `752/75282` (domyślny), B POLiOC podstawowy `754/75414`, C środki własne KG PSP `754/75409`. Procedura 6 faz (F1 Define → F2 Catalogize → F3 Price → F4 Classify → F5 Justify → F6 Verify+Ship), 7 plików `references/` (katalog kosztów A–O, klasyfikacja UFP, przeliczenia walut + VAT + reverse charge, 8-punktowy schemat uzasadnienia, ramy POLiOC, lista 19 małych kosztów, 20 wymówek anti-rationalization). Walidator POSIX `check-cost-plan.sh` — 8 sprawdzeń (§ 4000, kurs NBP, kompletność uzasadnienia, opinia MSWiA > 100k, plan utrzymania ≥ 5 lat dla § 6050/6060, reverse charge dla walut, klasyfikacja 752/75282, suma alokacji `G..L = F`). |
 
 ### `dev/` — Narzędzia developerskie
 
@@ -56,7 +57,7 @@ Repo jest **marketplace pluginów Claude Code** (`kgpsp-skills`). Skille są pog
 | Plugin | Skille | Co zawiera |
 |--------|--------|------------|
 | `pzp-tools` | 4 | analyzing-pzp-offers, drafting-pzp-letters, odpowiedzi-pytania, weryfikacja-umow-pzp |
-| `legal-tools` | 2 | opinie-prawne, sejm-eli-api |
+| `legal-tools` | 3 | opinie-prawne, sejm-eli-api, planowanie-wydatkow-it-psp |
 | `dev-tools` | 6 | agent-teams-builder, replit-style-workflow, audited-feature-workflow, feature-spec-planner, playwright-test-suite, swarm-orchestrator |
 
 **1. Dodaj marketplace** (jednorazowo):

@@ -2,6 +2,40 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-25] legal/planowanie-wydatkow-it-psp — code review fixes (v1.0.1)
+
+### Fixed (z code review)
+
+- **Walidator `scripts/check-cost-plan.sh` (sprawdzenie 8 dodane)** — egzekwowanie `sum(G..L) = F` w tabeli XLSX (parser awk, 12 kolumn A..L). Wcześniej deklarowane w SKILL.md F6 jako „twarda walidacja XLSX", ale niezaimplementowane. `tests/fixtures/bad-plan.md` BŁĄD 7 (suma 1 000 000 ≠ F 1 225 000) teraz wykrywany.
+- **Walidator (sprawdzenie 4, bug v1.0.0)** — heurystyka detekcji kwot > 100 000 zł brutto nigdy nie działała: `tr -d ' '` nie usuwało markdownowych `**` wokół etykiety „**Kwota brutto PLN:**", przez co regex `KwotabruttoPLN:[0-9]{6,}` nigdy nie matchował. Naprawiono na `tr -d ' *'`. Po naprawie sprawdzenie #4 (próg MSWiA z pkt 166 Programu OLiOC) faktycznie egzekwowane.
+- **`templates/tabela-xlsx-uklad.md`** — utworzono brakujący plik (SKILL.md:237 wskazywał ścieżkę do nieistniejącego pliku). Zawiera układ A–L, mapę skrótów jednostek PSP, konwencje formatu, przykłady kompletnego wypełnienia.
+- **Ścieżki absolutne `/Users/sq13pl/...`** — usunięto z `SKILL.md:247` i `templates/raport-skeleton.md:140` (anty-wzorzec wg DOC `since_skill.md` §6: skill po instalacji marketplace kopiuje się do `~/.claude/plugins/...`). Zastąpiono `sh scripts/check-cost-plan.sh ...` z komentarzem o uruchamianiu z katalogu skilla.
+- **`SKILL.md` frontmatter `description`** — skondensowano z 1149 do 789 znaków (router-friendly, brak duplikacji 11 trigger phrases z `trigger:`).
+- **`references/anti-rationalization.md` frontmatter** — `description` naprawiona „16 wymówek" → „20 wymówek" (zgodne z faktem i pozostałą dokumentacją).
+
+### Added (testy + adnotacje)
+
+- **`tests/fixtures/good-plan-tryb-c.md`** — fixture trybu C (754/75409, 4-pkt schemat). Beyoncé Rule: gałąź `--tryb C` walidatora ma teraz własny test (exit 0, 6 ✔).
+- **`tests/fixtures/bad-plan.md`** — komentarze diagnostyczne BŁĄD 3 i BŁĄD 6 oczyszczone z trigger phrases walidatora (wcześniej tłumiły wykrywanie samych przez globalny grep). Po naprawie BAD wykrywa 10 błędów (poprzednio 8).
+- **`SKILL.md` § Sources** — adnotacja, że `now_skille/` jest gitignored (analog `DOC/`); runtime skilla od niego niezależy.
+- **`references/klasyfikacja-budzetowa.md` §6** — adnotacja o spójności: skrócona matryca w SKILL.md F4 to derywat §6–8 tego pliku; w razie rozbieżności źródłem prawdy jest plik referencyjny.
+- **`legal-tools`** plugin → **v1.2.1** + **`marketplace.json`** root → **v1.6.1**.
+
+## [2026-05-25] legal/planowanie-wydatkow-it-psp — nowy skill (v1.0.0)
+
+### Added
+
+- **`legal/planowanie-wydatkow-it-psp/`** — nowy skill wspierający krok-po-kroku przygotowanie wniosku finansowego / uzasadnienia wydatku / kosztorysu TCO dla systemu IT KG PSP. Procedura 6 faz (F1 Define → F2 Catalogize → F3 Price → F4 Classify → F5 Justify → F6 Verify+Ship) z exit criteria per faza.
+- **Trzy tryby finansowania:** A (POLiOC cz. 42 obronne 752/75282 — domyślny), B (POLiOC podstawowy 754/75414), C (środki własne KG PSP poza POLiOC 754/75409).
+- **7 plików `references/`:** katalog kosztów (15 sekcji A–O), klasyfikacja UFP, przeliczenia walut + VAT + reverse charge, 8-punktowy schemat uzasadnienia, ramy POLiOC 2027–2031, lista 19 małych kosztów + alokacja A/B/C, tabela 20 wymówek anti-rationalization.
+- **`scripts/check-cost-plan.sh`** — POSIX-compliant walidator (7 sprawdzeń: § 4000, kurs NBP, 8-pkt uzasadnienie, opinia MSWiA > 100k, plan utrzymania ≥ 5 lat, reverse charge dla walut, klasyfikacja 752/75282).
+- **`tests/fixtures/good-plan.md` + `bad-plan.md`** — fixture testowy: GOOD → exit 0 (6 ✔), BAD → exit 1 (7 błędów wykrytych).
+- **`legal-tools`** plugin → **v1.2.0** + **`marketplace.json`** root → **v1.6.0**: opis legal-tools rozszerzony o trzeci skill.
+
+### Materiał źródłowy
+
+`now_skille/materialy_polioc/material_przeliczanie_kosztow.md` (11 części, ~1200 linii) + `Projekt-Programu-OLiOC-2027-2031-v17.DOCX` + `Propozycja zadań do POLiOC 2027-2031 cz.42.xlsx`. Weryfikacja aktów przez `legal/sejm-eli-api`: Dz.U. 2025 poz. 1483 (UFP), Dz.U. 2026 poz. 582 (klasyfikacja dochodów/wydatków), Dz.U. 2025 poz. 1185 (klasyfikacja części budżetowych), ustawa OLiOC z 5.12.2024 r.
+
 ## [2026-05-25] dev/planner-f → dev/feature-spec-planner — rename skilla (v1.1.0)
 
 ### Changed
