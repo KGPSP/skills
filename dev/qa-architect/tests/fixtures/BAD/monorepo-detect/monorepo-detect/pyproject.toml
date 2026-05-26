@@ -1,3 +1,0 @@
-[project]
-name = "bad-monorepo-fixture-py"
-dependencies = ["fastapi"]
