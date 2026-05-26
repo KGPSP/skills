@@ -64,7 +64,7 @@ Brak lockfile → flag `package_manager: unknown`, eskaluj (PM ma znaczenie dla 
 | **pgx** (Go) | `github.com/jackc/pgx` w `go.mod` |
 | **database/sql + lib/pq** (Go) | `github.com/lib/pq` w `go.mod` |
 
-Brak Postgres → flag `db_driver: none-postgres`, w Phase 3 layer strategy **integracyjna bazodanowa = N/A** (oznacz wprost).
+Brak Postgres → flag `db_driver: none`, w Phase 3 layer strategy **integracyjna bazodanowa = N/A** (oznacz wprost).
 
 ## 5. Wymagany output JSON (z `detect-stack.sh`)
 
@@ -73,7 +73,7 @@ Brak Postgres → flag `db_driver: none-postgres`, w Phase 3 layer strategy **in
   "stack": "nextjs|node-generic|python|go|monorepo|unknown",
   "components": ["nextjs", "python"],
   "package_manager": "npm|yarn|pnpm|bun|pip|uv|poetry|pdm|go|unknown",
-  "db_driver": "pg|prisma|psycopg|asyncpg|pgx|...|none-postgres",
+  "db_driver": "pg|prisma|psycopg|asyncpg|pgx|...|none",
   "has_existing_tests": true,
   "has_existing_ci": false,
   "project_size_files": 312,
@@ -89,7 +89,7 @@ Brak Postgres → flag `db_driver: none-postgres`, w Phase 3 layer strategy **in
 2. Jeśli `stack == unknown` → STOP, eskaluj user'owi z pełnym JSON-em.
 3. Jeśli `stack == monorepo` → STOP, eskaluj wyborem komponentu.
 4. Jeśli `package_manager == unknown` → eskaluj („który PM używasz?").
-5. Jeśli `db_driver == none-postgres` → flag w 00-environment, layer-db = N/A.
+5. Jeśli `db_driver == none` → flag w 00-environment, layer-db = N/A.
 6. Załaduj odpowiedni `references/stack-profiles/<stack>.md`.
 ```
 

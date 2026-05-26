@@ -74,9 +74,8 @@ jobs:
         with:
           fail-on-severity: high
 
-      - name: npm audit
-        if: matrix.pm == 'npm' || env.PM == 'npm' || true
-        run: {{PACKAGE_MANAGER}} audit --audit-level=high || true   # warn-only on PR; nightly enforces
+      - name: Dependency audit
+        run: {{PACKAGE_MANAGER}} audit --audit-level=high || true   # warn-only on PR; nightly.yml enforces
 
       - name: Upload reports
         if: always()

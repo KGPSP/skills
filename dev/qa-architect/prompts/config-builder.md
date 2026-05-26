@@ -19,14 +19,18 @@ Wygeneruj kompletne konfiguracje runnerów testowych + `docker-compose.test.yml`
 2. Dla każdego narzędzia: znajdź odpowiedni template w `templates/configs/<stack>/`, skopiuj do `qa-blueprint/configs/`, instancjonuj placeholdery.
 3. Wygeneruj `qa-blueprint/configs/docker-compose.test.yml` (template `templates/configs/<stack>/docker-compose.test.yml.tmpl` lub generic).
 4. Wygeneruj `qa-blueprint/configs/package.json-scripts.json` (lub `pyproject-test-deps.toml` / `go-test-deps.txt`) — fragment do mergeania w istniejący `package.json`/`pyproject.toml`/`go.mod`.
-5. Sprawdź składnię każdego config:
+5. **Gdy stack to nextjs/node-generic i config to vitest.config.ts lub jest.config.ts** — wygeneruj również plik setup do którego config się odwołuje (`setupFiles` / `setupFilesAfterEnv`):
+   - `qa-blueprint/configs/setup-vitest.ts` (jeśli vitest): `import '@testing-library/jest-dom'` + opcjonalnie MSW server setup.
+   - `qa-blueprint/configs/setup-jest.ts` (jeśli jest): `import '@testing-library/jest-dom'` + opcjonalnie MSW server setup.
+   - Bez tych plików runner failuje na starcie z `Cannot find module '<rootDir>/src/test/setup-*.ts'`.
+6. Sprawdź składnię każdego config:
    - TS: zaproponuj komendę `tsc --noEmit` w komentarzu (skill nie ma `tsc`).
    - YAML: zaproponuj `yamllint` lub `python -c 'import yaml; yaml.safe_load(...)'`.
    - JSON: `python -m json.tool` lub `jq .`.
 
 ## Exit criterion
 - Pliki w `qa-blueprint/configs/` istnieją per wymagana decyzja z `02-tooling.md`
-- Minimum dla Node + Postgres + UI: `vitest.config.ts` (lub `jest.config.ts`), `playwright.config.ts`, `docker-compose.test.yml`, `tsconfig.json`, `package.json-scripts.json`
+- Minimum dla Node + Postgres + UI: `vitest.config.ts` (lub `jest.config.ts`) **+ odpowiadający `setup-vitest.ts`/`setup-jest.ts`**, `playwright.config.ts`, `docker-compose.test.yml`, `tsconfig.json`, `package.json-scripts.json`
 - Minimum dla Python + Postgres + UI: `pyproject-test-deps.toml`, `conftest.py`, `pytest.ini`, `docker-compose.test.yml`
 - Minimum dla Go + Postgres: `go-test-deps.txt`, `testcontainers-postgres.go` (snippet), `docker-compose.test.yml`
 - Brak placeholderów `{{...}}` w finalnych plikach (wszystkie instancjowane)

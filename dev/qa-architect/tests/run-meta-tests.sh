@@ -8,6 +8,12 @@
 #   verify-postgres-strategy.sh on GOOD/complete-blueprint, BAD/postgres-mocked
 #
 # Usage: sh tests/run-meta-tests.sh
+#
+# NOTE: `set -u` (bez `-e`) celowe — assert_exit testuje też non-zero exit codes
+# (np. exit 1 dla BAD fixtures, exit 2 dla unknown-stack). `set -e` przerywałby
+# skrypt przy każdym oczekiwanym niepowodzeniu komendy w command substitution
+# `actual_out=$("$@" 2>&1)`. Bezpieczeństwo: każda komenda jest opakowana w
+# assert_exit/assert_contains, więc fail jest jawnie zliczany w $failed.
 
 set -u
 
@@ -74,6 +80,11 @@ assert_contains "detect-stack on GOOD/go-detect says db_driver=pgx" '"db_driver"
 
 assert_exit "detect-stack on BAD/unknown-stack (exit 2 = stack unknown)" 2 \
     sh "$root/scripts/detect-stack.sh" "$dir/fixtures/BAD/unknown-stack"
+
+assert_exit "detect-stack on BAD/monorepo-detect (exit 3 = monorepo)" 3 \
+    sh "$root/scripts/detect-stack.sh" "$dir/fixtures/BAD/monorepo-detect"
+assert_contains "detect-stack on BAD/monorepo-detect says stack=monorepo" '"stack":"monorepo"' \
+    sh "$root/scripts/detect-stack.sh" "$dir/fixtures/BAD/monorepo-detect"
 
 echo ""
 echo "=== check-blueprint-complete.sh ==="

@@ -29,7 +29,7 @@ sources:
   - DOC/QA-swarm.md §2 (paradygmat swarm), §3-4 (krytyczna rewizja, piramida), §6.3 (kontrakt projektowy), §7 (dobór narzędzi), §8 (wzorce), §10-11 (struktura+CI), §12.3 (pilotaż 4-tyg), §12.5 (checklisty)
   - DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md §3 (pięć filarów), §9 (checklista), §10 (`source:` traceability)
   - DOC/agent-teams-generator-ewaluator.md §2 (Manager + workers), §4 (rubryka)
-version: v1.0.0
+version: v1.0.1
 size-limit: 500-lines-hard
 ---
 
@@ -106,7 +106,9 @@ Granica: qa-architect **kończy się** na wygenerowaniu blueprintu + opcjonalnym
 > `qa-blueprint/00-environment.md` z polami: stack, size, fragile, package_manager, db_driver, existing_tests, existing_ci.
 
 > [!danger] Hard stop
-> Jeśli `stack == unknown` → **STOP**. Eskaluj do usera: pokaż output `detect-stack.sh` i zapytaj wprost który stack/profile wybrać. **Nie zgaduj** (#2 non-negotiable).
+> - `stack == unknown` (exit 2) → **STOP**. Eskaluj: pokaż output `detect-stack.sh`, zapytaj który stack/profile wybrać.
+> - `stack == monorepo` (exit 3) → **STOP**. Eskaluj: pokaż listę `components`, zapytaj który komponent przeprocesować (qa-architect domyślnie jeden komponent per invokacja; multi-component = osobne uruchomienia z `--projectDir <komponent>`).
+> - **Nie zgaduj** (#2 non-negotiable).
 
 ---
 
@@ -189,7 +191,7 @@ Po akceptacji #1 — uruchom **w jednej wiadomości równolegle** 3 sub-agenty (
 Każdy sub-agent dostaje w prompcie: output Phase 0–3 + ścieżkę do swojego template + **constraint scope discipline** (nie modyfikuje plików spoza przypisanej własności).
 
 > [!warning] Output Phase 5
-> Pliki w `qa-blueprint/configs/`, `qa-blueprint/samples/`, `qa-blueprint/ci/`. Raporty z każdego sub-agenta dołączone do `qa-blueprint/05-execution-log.md`.
+> Pliki w `qa-blueprint/configs/`, `qa-blueprint/samples/`, `qa-blueprint/ci/`. Raporty z każdego sub-agenta agregowane przez Managera w Phase 6 do `qa-strategy.md` (sekcja Execution log — nie osobny plik).
 
 ---
 

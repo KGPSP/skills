@@ -6,7 +6,7 @@
     "email": "claude@kg.straz.gov.pl"
   },
   "description": "Katalog skilli Claude Code KG PSP: Prawo Zamówień Publicznych (PZP), opinie prawne oraz narzędzia developerskie dla agentów AI.",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "plugins": [
     {
       "name": "pzp-tools",

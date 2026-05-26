@@ -1,7 +1,10 @@
 #!/bin/sh
 # detect-stack.sh — deterministyczna detekcja stacku dla qa-architect Phase 0.
-# Output: pojedynczy JSON na stdout. Exit 0 = sukces, 1 = błąd argumentów,
-# 2 = brak markerów (stack=unknown — wymaga eskalacji do usera).
+# Output: pojedynczy JSON na stdout.
+# Exit 0 = sukces (pojedynczy stack wykryty)
+# Exit 1 = błąd argumentów
+# Exit 2 = brak markerów (stack=unknown — wymaga eskalacji do usera)
+# Exit 3 = monorepo (>1 stack — wymaga eskalacji: który komponent?)
 #
 # Usage:
 #   sh detect-stack.sh [projectDir]
@@ -87,7 +90,7 @@ if [ "$pm" = "unknown" ] && has_file "go.mod"; then
 fi
 
 # === db driver ===
-db="none-postgres"
+db="none"
 if has_file "package.json"; then
     if grep -q '"@prisma/client"' "$project_dir/package.json" 2>/dev/null; then db="prisma"
     elif grep -q '"drizzle-orm"' "$project_dir/package.json" 2>/dev/null; then db="drizzle"
@@ -97,21 +100,21 @@ if has_file "package.json"; then
     fi
 fi
 
-if [ "$db" = "none-postgres" ] && has_file "pyproject.toml"; then
+if [ "$db" = "none" ] && has_file "pyproject.toml"; then
     if grep -qE 'asyncpg' "$project_dir/pyproject.toml" 2>/dev/null; then db="asyncpg"
     elif grep -qE 'psycopg' "$project_dir/pyproject.toml" 2>/dev/null; then db="psycopg"
     elif grep -qE 'sqlalchemy' "$project_dir/pyproject.toml" 2>/dev/null; then db="sqlalchemy"
     fi
 fi
 
-if [ "$db" = "none-postgres" ] && has_file "requirements.txt"; then
+if [ "$db" = "none" ] && has_file "requirements.txt"; then
     if grep -qE 'asyncpg' "$project_dir/requirements.txt" 2>/dev/null; then db="asyncpg"
     elif grep -qE 'psycopg' "$project_dir/requirements.txt" 2>/dev/null; then db="psycopg"
     elif grep -qE 'sqlalchemy' "$project_dir/requirements.txt" 2>/dev/null; then db="sqlalchemy"
     fi
 fi
 
-if [ "$db" = "none-postgres" ] && has_file "go.mod"; then
+if [ "$db" = "none" ] && has_file "go.mod"; then
     if grep -qE 'jackc/pgx' "$project_dir/go.mod" 2>/dev/null; then db="pgx"
     elif grep -qE 'lib/pq' "$project_dir/go.mod" 2>/dev/null; then db="lib-pq"
     fi
@@ -165,5 +168,8 @@ EOF
 
 if [ "$stack" = "unknown" ]; then
     exit 2
+fi
+if [ "$stack" = "monorepo" ]; then
+    exit 3
 fi
 exit 0

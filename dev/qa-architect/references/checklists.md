@@ -54,7 +54,7 @@ description: Checklisty PR i testów z paper'a §12.5. Trafiają do qa-blueprint
 |---|---|
 | Stack wykryty? | `detect-stack.sh` exit 0, JSON ma `stack != unknown` |
 | Package manager wykryty? | `package_manager != unknown` |
-| DB driver wykryty? | `db_driver` ma wartość (postgres lub `none-postgres`) |
+| DB driver wykryty? | `db_driver` ma wartość (konkretny driver: `pg`/`prisma`/`asyncpg`/`pgx`/... lub `none` gdy brak Postgres) |
 | Rozmiar projektu sklasyfikowany? | `project_size_class ∈ {S, M, L}` |
 | Fragile paths zidentyfikowane? | `fragile_paths` lista (może być pusta) |
 | Negative triggers nie odpalają? | Frontmatter `do-not-trigger-for` sprawdzony |

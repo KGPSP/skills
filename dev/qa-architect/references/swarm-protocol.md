@@ -124,7 +124,7 @@ E = (T_single · C_token) / (T_swarm · C_token · α_swarm)
 
 gdzie `α_swarm ∈ [4, 15]`. Dla qa-architect typowo `α_swarm ≈ 4–6` (mała liczba workers, prosty kontrakt).
 
-**Heurystyka:** jeśli detect-stack wskazuje **S** (mała aplikacja, <50 plików) i `db_driver == none-postgres` — Manager Phase 4 MOŻE zaproponować skipping `test-author` (templates wystarczają, brak testowania SQL). Decyzja **w APPROVAL #1**, nie automatyczna.
+**Heurystyka:** jeśli detect-stack wskazuje **S** (mała aplikacja, <50 plików) i `db_driver == none` — Manager Phase 4 MOŻE zaproponować skipping `test-author` (templates wystarczają, brak testowania SQL). Decyzja **w APPROVAL #1**, nie automatyczna.
 
 ## 8. Hard rules
 

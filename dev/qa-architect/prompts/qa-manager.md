@@ -22,7 +22,7 @@ Dekomponuj pracę QA blueprint na 5–6 mikro-zadań przydzielonych sub-agentom 
 4. Wypisz zależności między zadaniami. Domyślnie: config-builder, test-author, ci-author niezależne (Phase 5 parallel batch). Jeśli faktyczna zależność (np. test-author potrzebuje `setupFiles` z config-builder) — oznacz batch 1/batch 2.
 5. Oszacuj koszt tokenów per sub-agent (typowo 3–8k).
 6. Wpisz sekcję `## Anti-rationalization decisions:` listującą wymówki S1–S6 i ripostę „rozważona, nie zastosowana".
-7. Wpisz sekcję `## Cost-effectiveness check:` z heurystyką z `swarm-protocol.md` §7 (czy dla S+none-postgres skipping test-author ma sens? Decyzja w APPROVAL #1).
+7. Wpisz sekcję `## Cost-effectiveness check:` z heurystyką z `swarm-protocol.md` §7 (czy dla S+`db_driver=none` skipping test-author ma sens? Decyzja w APPROVAL #1).
 8. Wpisz pole `## APPROVAL #1 log:` (puste, do wypełnienia przez głównego skilla po decyzji usera).
 
 ## Exit criterion

@@ -45,7 +45,7 @@ description: Strategia warstw testów dla qa-architect Phase 3. Piramida 80/15/5
 
 ## 3. Modyfikacja 2 — Integracyjna bazodanowa (Testcontainers + Postgres)
 
-> [!warning] Egzekwowane dla każdego stacku z PostgreSQL (`db_driver != none-postgres` z Phase 0)
+> [!warning] Egzekwowane dla każdego stacku z PostgreSQL (`db_driver != none` z Phase 0)
 > Zapytania SQL, migracje, constraints, transakcje, współbieżność krytyczna **muszą być testowane na realnym PostgreSQL**. Mockowanie tej warstwy = wzorzec anty (paper §4.2, §8.5).
 
 **Reguły:**
@@ -113,7 +113,7 @@ Minimum sekcje:
 
 1. **Piramida dostosowana do rozmiaru S/M/L** (z §1).
 2. **Modyfikacja 1 obowiązkowa** (jeśli stack ma UI) — zasady semantycznych query.
-3. **Modyfikacja 2 obowiązkowa** (jeśli `db_driver != none-postgres`) — protokół Testcontainers.
+3. **Modyfikacja 2 obowiązkowa** (jeśli `db_driver != none`) — protokół Testcontainers.
 4. **Per-stack exclusions** (z §4).
 5. **Macierz odpowiedzialności** (kopia §5 dostosowana do stacku).
 6. **Open questions** — co wymaga decyzji usera.

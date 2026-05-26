@@ -21,7 +21,7 @@ Wybierz konkretne narzędzia testowe per warstwa dla wykrytego stacku. Każda de
 4. Wypełnij 9 sekcji decyzji w `02-tooling.md` w formacie z `tooling-decision-matrix.md` §2:
    - Unit/Component
    - Integration HTTP
-   - Integration DB (lub N/A jeśli `db_driver == none-postgres`)
+   - Integration DB (lub N/A jeśli `db_driver == none`)
    - E2E (lub N/A jeśli backend-only)
    - Mocking HTTP
    - Mocking lokalne moduły

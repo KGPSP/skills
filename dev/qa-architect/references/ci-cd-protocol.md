@@ -199,13 +199,18 @@ Skill **nie generuje** workflowów wywołujących Claude Code automatycznie (out
 
 Pliki templates w `templates/ci/`:
 
-- `pr.yml` (wersja Node — najbogatsza)
-- `pr-python.yml`
-- `pr-go.yml`
-- `nightly.yml` (jeden plik z conditional steps per stack)
-- `prerelease.yml`
+- `pr.yml` — **stack-agnostic** (działa dla Node, Python, Go via `{{PACKAGE_MANAGER}}` placeholder i conditional steps `setup-{node|python|go}`)
+- `nightly.yml` — stack-agnostic (j.w.)
+- `prerelease.yml` — stack-agnostic (j.w.)
 
-ci-author wybiera szablon na podstawie `stack` z Phase 0, instancjonuje placeholdery (`{{NODE_VERSION}}`, `{{PM}}`, `{{PM_INSTALL}}`, `{{HAS_PLAYWRIGHT}}`, `{{HAS_DB}}`).
+ci-author instancjonuje placeholdery na podstawie `stack` + `package_manager` z Phase 0:
+- `{{NODE_VERSION}}` (np. `"20"`)
+- `{{PACKAGE_MANAGER}}` (npm | yarn | pnpm | bun | pip | poetry | uv | go)
+- `{{PM_INSTALL}}` (np. `npm ci` | `pnpm install --frozen-lockfile` | `pip install -e .[test]` | `go mod download`)
+
+Dla stacku Python: zamień `actions/setup-node` → `actions/setup-python`, `npm run lint` → `ruff check`/`pytest`. Dla Go: `actions/setup-go` + `go test -tags=integration ./...`.
+
+> **Note:** brak osobnych `pr-python.yml`/`pr-go.yml` jest celowy — jeden template z placeholderami trzyma stack-detection w jednym miejscu (Phase 0) i unika duplikacji 80% wspólnej struktury workflow.
 
 ## 9. Hard rules
 

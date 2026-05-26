@@ -2,6 +2,39 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-26] dev/qa-architect — code review fixes (v1.0.1)
+
+### Fixed (3 Critical + 4 Important + 3 Nit z reviewu `feature-dev:code-reviewer`)
+
+**Critical:**
+- **`templates/configs/nextjs/jest.config.ts.tmpl`** — `setupFilesAfterEach` (pole nieistniejące) → **`setupFilesAfterEnv`** (poprawna nazwa per Jest docs, zweryfikowane WebFetch `https://jestjs.io/docs/configuration`). Bug krytyczny: każdy wygenerowany jest.config silently ignorował setup file → `@testing-library/jest-dom` matchers nieregistered → `toBeInTheDocument()` rzucał `TypeError`.
+- **`scripts/detect-stack.sh`** — monorepo case zwracał exit 0, agent gating po exit code nie wykrywał wymaganej eskalacji z `references/stack-detection.md §2`. Dodano **exit 3** dla monorepo, zaktualizowano `SKILL.md` Phase 0 hard-stop.
+- **`SKILL.md` Phase 5 + `references/dod-evidence-protocol.md`** — usunięto wymaganie osobnego `05-execution-log.md` (nie był w 24-file count ani w `check-blueprint-complete.sh` → false-positive DoD exit 0). Execution log agregowany w `qa-strategy.md` sekcja Execution log w Phase 6.
+
+**Important:**
+- **`templates/ci/pr.yml`** — `if: matrix.pm == 'npm' || env.PM == 'npm' || true` (martwy warunek przez `|| true`) → krok przemianowany na "Dependency audit" (stack-agnostic) bez `if:`. Audit działa dla wszystkich PMs via `{{PACKAGE_MANAGER}}` placeholder.
+- **`prompts/config-builder.md`** — dodano krok 5 + exit criterion: generuj `setup-vitest.ts`/`setup-jest.ts` razem z config'ami runnera (templates referencują przez `setupFilesAfterEnv` — bez tych plików runner failuje na starcie).
+- **`references/ci-cd-protocol.md` §8** — usunięto referencje do nieistniejących `pr-python.yml`/`pr-go.yml` (ci-author by ich szukał). Udokumentowano że `pr.yml` jest stack-agnostic via placeholdery + conditional `setup-{node|python|go}`.
+- **`tests/run-meta-tests.sh` + `scripts/extract-raw-log.sh`** — dopisano komentarze wyjaśniające celowy wybór `set -u` (bez `-e`) — `set -e` przerywałoby skrypty przy oczekiwanych non-zero exit codes z command substitution `actual_out=$("$@" 2>&1)`.
+
+**Nit:**
+- **`CHANGELOG.md` (skill-level)** — sloppy „5 sub-agentów wymienione: 6 nazw" → spójnie „1 Manager + 5 workers = 6 sub-agentów".
+- **`templates/configs/nextjs/playwright.config.ts.tmpl`** — `command: 'npm run dev'` → `command: '{{PACKAGE_MANAGER}} run dev'` (działa dla pnpm/yarn/bun).
+- **`scripts/detect-stack.sh`** + 5 plików referencyjnych — initial `db="none-postgres"` → `db="none"` (jednoznaczny brak driver'a; stara wartość brzmiała semantycznie „znaleziono nie-Postgres" zamiast „nie znaleziono Postgres").
+
+### Added (Beyoncé Rule dla nowego monorepo exit 3)
+
+- **`tests/fixtures/BAD/monorepo-detect/`** — fixture z `package.json` (Next.js) + `pyproject.toml` (Python) razem.
+- **`tests/run-meta-tests.sh`** — 2 nowe assertion: `exit 3` dla monorepo + `"stack":"monorepo"` w JSON output.
+
+### DoD evidence
+
+- `sh dev/qa-architect/tests/run-meta-tests.sh` → **18/18 passed** (16 oryginalne + 2 monorepo)
+- `sh -n` na wszystkich skryptach (`detect-stack`, `check-blueprint-complete`, `verify-postgres-strategy`, `extract-raw-log`, `run-meta-tests`) → OK
+- `claude plugin validate .` → **✔ Validation passed**
+- `dev-tools` plugin → v1.6.0 → **v1.6.1**, `marketplace.json` root → v1.8.0 → **v1.8.1**
+- Reviewer agent zaplątał się w pętlę przy nazwie pola Jest — werdykt zweryfikowany niezależnie via Jest docs.
+
 ## [2026-05-26] dev/qa-architect — nowy skill (v1.0.0)
 
 ### Added

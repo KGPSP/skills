@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin.json",
   "name": "dev-tools",
   "description": "Narzędzia developerskie dla agentów AI: planowanie feature'a (Claude Code), orkiestracja zespołów sub-agentów, QA E2E runtime + setup-time QA blueprint, swarm tmux orchestration z trybem YOLO/goal.",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "author": {
     "name": "Komenda Główna PSP",
     "email": "claude@kg.straz.gov.pl"

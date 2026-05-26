@@ -23,7 +23,7 @@ description: Format twardych dowodów dla blueprintu qa-architect. Każda faza w
 | **2** | `qa-blueprint/02-tooling.md` | 9 sekcji decyzji + Anti-rationalization decisions | Phase 7 reviewer sprawdzi obecność sekcji |
 | **3** | `qa-blueprint/03-layer-strategy.md` | Piramida + 2 modyfikacje + macierz + exclusions | reviewer Phase 7 |
 | **4** | `qa-blueprint/04-swarm-plan.md` | Tabela zadań z exit_criterion per task + APPROVAL #1 log | manualnie + reviewer |
-| **5** | Pliki w `configs/`, `samples/`, `ci/` + `05-execution-log.md` | Output każdego sub-agenta wklejony do log | reviewer Phase 7 |
+| **5** | Pliki w `configs/`, `samples/`, `ci/` | Output każdego sub-agenta agregowany przez Managera do `qa-strategy.md` Phase 6 (sekcja Execution log) | reviewer Phase 7 |
 | **6** | `qa-strategy.md`, `CLAUDE.md.patch`, `AGENTS.md`, `verify-tests/SKILL.md`, `checklists.md`, `pilot-4-weeks.md` | wszystkie pliki istnieją | `scripts/check-blueprint-complete.sh` |
 | **7** | `07-verification.md` + `07-review.md` | Raw output 2 skryptów (exit 0) + reviewer 5-axis (0 Critical) | `check-blueprint-complete.sh` + `verify-postgres-strategy.sh` |
 | **8** | `HANDOFF.md` + opcjonalny patch CLAUDE.md | APPROVAL #2 log + diff (jeśli patchowany) | git diff jeśli patch zastosowany |

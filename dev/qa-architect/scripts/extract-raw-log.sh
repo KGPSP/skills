@@ -8,6 +8,9 @@
 # Example:
 #   sh extract-raw-log.sh --label "blueprint-complete" --out 07-verification.md -- sh scripts/check-blueprint-complete.sh
 
+# NOTE: `set -u` (bez `-e`) celowe — skrypt świadomie kontroluje exit code wrapped
+# command przez `set +e` ... cmd ... `set -e` (linia 43-46) i zwraca rc do caller'a.
+# `set -e` na początku przerwałoby przed `exit "$rc"`.
 set -u
 
 label=""
