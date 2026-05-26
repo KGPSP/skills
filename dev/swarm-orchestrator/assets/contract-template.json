@@ -1,0 +1,39 @@
+{
+  "sprint": 1,
+  "status": "draft",
+  "paths_in_scope": [
+    "src/feature-x/",
+    "tests/feature-x/"
+  ],
+  "out_of_scope": [
+    "Refactoring legacy/",
+    "DB migration"
+  ],
+  "criteria": [
+    {
+      "id": "C-1",
+      "ac_id": "AC-1",
+      "check": "Endpoint /api/x zwraca 200 + JSON {id,name} dla validInput",
+      "verification_cmd": "npm test -- tests/feature-x/api.spec.ts --grep validInput",
+      "evidence_paths": ["state/evidence/sprint-1/C-1.log"]
+    },
+    {
+      "id": "C-2",
+      "ac_id": "AC-1",
+      "check": "Endpoint /api/x zwraca 400 dla missing field",
+      "verification_cmd": "npm test -- tests/feature-x/api.spec.ts --grep missingField",
+      "evidence_paths": ["state/evidence/sprint-1/C-2.log"]
+    }
+  ],
+  "ledger": [
+    {
+      "criterion_id": "C-1",
+      "iter": 0,
+      "passed": false,
+      "evidence_path": null,
+      "notes": "draft"
+    }
+  ],
+  "max_iter": 5,
+  "notes": "Negocjowane wspólnie przez generator + evaluator w Fazie 5. Akceptowane przez human/yolo w Gate #2."
+}
