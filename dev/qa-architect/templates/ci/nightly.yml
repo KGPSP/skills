@@ -1,0 +1,100 @@
+name: nightly
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # 02:00 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  full-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: app_test
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d app_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "{{NODE_VERSION}}"
+          cache: "{{PACKAGE_MANAGER}}"
+
+      - run: {{PM_INSTALL}}
+      - run: {{PACKAGE_MANAGER}} run build
+
+      - name: Install Playwright browsers (all)
+        run: npx playwright install --with-deps
+
+      - name: Run full Playwright suite (multi-browser)
+        env:
+          PLAYWRIGHT_ALL_BROWSERS: "1"
+          DATABASE_URL_TEST: postgresql://app:app@localhost:5432/app_test
+        run: {{PACKAGE_MANAGER}} run test:e2e
+
+      - name: Upload trace + screenshots + video
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: |
+            playwright-report/**
+            test-results/**
+          retention-days: 30
+
+  zap-baseline:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.13.0
+        with:
+          target: ${{ vars.STAGING_URL || 'https://example.com' }}
+          fail_action: false
+          cmd_options: "-a -j -m 5"
+
+  k6-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: grafana/setup-k6-action@v1
+      - name: Run k6 smoke
+        if: hashFiles('scripts/smoke.js') != ''
+        run: k6 run scripts/smoke.js --out json=k6-results.json
+      - name: Upload k6 results
+        if: always() && hashFiles('scripts/smoke.js') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-results
+          path: k6-results.json
+          retention-days: 30
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "{{NODE_VERSION}}"
+          cache: "{{PACKAGE_MANAGER}}"
+      - run: {{PM_INSTALL}}
+      - run: {{PACKAGE_MANAGER}} audit --audit-level=moderate

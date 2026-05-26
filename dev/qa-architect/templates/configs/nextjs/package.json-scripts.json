@@ -1,0 +1,32 @@
+{
+  "_comment": "Merge into existing package.json — qa-architect blueprint scripts (Next.js stack)",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage.enabled",
+    "test:unit": "vitest run src --exclude tests/**",
+    "test:integration": "vitest run tests/integration",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:all-browsers": "PLAYWRIGHT_ALL_BROWSERS=1 playwright test",
+    "test:api": "vitest run src/server tests/integration",
+    "db:test:up": "docker compose -f docker-compose.test.yml up -d postgres",
+    "db:test:down": "docker compose -f docker-compose.test.yml down -v"
+  },
+  "devDependencies": {
+    "_comment": "Run `{{PACKAGE_MANAGER}} add -D ...` for each",
+    "vitest": "^2.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "vite-tsconfig-paths": "^5.0.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/user-event": "^14.0.0",
+    "jsdom": "^25.0.0",
+    "@playwright/test": "^1.48.0",
+    "msw": "^2.0.0",
+    "supertest": "^7.0.0",
+    "@testcontainers/postgresql": "^10.0.0"
+  }
+}

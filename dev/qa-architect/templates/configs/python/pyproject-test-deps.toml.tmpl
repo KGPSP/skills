@@ -1,0 +1,34 @@
+[project.optional-dependencies]
+test = [
+  "pytest>=8.0",
+  "pytest-asyncio>=0.24",
+  "pytest-cov>=5.0",
+  "pytest-playwright>=0.5",
+  "httpx>=0.27",
+  "respx>=0.21",
+  "asyncpg>=0.29",
+  "testcontainers[postgres]>=4.0",
+  "pip-audit>=2.7",
+  # Optional (uncomment per stack):
+  # "pytest-django>=4.0",      # for Django
+  # "fastapi>=0.110",          # for FastAPI testing
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+addopts = [
+  "-ra",
+  "--strict-markers",
+  "--cov=src",
+  "--cov-report=xml",
+  "--cov-report=html",
+  "--cov-report=term-missing",
+  "--cov-fail-under={{COVERAGE_THRESHOLD}}",
+  "--junitxml=reports/junit.xml"
+]
+testpaths = ["tests"]
+markers = [
+  "unit: unit tests (fast, no I/O)",
+  "integration: integration tests (real DB/HTTP)",
+  "e2e: end-to-end tests (browser)"
+]

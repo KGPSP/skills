@@ -1,0 +1,2 @@
+# minimal uv.lock to make package_manager detection deterministic
+version = 1

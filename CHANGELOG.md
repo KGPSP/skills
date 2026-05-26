@@ -2,6 +2,39 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-26] dev/qa-architect — nowy skill (v1.0.0)
+
+### Added
+
+- **`dev/qa-architect/`** — multi-stack setup-time generator strategii QA i konfiguracji testów dla aplikacji webowych (Next.js + React, Node generic, Python, Go z PostgreSQL). Orkiestruje Managera + 5 sub-agentów (`tooling-decisor`, `config-builder`, `test-author`, `ci-author`, `reviewer`) przez Agent tool zgodnie z paradygmatem QA-swarm (DOC/QA-swarm.md §2.2, §13.2). Produkuje audytowalny `qa-blueprint/` z 24 plikami: master `qa-strategy.md`, konfiguracje runnerów per stack (vitest/jest/pytest/go test + Playwright + Testcontainers + docker-compose.test.yml), 4 sample testy per warstwa (unit/integration-HTTP/integration-DB/e2e), 3 workflowy GitHub Actions (PR/nightly/prerelease) z `permissions:` + artefakty `if: always()`, kontrakt projektowy (`CLAUDE.md.patch`, `AGENTS.md`, `.claude/skills/verify-tests/SKILL.md`), `checklists.md` (PR + testy z paper'a §12.5), `pilot-4-weeks.md` (harmonogram z §12.3). 8 faz + 2 bramki approval (#1 swarm plan, #2 handoff/patch).
+- **5 nienegocjowalnych pryncypiów** z paper'a egzekwowanych w 15 wpisach `anti-rationalization.md` + 6 S-series swarm-specific: realny PostgreSQL via Testcontainers (mock `pg`/`psycopg`/`pgx` zabronione, paper §4.2/§8.5), semantyczne query `getByRole > getByLabelText > data-testid` escape hatch (paper §10.2), async Server Components Next.js → Playwright e2e (paper §4.2), Playwright nad Cypress dla greenfield (paper §7.2), `permissions:` explicite w każdym workflow (paper §11).
+- **4 stack profiles** w `references/stack-profiles/` — Next.js+React, Node generic, Python (FastAPI/Django/Flask), Go (net/http/Gin/Echo/Fiber) — każdy z tooling per warstwa, wykluczeniami, konwencjami nazewniczymi, wzorcami testów per warstwa, templates konfiguracji.
+- **10 referencji** w `references/` (`non-negotiables`, `anti-rationalization`, `stack-detection`, `tooling-decision-matrix`, `layer-strategy`, `swarm-protocol`, `dod-evidence-protocol`, `ci-cd-protocol`, `checklists`, 4 stack-profiles) z `source:` traceability do DOC/{material_skill,since_skill,QA-swarm,INSTRUKCJA-BUDOWANIA-SKILLI,agent-teams-generator-ewaluator}.md.
+- **4 POSIX skrypty** (`#!/bin/sh` + `set -eu`, exec bit 100755): `detect-stack.sh` (deterministyczna detekcja Phase 0 — JSON exit 0 dla wykrytego stacku, exit 2 dla unknown), `check-blueprint-complete.sh` (DoD gate kompletności 24 plików), `verify-postgres-strategy.sh` (anti-mock gate — `jest.mock\\(.*pg`, `vi.mock\\(.*postgres`, `pg-mem`, `monkeypatch.*psycopg`, `sqlmock` bez Testcontainers), `extract-raw-log.sh` (helper Phase 7 z timestamp + exit code).
+- **11 templates** w `templates/`: master (`qa-strategy.md`, `claude-md-patch.md`, `agents-md.md`, `verify-tests-skill.md`, `pilot-4-weeks.md`) + configs per stack (nextjs: vitest/jest/playwright/tsconfig/package-scripts/docker-compose + 4 sample testy) + node-generic + python + go + CI (`pr.yml`, `nightly.yml`, `prerelease.yml`).
+- **Beyoncé Rule:** `tests/fixtures/GOOD/` (4 fixtures: nextjs-detect, python-detect, go-detect, complete-blueprint) + `tests/fixtures/BAD/` (3 fixtures: unknown-stack, postgres-mocked, incomplete-blueprint) + `tests/run-meta-tests.sh` z **16/16 assertions PASS** (detect-stack na 4 stackach, check-blueprint-complete na GOOD+BAD, verify-postgres-strategy na GOOD+BAD).
+
+### Why
+
+DOC/QA-swarm.md (1456-liniowy paper) dostarcza spójną metodykę QA dla stacku Next.js/React/Node/PostgreSQL łączącą paradygmat wieloagentowy (Sekcja 2) z konkretnym doborem narzędzi (Sekcja 7), wzorcami implementacyjnymi (Sekcja 8), CI/CD (Sekcja 11) i pilotażem (Sekcja 12). W repo dotychczas brakowało setup-time skilla — `playwright-test-suite` to runtime E2E executor, `audited-feature-workflow` Phase 7 to per-feature test gate, `swarm-orchestrator` to tmux orkiestracja długich runów. `qa-architect` wypełnia lukę: jednorazowy „blueprint dropper" dla nowego projektu lub gap-analysis assessment dla istniejącego.
+
+### Pozycjonowanie vs istniejące skille dev/
+
+| Tryb | Skill |
+|---|---|
+| **Setup QA blueprint (multi-stack)** | `qa-architect` ← nowy |
+| Runtime E2E (Playwright + axe + Chrome DevTools MCP) | `playwright-test-suite` |
+| Per-feature 7-warstwowy test gate | `audited-feature-workflow` Phase 7 |
+| Tmux 4 agenci Claude w panes (>2h zadania) | `swarm-orchestrator` |
+
+### DoD evidence
+
+- `sh dev/qa-architect/tests/run-meta-tests.sh` → **16/16 passed**
+- `for f in dev/qa-architect/scripts/*.sh dev/qa-architect/tests/*.sh; do sh -n "$f"; done` → wszystkie OK (zero błędów składni)
+- `sh dev/qa-architect/scripts/detect-stack.sh /tmp/fixtures/{nextjs,python,go,empty}` → exit 0/0/0/2 zgodnie z spec
+- `dev-tools` plugin → **v1.6.0** (skill dopisany do `skills:`)
+- `marketplace.json` root → **v1.8.0** (description dev-tools: 6 → 7 skilli)
+
 ## [2026-05-25] legal/planowanie-wydatkow-it-psp — **migracja na klasyfikację UFP 2027+** (v1.1.0)
 
 ### Changed (BREAKING)

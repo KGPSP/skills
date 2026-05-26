@@ -1,0 +1,49 @@
+//go:build integration
+
+package db_test
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/stretchr/testify/require"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/modules/postgres"
+	"github.com/testcontainers/testcontainers-go/wait"
+)
+
+// SetupTestPostgres starts an ephemeral Postgres 16 container and returns a connection
+// pool with t.Cleanup() registered to terminate the container.
+//
+// Paper §4.2, §8.5: testing SQL layer MUST use real Postgres, not mocks.
+func SetupTestPostgres(t *testing.T) *pgxpool.Pool {
+	t.Helper()
+	ctx := context.Background()
+
+	pgContainer, err := postgres.RunContainer(ctx,
+		testcontainers.WithImage("postgres:16-alpine"),
+		postgres.WithDatabase("app_test"),
+		postgres.WithUsername("app"),
+		postgres.WithPassword("app"),
+		testcontainers.WithWaitStrategy(
+			wait.ForLog("database system is ready to accept connections").
+				WithOccurrence(2).
+				WithStartupTimeout(60*time.Second),
+		),
+	)
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		_ = pgContainer.Terminate(ctx)
+	})
+
+	connStr, err := pgContainer.ConnectionString(ctx, "sslmode=disable")
+	require.NoError(t, err)
+
+	pool, err := pgxpool.New(ctx, connStr)
+	require.NoError(t, err)
+	t.Cleanup(pool.Close)
+
+	return pool
+}

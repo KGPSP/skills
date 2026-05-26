@@ -1,0 +1,7 @@
+[project]
+name = "good-python-fixture"
+version = "0.1.0"
+dependencies = [
+  "fastapi>=0.110",
+  "asyncpg>=0.29",
+]

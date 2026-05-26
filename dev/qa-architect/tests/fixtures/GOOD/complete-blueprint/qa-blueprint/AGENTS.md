@@ -1,0 +1,1 @@
+# AGENTS.md (good fixture)

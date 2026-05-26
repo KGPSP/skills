@@ -1,0 +1,13 @@
+# Go modules required for the qa-architect blueprint.
+# Run for each:
+#   go get -u <module>
+#   go mod tidy
+
+github.com/jackc/pgx/v5
+github.com/jackc/pgx/v5/pgxpool
+github.com/testcontainers/testcontainers-go
+github.com/testcontainers/testcontainers-go/modules/postgres
+github.com/stretchr/testify   # optional, idiomatic to use stdlib `testing`
+
+# For vulnerability scanning (CI):
+#   go install golang.org/x/vuln/cmd/govulncheck@latest

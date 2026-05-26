@@ -1,0 +1,91 @@
+name: quality-gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: app_test
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d app_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # required by dependency-review
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "{{NODE_VERSION}}"
+          cache: "{{PACKAGE_MANAGER}}"
+
+      - name: Install deps
+        run: {{PM_INSTALL}}
+
+      - name: Lint
+        run: {{PACKAGE_MANAGER}} run lint
+
+      - name: Typecheck
+        run: {{PACKAGE_MANAGER}} run typecheck
+
+      - name: Unit + integration tests (with coverage)
+        env:
+          DATABASE_URL_TEST: postgresql://app:app@localhost:5432/app_test
+          USE_EXISTING_POSTGRES: "1"
+        run: {{PACKAGE_MANAGER}} run test:coverage
+
+      - name: Build
+        run: {{PACKAGE_MANAGER}} run build
+
+      - name: Install Playwright browsers
+        if: hashFiles('playwright.config.ts', 'playwright.config.js') != ''
+        run: npx playwright install --with-deps chromium
+
+      - name: Smoke E2E
+        if: hashFiles('playwright.config.ts', 'playwright.config.js') != ''
+        run: {{PACKAGE_MANAGER}} run test:e2e -- --grep "@smoke|@golden"
+
+      - name: Dependency review (GH-native)
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+      - name: npm audit
+        if: matrix.pm == 'npm' || env.PM == 'npm' || true
+        run: {{PACKAGE_MANAGER}} audit --audit-level=high || true   # warn-only on PR; nightly enforces
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            coverage/**
+            reports/**
+            playwright-report/**
+            test-results/**
+          retention-days: 30

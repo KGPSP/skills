@@ -1,0 +1,30 @@
+import { defineConfig } from 'vitest/config'
+import tsconfigPaths from 'vite-tsconfig-paths'
+
+export default defineConfig({
+  plugins: [tsconfigPaths()],
+  test: {
+    environment: 'node',
+    include: [
+      'src/**/*.test.ts',
+      'tests/unit/**/*.test.ts',
+      'tests/integration/**/*.{test,int.test}.ts'
+    ],
+    exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
+    reporters: ['default', 'junit'],
+    outputFile: { junit: './reports/vitest.junit.xml' },
+    coverage: {
+      enabled: false,
+      provider: 'v8',
+      reporter: ['text', 'html', 'json-summary'],
+      include: ['src/**/*.ts'],
+      exclude: ['**/*.d.ts', 'src/test/**'],
+      thresholds: {
+        lines: {{COVERAGE_LINES}},
+        functions: {{COVERAGE_FUNCTIONS}},
+        branches: {{COVERAGE_BRANCHES}},
+        statements: {{COVERAGE_STATEMENTS}}
+      }
+    }
+  }
+})

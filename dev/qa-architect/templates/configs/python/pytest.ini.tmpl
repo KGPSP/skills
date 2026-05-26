@@ -1,0 +1,16 @@
+[pytest]
+asyncio_mode = auto
+addopts =
+    -ra
+    --strict-markers
+    --cov=src
+    --cov-report=xml
+    --cov-report=html
+    --cov-report=term-missing
+    --cov-fail-under={{COVERAGE_THRESHOLD}}
+    --junitxml=reports/junit.xml
+testpaths = tests
+markers =
+    unit: unit tests (fast, no I/O)
+    integration: integration tests (real DB/HTTP)
+    e2e: end-to-end tests (browser)

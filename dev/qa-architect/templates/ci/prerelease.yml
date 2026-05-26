@@ -1,0 +1,92 @@
+name: prerelease
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "Pre-release target URL (staging or canary)"
+        required: true
+  push:
+    tags:
+      - "v*-rc*"
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  k6-stress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: grafana/setup-k6-action@v1
+      - name: Stress + soak
+        if: hashFiles('scripts/stress.js') != ''
+        run: k6 run scripts/stress.js --out json=k6-stress.json
+      - name: Upload results
+        if: always() && hashFiles('scripts/stress.js') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-stress
+          path: k6-stress.json
+          retention-days: 90
+
+  zap-api-scan:
+    runs-on: ubuntu-latest
+    if: hashFiles('openapi.yaml', 'openapi.yml', 'openapi.json') != ''
+    steps:
+      - uses: actions/checkout@v4
+      - name: ZAP API scan
+        uses: zaproxy/action-api-scan@v0.9.0
+        with:
+          target: ${{ inputs.target_url }}
+          format: openapi
+          cmd_options: "-a -j -d"
+
+  full-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: app_test
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U app -d app_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "{{NODE_VERSION}}"
+          cache: "{{PACKAGE_MANAGER}}"
+      - run: {{PM_INSTALL}}
+      - run: {{PACKAGE_MANAGER}} run build
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Full Playwright (multi-browser) + integration + db
+        env:
+          PLAYWRIGHT_ALL_BROWSERS: "1"
+          DATABASE_URL_TEST: postgresql://app:app@localhost:5432/app_test
+        run: {{PACKAGE_MANAGER}} run test:coverage && {{PACKAGE_MANAGER}} run test:e2e
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prerelease-reports
+          path: |
+            coverage/**
+            reports/**
+            playwright-report/**
+            test-results/**
+          retention-days: 90
