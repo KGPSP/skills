@@ -2,6 +2,27 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-27] DOC/ — publikacja kanonicznego korpusu pryncypiów + cleanup
+
+### Changed
+
+- **`.gitignore`** — usunięto wpis `DOC/`. Katalog (10 plików, ~350 KB) jest teraz commitowany do repo jako kanoniczne źródło prawdy dla skilli (pola `source:`/`sources:` wskazujące `DOC/...` w ~140 plikach skilli są od teraz dostępne dla każdego klonującego repo).
+- **`CLAUDE.md`** — zaktualizowano dwa zdania o "DOC/ gitignored" (sekcja Zasada nr 1 oraz Git). `CLAUDE.md` pozostaje per-developer local-only.
+- **`DOC/README.md`** — bump do `v2`: katalog uzupełniony o `QA-swarm.md`, `agents_swarm.md`, `GEO-SEO.md`; usunięto wzmiankę o nieistniejącym `archive/`; przeliczono cytowania (material 78, since 67, agent-teams 28, INSTRUKCJA 25, QA-swarm 20, goal_mode 10, agents_swarm 3); konwencje doprecyzowane.
+
+### Fixed (spójność wizualna paper-style)
+
+- **`DOC/QA-swarm.md`**, **`DOC/agents_swarm.md`** — dodany pełen YAML frontmatter (title/type/status/version/audience/tags/sources/updated) + blockquote header `> **Typ:** … · **Status:** … · **Aktualizacja:** …` (wcześniej metadane były wpisane bold w treści, niezgodnie z konwencją "każdy dokument = paper").
+- **`DOC/material_skill.md`**, **`DOC/since_skill.md`** — dodane brakujące pola `status: kanoniczny` + `version: v1` we frontmatter + blockquote header.
+- **`DOC/INSTRUKCJA-BUDOWANIA-SKILLI.md:40`** — zanonimizowana hardkodowana ścieżka `/Users/sq13pl/Documents/GitHub/skills` → `<repo-root>`.
+- **`DOC/.DS_Store`** — usunięty artefakt macOS.
+- **`dev/qa-architect/{CHANGELOG 2.md, README 2.md, tests/run-meta-tests 2.sh}`** — usunięte artefakty cp collision macOS (analogiczne do czyszczenia w `3d21bf0`); `CHANGELOG 2.md` był starszą wersją (pre-v1.0.1) wchłoniętą przez aktualną.
+
+### Notes
+
+- **Audyt wrażliwości przed publikacją:** wszystkie `*.md` w `DOC/` przeskanowane pod kątem emaili / kluczy API / hostnamów / ścieżek absolutnych. Czyste — jedyne emaile to przykłady kodu `anna@example.com`, secrets to placeholdery GitHub Actions `${{ secrets.ANTHROPIC_API_KEY }}`.
+- **Stabilność cytowań:** żadna nazwa pliku ani numeracja sekcji (§N) nie została zmieniona — pola `source:` w skillach nadal działają.
+
 ## [2026-05-26] dev/qa-architect — code review fixes (v1.0.1)
 
 ### Fixed (3 Critical + 4 Important + 3 Nit z reviewu `feature-dev:code-reviewer`)
