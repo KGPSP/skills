@@ -1,5 +1,7 @@
 # Analysis Report — plan #42 — sample
 
+- effort-level: max
+
 ## Stack
 Next.js 14 (app router) + Prisma/Postgres + Vitest.
 

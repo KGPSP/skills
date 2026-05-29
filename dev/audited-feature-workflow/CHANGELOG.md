@@ -4,6 +4,18 @@
 > Wariant **senior-grade** Claude Code workflow — koegzystuje z `replit-style-workflow` (wygodny, historycznie `feature-planner-v2`) i `feature-spec-planner` (planning-only).
 > **Rename 2026-05-25:** `feature-planner-v3` → `audited-feature-workflow` (folder + frontmatter `name:`). Trigger keywords zachowane (`/goal`, `senior-grade feature`, `dodaj feature v3`).
 
+## [v3.6.1] — 2026-05-29 — Code-review fixes (1 Critical + 3 Major, pryncypia DOC)
+
+### Fixed
+- **[C-1] `run-goal-loop.sh`** — walidacja numeryczności state file przed arytmetyką capów (`case … *[!0-9]*`). Skażony `<goal>-goal-iter-state` nie wywala już skryptu `unbound variable` pod `set -u` PRZED bramką iter/time-cap (caps realnie machine-enforced). + regression test (Prove-It #13).
+- **[M-1] SKILL.md** — usunięto fałszywą metrykę „31 case'ów" (runner ≠ 31) → `X/X passed`.
+- **[M-2] SKILL.md** — Gate Phase 0: „6/6 pól" → „5/5 pól" (po usunięciu pola `ralph` w v3.5.0).
+- **[M-3] effort/Dynamic Workflows egzekwowalne** — `check-analysis-report.sh` wymaga zadeklarowanego `effort-level:` w analysis report (Phase 1). Standard v3.6.0 dostał obserwowalny dowód + fixture + meta-test (koniec „czystej prozy").
+
+### Dowód
+- `bash tests/run-meta-tests.sh` → `X/X passed` (+2 case'y: regression corrupt-state C-1, analysis-no-effort M-3).
+- Code review: Five-Axis + pryncypia DOC (material §3/§4/§5).
+
 ## [v3.6.0] — 2026-05-29 — Dynamic Workflows + ultrathink/effort jako standard analizy
 
 ### Added

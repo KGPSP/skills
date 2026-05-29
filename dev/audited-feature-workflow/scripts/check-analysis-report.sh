@@ -56,5 +56,10 @@ if [ "$open_q" -gt 0 ]; then
     exit 1
 fi
 
-printf '{"status":"ok","message":"analysis report complete, open questions resolved","file":"%s"}\n' "$file"
+if ! grep -iqE 'effort[-_ ]?level[[:space:]]*[:=]' "$file"; then
+    printf '{"status":"fail","message":"missing effort-level declaration (Phase 1 standard v3.6.0)","file":"%s"}\n' "$file" >&2
+    exit 1
+fi
+
+printf '{"status":"ok","message":"analysis report complete, open questions resolved, effort declared","file":"%s"}\n' "$file"
 exit 0

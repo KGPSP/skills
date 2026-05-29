@@ -208,6 +208,14 @@ assert_exit "run-goal-loop time cap exceeded -> exit 2 (time-cap-hit)" "2" \
   bash "$SCRIPTS/run-goal-loop.sh" --goal "$T/x-goal-statement.md" --plan "$T/plan.md" --max-time 1
 rm -rf "$T"
 
+T=$(mk)
+cp "$FIXTURES/goal-statement-valid.md" "$T/x-goal-statement.md"
+echo "plan" > "$T/plan.md"
+printf 'iter=notanumber\nstart_epoch=notanumber\n' > "$T/x-goal-iter-state"
+assert_exit "run-goal-loop corrupt iter-state -> no crash (regression C-1)" "0" \
+  bash "$SCRIPTS/run-goal-loop.sh" --goal "$T/x-goal-statement.md" --plan "$T/plan.md" --max-iter 20
+rm -rf "$T"
+
 # ============ [8] check-env-detection.sh (Phase 0) ============
 echo "[8] check-env-detection.sh"
 assert_exit "env-detection complete (5 fields) -> exit 0" "0" \
@@ -221,6 +229,8 @@ assert_exit "analysis complete + open-questions resolved -> exit 0" "0" \
   bash "$SCRIPTS/check-analysis-report.sh" --file "$FIXTURES/analysis-complete.md"
 assert_exit "analysis with unresolved open questions -> exit 1" "nonzero" \
   bash "$SCRIPTS/check-analysis-report.sh" --file "$FIXTURES/analysis-open-questions.md"
+assert_exit "analysis without effort-level -> exit 1 (v3.6.1 standard)" "nonzero" \
+  bash "$SCRIPTS/check-analysis-report.sh" --file "$FIXTURES/analysis-no-effort.md"
 
 # ============ [10] check-hypotheses.sh (Phase 2+3) ============
 echo "[10] check-hypotheses.sh"

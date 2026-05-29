@@ -139,8 +139,8 @@ NOW_EPOCH=$(date -u +%s)
 if [[ -f "$STATE_FILE" ]]; then
   ITER=$(awk -F= '/^iter=/{print $2}' "$STATE_FILE")
   START_EPOCH=$(awk -F= '/^start_epoch=/{print $2}' "$STATE_FILE")
-  ITER=${ITER:-0}
-  START_EPOCH=${START_EPOCH:-$NOW_EPOCH}
+  case "$ITER" in (''|*[!0-9]*) ITER=0 ;; esac
+  case "$START_EPOCH" in (''|*[!0-9]*) START_EPOCH=$NOW_EPOCH ;; esac
   ITER=$((ITER + 1))
 else
   ITER=1
