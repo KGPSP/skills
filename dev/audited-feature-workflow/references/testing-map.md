@@ -32,7 +32,7 @@ description: Mapa testów (unit / integration / regression) dla każdego skryptu
 
 | Typ | Definicja | Lokalizacja | Konwencja nazwy |
 |---|---|---|---|
-| **Unit** | Jeden skrypt vs jedna fixture, exit code + stdout/JSON check. | `tests/run-meta-tests.sh` (TODO — runner nie istnieje) + `tests/fixtures/<komponent>-<scenariusz>.<ext>` | `<komponent>-<scenariusz>` (np. `ac-coverage-incomplete-mapping.md`) |
+| **Unit** | Jeden skrypt vs jedna fixture, exit code + stdout/JSON check. | `tests/run-meta-tests.sh` (runner istnieje) + `tests/fixtures/<komponent>-<scenariusz>.<ext>` | `<komponent>-<scenariusz>` (np. `ac-coverage-incomplete-mapping.md`) |
 | **Integration** | Chain ≥2 skryptów (np. `derive-goal-from-ac.sh` produkuje `goal-statement.md`, który zżywa `run-goal-loop.sh`). | `tests/run-meta-tests.sh` — sceny z pipeline | Opis scenariusza |
 | **Regression** | Fixture odtwarzająca historyczny bug skryptu. | `tests/fixtures/regression-<short-desc>.<ext>` | `regression-<short-desc>` |
 
@@ -40,22 +40,34 @@ description: Mapa testów (unit / integration / regression) dla każdego skryptu
 
 | Skrypt (`scripts/`) | Funkcjonalność | Unit (fixtures) | Integration | Regression | Status |
 |---|---|---|---|---|---|
-| `check-pr-size.sh` | PR sizing gate: ≤100 OK, ≤300 z uzasadnieniem, >1000 hard stop | (TODO) `pr-size-under-100.diff`, `pr-size-200-500.diff`, `pr-size-over-1000.diff` | — | — | ❌ |
-| `verify-build-clean.sh` | Auto-detect stack (package.json/Cargo/pyproject/go.mod), exit 0 + zero warnings | (TODO) `build-clean-node.tar`, `build-warning-node.tar`, `build-error-node.tar` | stack auto-detect scena (4 fixtures) | — | ❌ |
-| `check-ac-coverage.sh` | 1:1 AC ↔ Test mapping per plan; każdy AC ma test, każdy test ma plik | (TODO) `complete-plan.md` (już istnieje, martwy), `incomplete-plan.md` (już istnieje, martwy), `ac-coverage-missing-test-file.md`, `ac-coverage-orphan-test.md` | — | — | ❌ (fixtures istnieją, runner brak) |
-| `extract-raw-log.sh` | Run cmd, capture last N lines + status, emit Markdown code block | (TODO) `cmd-success.sh`, `cmd-fail-with-stderr.sh`, `cmd-timeout.sh` | — | — | ❌ |
-| `api-impact-scan.sh` | Hyrum scan: public exports vs BASE → breaking/additive/internal + callerzy | (TODO) `api-impact-breaking.diff`, `api-impact-additive.diff`, `api-impact-internal-only.diff` | git diff scena | — | ❌ |
-| `derive-goal-from-ac.sh` | Parser AC + generator `goal-statement.md` + `goal-prompt.txt` | (TODO) `complete-plan.md` (istnieje), `incomplete-plan.md` (istnieje), `ac-malformed-table.md` | derive → run-goal-loop chain | — | ❌ (fixtures istnieją, runner brak) |
-| `run-goal-loop.sh` | Pure validator/driver: 1 invocation = 1 iteracja, emit GREEN/NEEDS_AGENT_ITERATION | (TODO) `goal-statement-valid.md`, `goal-statement-missing-section.md` | — | — | ❌ |
+| `check-pr-size.sh` | PR sizing gate: ≤100 OK, ≤300 z uzasadnieniem, >1000 hard stop | (TODO) `pr-size-under-100.diff`, `pr-size-200-500.diff`, `pr-size-over-1000.diff` | — | — | ✅ |
+| `verify-build-clean.sh` | Auto-detect stack (package.json/Cargo/pyproject/go.mod), exit 0 + zero warnings | (TODO) `build-clean-node.tar`, `build-warning-node.tar`, `build-error-node.tar` | stack auto-detect scena (4 fixtures) | — | ✅ |
+| `check-ac-coverage.sh` | 1:1 AC ↔ Test mapping per plan; każdy AC ma test, każdy test ma plik | (TODO) `complete-plan.md` (już istnieje, martwy), `incomplete-plan.md` (już istnieje, martwy), `ac-coverage-missing-test-file.md`, `ac-coverage-orphan-test.md` | — | — | ✅ |
+| `extract-raw-log.sh` | Run cmd, capture last N lines + status, emit Markdown code block | (TODO) `cmd-success.sh`, `cmd-fail-with-stderr.sh`, `cmd-timeout.sh` | — | — | ✅ |
+| `api-impact-scan.sh` | Hyrum scan: public exports vs BASE → breaking/additive/internal + callerzy | (TODO) `api-impact-breaking.diff`, `api-impact-additive.diff`, `api-impact-internal-only.diff` | git diff scena | — | ✅ |
+| `derive-goal-from-ac.sh` | Parser AC + generator `goal-statement.md` + `goal-prompt.txt` | (TODO) `complete-plan.md` (istnieje), `incomplete-plan.md` (istnieje), `ac-malformed-table.md` | derive → run-goal-loop chain | — | ✅ |
+| `run-goal-loop.sh` | Pure validator/driver: 1 invocation = 1 iteracja, emit GREEN/NEEDS_AGENT_ITERATION; caps iter/time maszynowe (state file) | `goal-statement-valid.md`, `goal-statement-no-weryfikacja.md`, `goal-statement-chaining.md` | dry-run + caps (iter/time) scenariusze | seed state iter=99 / start_epoch=1 | ✅ |
+| `check-env-detection.sh` | Gate Phase 0: env-detection.md kompletny (6 pól) | `env-detection-complete.md`, `env-detection-missing-fields.md` | — | — | ✅ |
+| `check-analysis-report.sh` | Gate Phase 1: raport + sekcje core + Open questions rozwiązane | `analysis-complete.md`, `analysis-open-questions.md` | — | — | ✅ |
+| `check-hypotheses.sh` | Gate Phase 2+3: ≥3 hipotezy (Minimal/Idiomatic/Ambitious) + Recommendation | `hypotheses-complete.md`, `hypotheses-missing-ambitious.md` | — | — | ✅ |
+| `check-screenshots.sh` | Gate Phase 7.8: screenshot per AC-F | `screenshots-plan.md` + dir setup w runnerze | — | — | ✅ |
+| `check-adr.sh` | Gate Phase 9: sekcje ADR obowiązkowe (Context/Decision/Anti-rationalization/Consequences) | `adr-complete.md`, `adr-missing-consequences.md` | — | — | ✅ |
 
-**Stan ogółem (2026-05-25 snapshot):**
-- **0 / 7 skryptów ma unit testy** (runner `tests/run-meta-tests.sh` NIE ISTNIEJE)
-- **0 integration tests**
-- **0 regression fixtures**
-- 2 fixtures istnieją w `tests/fixtures/` (`complete-plan.md`, `incomplete-plan.md`) ale są **martwe** — żaden skrypt v3 ich nie wywołuje (referencje tylko w prozie CHANGELOG/README/analysis-protocol.md)
-- Bramki `Phase 6` (PR sizing), `Phase 7` (build clean + AC coverage) zależą od skryptów które nie mają meta-testów → ryzyko cichych regresji walidatorów
+**Stan ogółem (2026-05-29 snapshot, v3.4.0):**
+- **12 / 12 skryptów ma unit testy** (runner `tests/run-meta-tests.sh` ISTNIEJE — 30 case'ów GOOD/BAD)
+- Integration: scenariusze dry-run + caps (iter/time przez state file) dla `run-goal-loop.sh`
+- Regression: dodawane wg procedury Prove-It (sekcja niżej) per bug skryptu
+- `complete-plan.md`/`incomplete-plan.md` — **ożywione** (wywoływane przez derive-goal fixtures w runnerze)
+- DoD: `bash tests/run-meta-tests.sh` → `30/30 passed`, exit 0
+- Bramki Phase 0–9 mają deterministyczne walidatory pokryte meta-testami → brak ryzyka cichych regresji
 
-## TODO retrofitting (kolejność)
+## Retrofitting — ZREALIZOWANE (2026-05-29, v3.4.0)
+
+> Runner `tests/run-meta-tests.sh` istnieje; 12/12 skryptów ma meta-testy (`30/30 passed`).
+> 5 nowych skryptów-bramek (Phase 0/1/2/3/7.8/9) + caps maszynowe w `run-goal-loop.sh`.
+> Poniższa lista pozostaje jako log historyczny pierwotnej kolejności.
+
+### Pierwotna kolejność (log)
 
 1. **`tests/run-meta-tests.sh`** — skopiuj wzorzec z `dev/agent-teams-builder/tests/run-meta-tests.sh` (POSIX-friendly: `#!/usr/bin/env bash`, `set -uo pipefail`, `assert_exit`, helpers).
 2. **`check-pr-size.sh`** — najprostszy do retrofittingu (input: ścieżka diff lub git refs). Daj 3 GOOD/BAD fixtures (under-100, 200-500, over-1000). Priorytet #1.

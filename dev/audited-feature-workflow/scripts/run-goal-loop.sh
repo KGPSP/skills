@@ -6,11 +6,11 @@
 #                       [--worktree PATH] [--files-touched CSV]
 #                       [--fragile-paths CSV] [--dry-run]
 #
-# Note: --max-iter, --max-time, --worktree, --files-touched are accepted and
-# echoed in dry-run for caller visibility, but NOT enforced by this script.
-# The calling Claude session is responsible for counting iterations, timing
-# out, and verifying scope/worktree boundaries before re-invoking this script.
-# Each invocation runs verification commands once and exits.
+# Caps enforcement (v3.4.0): --max-iter and --max-time are now MACHINE-ENFORCED via a
+# persistent state file (<goal-base>-goal-iter-state) across single-shot invocations.
+# Exceeding either emits status iter-cap-hit / time-cap-hit and exits 2 before running
+# verification commands. --worktree and --files-touched scope boundaries remain the
+# calling Claude session's responsibility. Each invocation runs verification once.
 
 set -euo pipefail
 
@@ -130,6 +130,50 @@ fi
 LOG_DIR=$(dirname "$GOAL")
 RUN_LOG="${LOG_DIR}/$(basename "$GOAL" -goal-statement.md)-goal-run-log.md"
 RESULT="${LOG_DIR}/$(basename "$GOAL" -goal-statement.md)-goal-result.md"
+
+# --- Iteration / time cap enforcement (machine-enforced via state file) ---
+# State persists iter count + ISO start across single-shot invocations so caps are
+# verified by the script, not trusted from the caller.
+STATE_FILE="${LOG_DIR}/$(basename "$GOAL" -goal-statement.md)-goal-iter-state"
+NOW_EPOCH=$(date -u +%s)
+if [[ -f "$STATE_FILE" ]]; then
+  ITER=$(awk -F= '/^iter=/{print $2}' "$STATE_FILE")
+  START_EPOCH=$(awk -F= '/^start_epoch=/{print $2}' "$STATE_FILE")
+  ITER=${ITER:-0}
+  START_EPOCH=${START_EPOCH:-$NOW_EPOCH}
+  ITER=$((ITER + 1))
+else
+  ITER=1
+  START_EPOCH=$NOW_EPOCH
+fi
+{ echo "iter=$ITER"; echo "start_epoch=$START_EPOCH"; } > "$STATE_FILE"
+ELAPSED_MIN=$(( (NOW_EPOCH - START_EPOCH) / 60 ))
+
+if [[ "$ITER" -gt "$MAX_ITER" ]]; then
+  echo "STATUS=iter-cap-hit" >&2
+  echo "ERR: iteration cap exceeded (iter=$ITER > max-iter=$MAX_ITER). Report state to user; no Phase 7." >&2
+  {
+    echo "# Goal Result"
+    echo ""
+    echo "- **status**: iter-cap-hit"
+    echo "- **iter**: $ITER"
+    echo "- **max-iter**: $MAX_ITER"
+  } > "$RESULT"
+  exit 2
+fi
+
+if [[ "$ELAPSED_MIN" -gt "$MAX_TIME" ]]; then
+  echo "STATUS=time-cap-hit" >&2
+  echo "ERR: time cap exceeded (elapsed=${ELAPSED_MIN}min > max-time=${MAX_TIME}min). Report state to user; no Phase 7." >&2
+  {
+    echo "# Goal Result"
+    echo ""
+    echo "- **status**: time-cap-hit"
+    echo "- **elapsed-min**: $ELAPSED_MIN"
+    echo "- **max-time**: $MAX_TIME"
+  } > "$RESULT"
+  exit 2
+fi
 
 # Capture baseline git commit for fragile-zone diff check at script start.
 BASELINE_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "")

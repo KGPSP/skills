@@ -103,14 +103,14 @@ loop:
 
 **Scenariusze stop:**
 
-`run-goal-loop.sh` jest single-shot per invocation: emituje 2 statusy (`GREEN`, `NEEDS_AGENT_ITERATION`). Pozostałe statusy są caller-emitted przez calling Claude session, która agreguje stan między re-invocations.
+`run-goal-loop.sh` jest single-shot per invocation: emituje `GREEN` / `NEEDS_AGENT_ITERATION`, a od v3.4.0 **maszynowo** także `iter-cap-hit` / `time-cap-hit` (przez plik stanu `<goal>-goal-iter-state`) oraz `scope-violation` (chaining/fragile). Status `no-progress` pozostaje caller-emitted (agregacja error_hash między re-invocations).
 
 | Status | Emitent | Trigger | Działanie |
 |---|---|---|---|
 | `GREEN` | skrypt | wszystkie cmd exit 0 | przejdź do Phase 6.5/7 |
 | `NEEDS_AGENT_ITERATION` | skrypt | ≥1 cmd fail | hand-off do calling agent, re-invoke po commit |
-| `iter-cap-hit` | caller | iter > max-iter | raport, brak Phase 7, decyzja user |
-| `time-cap-hit` | caller | elapsed > max-time | raport, brak Phase 7, decyzja user |
+| `iter-cap-hit` | skrypt | iter > max-iter (state file) | raport, brak Phase 7, decyzja user |
+| `time-cap-hit` | skrypt | elapsed > max-time (state file) | raport, brak Phase 7, decyzja user |
 | `scope-violation` | caller | plik poza files-touched LUB Fragile path | hard stop, eskalacja |
 | `no-progress` | caller | 3 iter z tym samym error_hash | hard stop, raport |
 | `pr-too-big` | caller | diff > 1000 linii | hard stop, split/justify |

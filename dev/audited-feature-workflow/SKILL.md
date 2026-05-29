@@ -23,7 +23,7 @@ sources:
   - DOC/material_skill.md
   - DOC/since_skill.md
   - DOC/goal_mode.md
-version: v3.3.0
+version: v3.4.0
 extends: replit-style-workflow
 size-limit: 500-lines-hard
 ---
@@ -59,7 +59,7 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 | 9 | „Test pokrywa happy path" | Beyoncé Rule. Każdy edge case z AC-N → osobny test. |
 | 10 | „DRY-uję testy w helper" | DAMP over DRY. Test czytelny jak spec, bez magicznych helperów. |
 | 11 | „Goal-statement deryw kompletny, można pominąć Gate #1.5" | Gate #1.5 jest nienegocjowalny w /goal. Bez jawnej zgody → brak startu pętli. |
-| 12 | „Skrypt v3 (`check-pr-size`, `api-impact-scan` …) jest deterministyczny, meta-test zbędny" | Odrzucono. **Beyoncé Rule dla samego skilla.** Każdy `scripts/*.sh` ma fixture + `assert_exit` w `tests/run-meta-tests.sh` (runner do utworzenia — wzorzec a-t-b). Bez tego skrypt może milcząco regresować przy refaktorze. Patrz [testing-map.md](references/testing-map.md). |
+| 12 | „Skrypt v3 (`check-pr-size`, `api-impact-scan` …) jest deterministyczny, meta-test zbędny" | Odrzucono. **Beyoncé Rule dla samego skilla.** Każdy `scripts/*.sh` ma fixture + `assert_exit` w `tests/run-meta-tests.sh` (runner istnieje — 12/12 skryptów, 31 case'ów). Bez tego skrypt może milcząco regresować przy refaktorze. Patrz [testing-map.md](references/testing-map.md). |
 | 13 | „Bug w skrypcie v3 — fix, regresji nie dorabiam" | Odrzucono. **Prove-It Pattern dla skryptu** (analog Phase 6.5 ale dla samego walidatora). `tests/fixtures/regression-<short-desc>.<ext>` + failing `assert_exit` PRZED fixem. Patrz [testing-map.md](references/testing-map.md) §Procedura fix buga. |
 
 ---
@@ -99,6 +99,7 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 
 > [!warning] Output Phase 0
 > `env-detection.md` z polami: stack, size, fragile, ralph, teams, plan-number.
+> **Gate Phase 0:** `sh {baseDir}/dev/audited-feature-workflow/scripts/check-env-detection.sh --file env-detection.md` → exit 0 (6/6 pól).
 
 ---
 
@@ -115,6 +116,7 @@ Wywołaj [analysis-protocol.md](references/analysis-protocol.md). Wymagane outpu
 
 > [!warning] Output Phase 1
 > `analysis/<plan-id>.md` + `analysis/<plan-id>-api-impact.md` (jeśli zmiana publiczna).
+> **Gate Phase 1:** `sh {baseDir}/dev/audited-feature-workflow/scripts/check-analysis-report.sh --file analysis/<plan-id>.md` → exit 0 (sekcje core + Open questions rozwiązane).
 
 ---
 
@@ -139,6 +141,9 @@ Generuj minimum 3 alternatywy: **Minimal** (najmniejszy ruch), **Idiomatic** (zg
 2. Uzasadnij wybór względem 5 Non-negotiables.
 3. **Hyrum Risk section** (jeśli zmiana publiczna) — co się stanie z istniejącymi callerami.
 4. Kluczowe decyzje techniczne (formaty, biblioteki, schematy).
+
+> [!warning] Gate Phase 2+3
+> `sh {baseDir}/dev/audited-feature-workflow/scripts/check-hypotheses.sh --file <hipotezy-lub-plan.md>` → exit 0 (≥3 hipotezy Minimal/Idiomatic/Ambitious + Recommendation).
 
 ---
 
@@ -283,7 +288,7 @@ Stop warunki (poza GREEN):
 Każdy stop ≠ GREEN: raport do użytkownika, **brak Phase 7**, brak merge.
 
 > [!note] Emitenci statusów
-> Skrypt `run-goal-loop.sh` emituje TYLKO `GREEN` lub `NEEDS_AGENT_ITERATION` (single-shot per invocation). Pozostałe statusy (`iter-cap-hit`, `time-cap-hit`, `no-progress`) są emitted by calling Claude session która agreguje stan między re-invocations. Patrz [goal-mode-protocol.md §8](references/goal-mode-protocol.md).
+> `run-goal-loop.sh` emituje `GREEN`/`NEEDS_AGENT_ITERATION` oraz — od v3.4.0 — **maszynowo** `iter-cap-hit`/`time-cap-hit` (plik stanu `<goal>-goal-iter-state`) i `scope-violation` (chaining/fragile). Status `no-progress` pozostaje caller-emitted. Patrz [goal-mode-protocol.md §8](references/goal-mode-protocol.md).
 
 > [!danger] Jeśli `--fragile`
 > Reżim **Plan-Validate-Execute** — patrz [fragile-operations-protocol.md](references/fragile-operations-protocol.md). Bez kreatywności. Dosłowne wykonanie zatwierdzonych komend.
@@ -323,7 +328,7 @@ Bramki Phase 7:
 - [ ] **AC coverage 1:1**: `sh {baseDir}/dev/audited-feature-workflow/scripts/check-ac-coverage.sh --plan "$PLAN_FILE"` → 100%.
 - [ ] **DAMP checklist** per test file (patrz [testing-protocol.md](references/testing-protocol.md) sekcja DAMP).
 - [ ] **Trace runtime** dla ścieżki krytycznej.
-- [ ] **Meta-testy skryptów v3 (Beyoncé Rule dla samego skilla)** — jeśli ta sesja dodała/zmodyfikowała `scripts/*.sh`: fixture w `tests/fixtures/` + `assert_exit` w `tests/run-meta-tests.sh` (utwórz runner jeśli nie istnieje — wzorzec: `dev/agent-teams-builder/tests/`). Fix buga skryptu → `regression-*.<ext>` (analog Phase 6.5 dla walidatora). Mapa + procedura: [testing-map.md](references/testing-map.md). **Stan obecny: 0 / 7 skryptów ma meta-testy** — patrz testing-map.md §TODO retrofitting.
+- [ ] **Meta-testy skryptów v3 (Beyoncé Rule dla samego skilla)** — jeśli ta sesja dodała/zmodyfikowała `scripts/*.sh`: fixture w `tests/fixtures/` + `assert_exit` w `tests/run-meta-tests.sh` (utwórz runner jeśli nie istnieje — wzorzec: `dev/agent-teams-builder/tests/`). Fix buga skryptu → `regression-*.<ext>` (analog Phase 6.5 dla walidatora). Mapa + procedura: [testing-map.md](references/testing-map.md). **Stan obecny: 12 / 12 skryptów ma meta-testy** (`tests/run-meta-tests.sh`, 31 case'ów, `X/X passed`).
 
 > [!important] Brak któregokolwiek artefaktu = STOP. **„Wydaje się działać" to halucynacja**, nie status.
 
@@ -335,6 +340,7 @@ Uruchom dev server. Otwórz w przeglądarce. **Screenshot per AC-F** z UI. Walid
 
 > [!important] Gate #4 — preview approval
 > Bez screenshotów per AC-F i wizualnej walidacji UI nie przechodź do Phase 8.
+> **Gate Phase 7.8:** `sh {baseDir}/dev/audited-feature-workflow/scripts/check-screenshots.sh --plan "$PLAN_FILE" --dir plans/screenshots` → exit 0 (każdy AC-F ma screenshot).
 
 ---
 
@@ -370,6 +376,9 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 5. **Consequences** — co się zmienia, co zostaje.
 6. **Gotchas dopisek** — anomalie odkryte w Phase 1 dodane do [gotchas.md](references/gotchas.md).
 
+> [!warning] Gate Phase 9
+> `sh {baseDir}/dev/audited-feature-workflow/scripts/check-adr.sh --file <ADR.md>` → exit 0 (Context/Decision/Anti-rationalization/Consequences).
+
 > [!warning] Dedup pass
 > Phase 9 wymusza dedup [gotchas.md](references/gotchas.md). Jeśli >100 wpisów → split per moduł.
 
@@ -404,7 +413,12 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - `scripts/extract-raw-log.sh` — DoD evidence helper.
 - `scripts/api-impact-scan.sh` — Hyrum risk scan.
 - `scripts/derive-goal-from-ac.sh` — AC → goal-statement.md generator.
-- `scripts/run-goal-loop.sh` — autonomous goal-driven loop driver.
+- `scripts/run-goal-loop.sh` — autonomous goal-driven loop driver (caps iter/time maszynowe od v3.4.0).
+- `scripts/check-env-detection.sh` — Gate Phase 0 (env-detection.md kompletny).
+- `scripts/check-analysis-report.sh` — Gate Phase 1 (raport + Open questions rozwiązane).
+- `scripts/check-hypotheses.sh` — Gate Phase 2+3 (≥3 hipotezy + Recommendation).
+- `scripts/check-screenshots.sh` — Gate Phase 7.8 (screenshot per AC-F).
+- `scripts/check-adr.sh` — Gate Phase 9 (sekcje ADR obowiązkowe).
 
 ### Szablon
 
