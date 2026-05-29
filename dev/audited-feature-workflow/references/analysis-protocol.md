@@ -17,6 +17,9 @@ jawny artefakt, który zasila Phase 2 (hipotezy) i Phase 4 (plan).
 > **Zasada nadrzędna:** jeśli kończysz Phase 1 i nie umiesz wskazać *analoga* (istniejący feature
 > najbliższy temu co budujesz) — masz problem. Albo go znajdź, albo uruchom Blocker Protocol.
 
+> [!important] Effort & Orchestration (v3.6.0)
+> Phase 1 domyślnie **`/effort max`** (+ keyword `ultrathink` jeśli dostępny); dla **M/L** orkiestruj analizę przez **Dynamic Workflows** (fan-out czytelników per podsystem, synteza w jednym agencie). Standard + reguła HITL: [dynamic-workflows-standard.md](dynamic-workflows-standard.md).
+
 ---
 
 ## Timing (orientacyjny, łącznie ~30 min)

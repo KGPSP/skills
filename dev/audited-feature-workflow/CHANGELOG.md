@@ -4,6 +4,49 @@
 > Wariant **senior-grade** Claude Code workflow — koegzystuje z `replit-style-workflow` (wygodny, historycznie `feature-planner-v2`) i `feature-spec-planner` (planning-only).
 > **Rename 2026-05-25:** `feature-planner-v3` → `audited-feature-workflow` (folder + frontmatter `name:`). Trigger keywords zachowane (`/goal`, `senior-grade feature`, `dodaj feature v3`).
 
+## [v3.6.0] — 2026-05-29 — Dynamic Workflows + ultrathink/effort jako standard analizy
+
+### Added
+- **`references/dynamic-workflows-standard.md`** — standard Dynamic Workflows (Claude Code v2.1.154+) + mapowanie rozumowania: **kanon `/effort` (low/medium/high/xhigh/max)**; **ultrathink** = keyword CLI (nie API/web) → fallback `/effort max`; **ultracode** = `/effort ultracode` (xhigh + auto-orkiestracja; alias `/effort xhigh|max`, z disclaimerem). Wzorce pipeline/parallel + adwersaryjna weryfikacja, limity 16/1000, integracja faz 0/1/6/8, reguła ładowania.
+
+### Changed
+- **Phase 1** domyślnie `/effort max` (+ ultrathink); M/L → orkiestracja analizy przez Dynamic Workflows. Callout w SKILL.md + `analysis-protocol.md`.
+- **SKILL.md frontmatter** — `allowed-tools` += `Workflow`; `sources` += `DOC/dynamic_workflows-cc.md`; `version: v3.5.0 → v3.6.0`.
+- **`/goal` exclusivity** += Dynamic Workflows / `ultracode` (hard stop — DW nie wspiera mid-run input wymaganego przez Gate #1.5).
+
+### Why
+Decyzja właściciela: `DOC/dynamic_workflows-cc.md` jako standard, analiza na maks. effort. Terminy zweryfikowane przez research workflow w docs Claude Code; `ultracode`/`ultrathink` z fallbackiem na `/effort` — bez zmyślonych komend.
+
+### Dowód
+- `bash tests/run-meta-tests.sh` → `30/30 passed`.
+
+## [v3.5.0] — 2026-05-29 — Usunięcie ralph-loop ze skilla
+
+### Removed
+- Tryb **ralph-loop**: trigger `ralph v3`; **Phase 5.7** (16→15 faz); route **6-Ralph**; detekcja Ralph mode + pole `ralph` w env-detection (6→5 pól); sekcja `## Ralph-iterations` w `adr-template.md`; wzmianki `/ralph` w exclusivity.
+
+### Changed
+- Treść autonomicznej pętli (wciąż aktualna dla 6-Goal) przeniesiona ralph-loop → 6-Goal: `anti-rationalization.md` §3, `dod-evidence-protocol.md` §7, `non-negotiables.md` #7. `check-env-detection.sh` 5 pól; fixture + meta-test zaktualizowane. `version: v3.4.0 → v3.5.0`.
+
+### Dowód
+- `bash tests/run-meta-tests.sh` → `30/30 passed`; `ralph` poza CHANGELOG = 0.
+
+> Uwaga: wpis backfillowany 2026-05-29 — commit kodu (`09d7a61`) utrwalił się wcześniej; edycja CHANGELOG zginęła przez usterkę narzędzi w sesji.
+
+## [v3.4.0] — 2026-05-29 — „Zawsze dowód": evidence gates + meta-testy 12/12
+
+### Added
+- **Runner `tests/run-meta-tests.sh`** (wcześniej nie istniał) — 30 case'ów GOOD/BAD, `30/30 passed`. Zamknięcie luki: dotąd 0/7 skryptów-bramek miało testy.
+- **5 nowych bramek**: `check-env-detection` (Phase 0), `check-analysis-report` (Phase 1), `check-hypotheses` (Phase 2+3), `check-screenshots` (Phase 7.8), `check-adr` (Phase 9) + fixtures.
+
+### Changed
+- **`run-goal-loop.sh`** — capy `--max-iter`/`--max-time` egzekwowane maszynowo (plik stanu → `iter-cap-hit`/`time-cap-hit`, exit 2). SKILL.md: bullety Gate Phase 0/1/2/3/7.8/9; usunięto „0/7"; `version: v3.3.0 → v3.4.0`. `testing-map.md`: 12/12 ✅.
+
+### Dowód
+- `bash tests/run-meta-tests.sh` → `30/30 passed`.
+
+> Uwaga: wpis backfillowany 2026-05-29 — commit kodu (`23b3fb4`) utrwalił się wcześniej; edycja CHANGELOG zginęła przez usterkę narzędzi w sesji.
+
 ## [v3.3.0] — 2026-05-25 — Rename: feature-planner-v3 → audited-feature-workflow
 
 ### Changed

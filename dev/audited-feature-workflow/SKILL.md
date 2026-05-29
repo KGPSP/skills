@@ -17,12 +17,13 @@ do-not-trigger-for:
   - jednoliniowe poprawki bez impactu architektonicznego
   - eksploracja repozytorium bez zamiaru implementacji
 model: claude-opus-4-7
-allowed-tools: ['Bash', 'Read', 'Edit', 'Write', 'Grep', 'Glob', 'TodoWrite', 'Agent', 'SendMessage', 'TaskOutput']
+allowed-tools: ['Bash', 'Read', 'Edit', 'Write', 'Grep', 'Glob', 'TodoWrite', 'Agent', 'SendMessage', 'TaskOutput', 'Workflow']
 sources:
   - DOC/material_skill.md
   - DOC/since_skill.md
   - DOC/goal_mode.md
-version: v3.5.0
+  - DOC/dynamic_workflows-cc.md
+version: v3.6.0
 extends: replit-style-workflow
 size-limit: 500-lines-hard
 ---
@@ -102,6 +103,9 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 ---
 
 ## Phase 1 — Deep Analysis
+
+> [!important] Effort & Orchestration standard (v3.6.0)
+> **Phase 1 domyślnie max budżet rozumowania:** `/effort max` (kanon) + keyword `ultrathink` jeśli dostępny. Dla zadań **M/L lub wieloskładnikowych** orkiestruj analizę przez **Dynamic Workflows** (fan-out czytelników per podsystem; reguła DOC §3: >5 równoległych ścieżek) — standard, nie opcja; opcjonalnie `/effort ultracode`. Workflows **nie wspierają mid-run input** → muszą omijać bramki APPROVAL/Gate. Pełny standard + mapowanie effort/ultrathink/ultracode i fallbacki: [dynamic-workflows-standard.md](references/dynamic-workflows-standard.md).
 
 Wywołaj [analysis-protocol.md](references/analysis-protocol.md). Wymagane outputy:
 
@@ -199,6 +203,7 @@ Aktywuje się **tylko** gdy prompt zawiera `/goal` lub `goal mode`.
 
 **Exclusivity:**
 - `/goal` + `/teams` → hard stop. Konflikt modeli wykonawczych.
+- `/goal` + Dynamic Workflows / `ultracode` → hard stop. DW nie wspiera mid-run user input wymaganego przez Gate #1.5; konkurencyjny model wykonawczy. Patrz [dynamic-workflows-standard.md](references/dynamic-workflows-standard.md).
 - `/goal` + `--fragile` (z Phase 0) → hard stop. Fragile zone wymusza Plan-Validate-Execute; autonomia niedozwolona, eskalacja do operatora.
 
 **Goal derivation (deterministyczna):**
@@ -389,6 +394,7 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - [incremental-implementation.md](references/incremental-implementation.md) — Thin Vertical Slices.
 - [five-axis-review.md](references/five-axis-review.md) — 5 osi + severity + Multi-Model.
 - [gotchas.md](references/gotchas.md) — auto-populating projektowych anomalii.
+- [dynamic-workflows-standard.md](references/dynamic-workflows-standard.md) — Dynamic Workflows + ultrathink/effort/ultracode jako standard analizy/orkiestracji (Phase 0/1/8). Ładuj warunkowo (M/L lub trigger workflow|ultracode).
 
 ### Skrypty (warstwa B — deterministyczne narzędzia)
 
