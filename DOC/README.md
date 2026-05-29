@@ -5,12 +5,12 @@ status: kanoniczny
 version: v2
 audience: autorzy i agenci pracujący nad skillami w tym repo
 tags: [doc, index, canonical, agent-skills, kg-psp]
-updated: 2026-05-27
+updated: 2026-05-29
 ---
 
 # DOC — korpus kanoniczny
 
-> **Typ:** index · **Status:** kanoniczny · **Aktualizacja:** 2026-05-27
+> **Typ:** index · **Status:** kanoniczny · **Aktualizacja:** 2026-05-29
 > **Zasada nr 1 (CLAUDE.md):** przed pracą nad jakimkolwiek skillem przeczytaj ten katalog.
 
 ## Streszczenie
@@ -30,8 +30,11 @@ updated: 2026-05-27
 | [`goal_mode.md`](goal_mode.md) | reference | kanoniczny | Wzorzec polecenia `/goal` | 10 |
 | [`QA-swarm.md`](QA-swarm.md) | methodology | kanoniczny | Wieloagentowa metodyka QA dla React/Next.js/Node/PostgreSQL (§1–§14) | 20 |
 | [`agents_swarm.md`](agents_swarm.md) | research-report | kanoniczny | Warstwa koordynacji + SwarmNode Factory (§1–§6) | 3 |
+| [`dynamic_workflows-cc.md`](dynamic_workflows-cc.md) | research-report | kanoniczny | Kompendium orkiestracji Dynamic Workflows w Claude Code v2.1.154+ (§1–§14) | — |
+| [`Messages_API_w_Opus_4.8.md`](Messages_API_w_Opus_4.8.md) | research-report | kanoniczny | Przegląd Messages API w Opus 4.8 i śródsesyjnych komunikatów systemowych (§1–§10) | — |
 | [`agenci-ai-2026-przeglad-ekosystemu.md`](agenci-ai-2026-przeglad-ekosystemu.md) | research-report | tło teoretyczne | Szeroki przegląd ekosystemu agentowego AI (poglądowy) | — |
 | [`GEO-SEO.md`](GEO-SEO.md) | — | placeholder | Zarezerwowany na przyszłą notatkę (obecnie pusty) | — |
+
 
 ## Kolejność czytania (dla autora skilla)
 
