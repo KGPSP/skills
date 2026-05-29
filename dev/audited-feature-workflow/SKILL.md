@@ -1,13 +1,12 @@
 ---
 name: audited-feature-workflow
-description: Senior-grade feature workflow z deterministyczną uprzężą inżynieryjną. Rozszerza v2 (Replit Agent style, Agent Teams, ralph-loop, worktree, 7 test scopes) o twarde bramki z material_skill.md + since_skill.md — Anti-Rationalization, Hyrum's Law, Chesterton's Fence, Beyoncé Rule, DAMP over DRY, PR Sizing, Five-Axis Review, Plan-Validate-Execute dla fragile ops, Thin Vertical Slices, Prove-It Pattern. Używaj gdy zadanie wymaga audytowalnej delegacji na agenta AI z mierzalnymi exit criteria w każdej fazie. Plus /goal mode — autonomiczna pętla weryfikacji AC z mierzalnym stopem (Phase 5.8 + 6-Goal route).
+description: Senior-grade feature workflow z deterministyczną uprzężą inżynieryjną. Rozszerza v2 (Replit Agent style, Agent Teams, worktree, 7 test scopes) o twarde bramki z material_skill.md + since_skill.md — Anti-Rationalization, Hyrum's Law, Chesterton's Fence, Beyoncé Rule, DAMP over DRY, PR Sizing, Five-Axis Review, Plan-Validate-Execute dla fragile ops, Thin Vertical Slices, Prove-It Pattern. Używaj gdy zadanie wymaga audytowalnej delegacji na agenta AI z mierzalnymi exit criteria w każdej fazie. Plus /goal mode — autonomiczna pętla weryfikacji AC z mierzalnym stopem (Phase 5.8 + 6-Goal route).
 trigger:
   - "feature-planner v3"
   - "dodaj feature v3"
   - "senior-grade feature"
   - "implement v3"
   - "zaimplementuj v3"
-  - "ralph v3"
   - "/goal"
   - "goal mode"
 do-not-trigger-for:
@@ -23,7 +22,7 @@ sources:
   - DOC/material_skill.md
   - DOC/since_skill.md
   - DOC/goal_mode.md
-version: v3.4.0
+version: v3.5.0
 extends: replit-style-workflow
 size-limit: 500-lines-hard
 ---
@@ -64,7 +63,7 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 
 ---
 
-## Architektura: 16 faz + 6 bramek approval
+## Architektura: 15 faz + 6 bramek approval
 
 | Faza | Cel | Bramka |
 |---|---|---|
@@ -76,9 +75,8 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 | 4 | Plan document + DoD + Thin Slices + AC↔Test mapping | — |
 | 5 | Save plan | **APPROVAL #1** |
 | 5.5 | Worktree decision (S/M/L) | — |
-| 5.7 | Ralph-loop decision (opt-in L) | — |
 | 5.8 | Goal Mode decision + auto-derive (tylko /goal) | **APPROVAL #1.5** |
-| 6 | Implementation (Sequential / Teams / Ralph / Goal) | **APPROVAL #2** |
+| 6 | Implementation (Sequential / Teams / Goal) | **APPROVAL #2** |
 | 6.5 | Prove-It Pattern (bugfix only) | — |
 | 7 | Testing 7 scopes + raw logs + build clean | **APPROVAL #3** |
 | 7.8 | Live preview UI (M+) | **APPROVAL #4** |
@@ -94,11 +92,11 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 3. Wykrywaj **stack**: `package.json` (Node), `pyproject.toml` (Python), `Cargo.toml` (Rust), `go.mod` (Go), `pom.xml` / `build.gradle` (JVM).
 4. Wykrywaj **rozmiar projektu** (S/M/L) — `find . -type f -name "*.{ts,py,rs,go}" | wc -l` + linie zmian planowanych.
 5. Wykrywaj **Fragile Zone** — ścieżki `migrations/`, `terraform/`, `k8s/`, `auth/`, `Dockerfile`, `.github/workflows/`. Jeśli match → flag `--fragile` → aktywuj [fragile-operations-protocol.md](references/fragile-operations-protocol.md).
-6. Wykrywaj **Ralph mode** (trigger `ralph` lub `iteruj aż zielono`) i **Agent Teams** (trigger `parallel`, `teams`).
+6. Wykrywaj **Agent Teams** (trigger `parallel`, `teams`).
 7. Numeruj plan: `find {baseDir}/plans -name "*.md" | wc -l` + 1.
 
 > [!warning] Output Phase 0
-> `env-detection.md` z polami: stack, size, fragile, ralph, teams, plan-number.
+> `env-detection.md` z polami: stack, size, fragile, teams, plan-number.
 > **Gate Phase 0:** `sh {baseDir}/dev/audited-feature-workflow/scripts/check-env-detection.sh --file env-detection.md` → exit 0 (6/6 pól).
 
 ---
@@ -195,23 +193,11 @@ Komenda: `git worktree add ../<slug>-wt -b feat/<slug>`.
 
 ---
 
-## Phase 5.7 — Ralph-loop decision
-
-Aktywuj **tylko** gdy: (a) size L, (b) testy zielone w v2 dla podobnej fazy, (c) user explicite napisał `ralph`.
-
-Reguła v3: każda iteracja ralph-loop **MUSI** przejść przez Anti-Rationalization quick-table. Brak skrótu na „już to widziałem w poprzedniej iteracji".
-
-> [!warning] Exclusivity z /goal
-> `/goal` jest exclusive z `/ralph` i `/teams`. Jeśli w prompcie pojawi się więcej niż jeden z trzech triggerów → Phase 5.8 hard-stopuje. Wybierz jedną strategię pętli.
-
----
-
 ## Phase 5.8 — Goal Mode decision + auto-derive
 
 Aktywuje się **tylko** gdy prompt zawiera `/goal` lub `goal mode`.
 
 **Exclusivity:**
-- `/goal` + `/ralph` → hard stop. „Wybierz jedną strategię pętli."
 - `/goal` + `/teams` → hard stop. Konflikt modeli wykonawczych.
 - `/goal` + `--fragile` (z Phase 0) → hard stop. Fragile zone wymusza Plan-Validate-Execute; autonomia niedozwolona, eskalacja do operatora.
 
@@ -245,8 +231,7 @@ Aktywuje się **tylko** gdy prompt zawiera `/goal` lub `goal mode`.
 Routing implementacji:
 - **6-Sequential** — domyślnie dla S/M.
 - **6-Teams** (2-5 agentów) — dla L gdy parallel safe.
-- **6-Ralph** — autonomous L z zielonym test gate.
-- **6-Goal** — autonomous goal-driven loop (tylko gdy `/goal`, exclusive z Ralph/Teams).
+- **6-Goal** — autonomous goal-driven loop (tylko gdy `/goal`, exclusive z Teams).
 
 Pre-flight: `git status` clean. Build baseline check.
 
@@ -389,7 +374,7 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 ### Protokoły procesowe (warstwa A — material_skill.md)
 
 - [non-negotiables.md](references/non-negotiables.md) — 5 zasad master.
-- [anti-rationalization.md](references/anti-rationalization.md) — pełna tabela wymówek + ralph-loop variant.
+- [anti-rationalization.md](references/anti-rationalization.md) — pełna tabela wymówek.
 - [dod-evidence-protocol.md](references/dod-evidence-protocol.md) — formaty dowodów per typ AC.
 - [analysis-protocol.md](references/analysis-protocol.md) — Phase 1 (+ Hyrum + Chesterton).
 - [ac-protocol.md](references/ac-protocol.md) — AC + Beyoncé 1:1 mapping.
@@ -430,5 +415,5 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 
 - [DOC/material_skill.md](../../DOC/material_skill.md) — pryncypia procesowe (Process over Prose, Anti-rationalization, DoD, Scope Discipline, Hyrum, Chesterton, Beyoncé, DAMP, 5 Non-negotiables).
 - [DOC/since_skill.md](../../DOC/since_skill.md) — pryncypia projektowe skilla (token budget, kebab-case, imperatyw, scripts/, Negative Triggers, Anti-Laziness, Plan-Validate-Execute, Five-Axis Review, Thin Vertical Slices, Prove-It).
-- [dev/replit-style-workflow/SKILL.md](../replit-style-workflow/SKILL.md) — wygodny workflow baseline (Agent Teams, ralph-loop, worktree decision, 7 test scopes); historycznie feature-planner-v2.
+- [dev/replit-style-workflow/SKILL.md](../replit-style-workflow/SKILL.md) — wygodny workflow baseline (Agent Teams, worktree decision, 7 test scopes); historycznie feature-planner-v2.
 - [DOC/goal_mode.md](../../DOC/goal_mode.md) (local-only, gitignored) — pattern „stan końcowy + weryfikacja + ograniczenia", przykłady, antywzorce.

@@ -1,6 +1,6 @@
 #!/bin/sh
 # check-env-detection.sh — Phase 0 gate. Verifies env-detection.md exists, non-empty,
-# and declares all required fields: stack, size, fragile, ralph, teams, plan-number.
+# and declares all required fields: stack, size, fragile, teams, plan-number.
 # Field may appear as "key:" or "**key**" (case-insensitive).
 #
 # Usage:
@@ -32,7 +32,7 @@ if [ ! -s "$file" ]; then
 fi
 
 missing=""
-for key in stack size fragile ralph teams plan-number; do
+for key in stack size fragile teams plan-number; do
     if ! grep -iqE "(^|[*| ])${key}[*]*[[:space:]]*[:=]" "$file"; then
         missing="${missing}${key},"
     fi
@@ -44,5 +44,5 @@ if [ -n "$missing" ]; then
     exit 1
 fi
 
-printf '{"status":"ok","message":"env-detection complete (6/6 fields)","file":"%s"}\n' "$file"
+printf '{"status":"ok","message":"env-detection complete (5/5 fields)","file":"%s"}\n' "$file"
 exit 0

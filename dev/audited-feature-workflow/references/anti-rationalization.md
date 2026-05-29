@@ -3,7 +3,7 @@ name: anti-rationalization
 type: reference
 parent: audited-feature-workflow
 source: DOC/material_skill.md §3
-description: Pełna tabela wymówek agenta AI z gotowymi ripostami. Egzekwowana w Phase 6 (przed commit), Phase 7 (przed deklaracją done), Phase 8 (final pass), oraz w każdej iteracji ralph-loop.
+description: Pełna tabela wymówek agenta AI z gotowymi ripostami. Egzekwowana w Phase 6 (przed commit), Phase 7 (przed deklaracją done), Phase 8 (final pass), oraz w każdej iteracji pętli 6-Goal.
 ---
 
 # Anti-Rationalization Tables
@@ -51,11 +51,11 @@ Zamiast czytać całą tabelę za każdym razem, w danej fazie sprawdzaj konkret
 
 ---
 
-## Sekcja 3 — Wymówki spotykane w ralph-loop (autonomous mode)
+## Sekcja 3 — Wymówki spotykane w pętli 6-Goal (autonomous mode)
 
-Ralph-loop iteruje bez user interruption. Bez disciplины model akumuluje skróty z iteracji na iterację. Te wymówki pojawiają się w autonomous mode częściej:
+Pętla 6-Goal iteruje bez user interruption. Bez dyscypliny model akumuluje skróty z iteracji na iterację. Te wymówki pojawiają się w autonomous mode częściej:
 
-| # | Wymówka ralph-loop | Riposta |
+| # | Wymówka 6-Goal | Riposta |
 |---|---|---|
 | R1 | „Już to widziałem w poprzedniej iteracji, pomijam check" | Każda iteracja przechodzi przez quick-table na nowo. Cache anty-pattern. |
 | R2 | „Test flaky, restart powtórzy" | Flaky test to bug. Stop, debug, fix — nie restart. |
@@ -107,4 +107,4 @@ Reguła: **gdy wątpisz, traktuj parafrazę jak standardową wymówkę** i egzek
 - **Phase 7**: Final pass na #4, #9, #10, #11, #14.
 - **Phase 8**: Pełny audyt wszystkich wpisów. Sekcja `Anti-rationalization decisions` w PR description.
 - **Phase 9**: ADR zawiera listę zastosowanych ripost (które wymówki agent odrzucił).
-- **Ralph-loop**: Sekcja 3 obowiązkowo każdą iterację.
+- **6-Goal**: Sekcja 3 obowiązkowo każdą iterację.

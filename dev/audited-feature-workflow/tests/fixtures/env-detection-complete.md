@@ -3,6 +3,5 @@
 - stack: Next.js 14 + Prisma/Postgres + Vitest
 - size: M
 - fragile: false
-- ralph: false
 - teams: false
 - plan-number: 42

@@ -40,7 +40,6 @@ lub jeden z innych triggerów:
 - `senior-grade feature`
 - `implement v3`
 - `zaimplementuj v3`
-- `ralph v3` — wariant z autonomous ralph-loop
 - `/goal` — wariant z autonomous goal-driven loop (patrz [Tryb /goal](#tryb-goal))
 - `goal mode`
 
@@ -58,9 +57,8 @@ Claude rozpozna trigger, wykona Phase 0 (env detection) i poprowadzi cię przez 
 | 4 | Plan document + DoD + Thin Slices + AC↔Test mapping | — |
 | **5** | **Save plan** | **APPROVAL #1** |
 | 5.5 | Worktree decision (S/M/L) | — |
-| 5.7 | Ralph-loop decision (opt-in L) | — |
 | 5.8 | **Goal Mode decision + auto-derive (tylko /goal)** | **APPROVAL #1.5** |
-| **6** | **Implementation (Sequential / Teams / Ralph / Goal)** | **APPROVAL #2** |
+| **6** | **Implementation (Sequential / Teams / Goal)** | **APPROVAL #2** |
 | 6.5 | Prove-It Pattern (bugfix only) | — |
 | **7** | **Testing 7 scopes + raw logs + build clean** | **APPROVAL #3** |
 | **7.8** | **Live preview UI (M+)** | **APPROVAL #4** |
@@ -106,7 +104,7 @@ Każdy PR przechodzi audyt na 5 osiach: **Correctness, Readability, Architecture
 
 > **Nowość w v3.1.1** — autonomiczna pętla weryfikacji AC.
 
-`/goal` to czwarta ścieżka implementacji (obok Sequential, Teams, Ralph). Aktywuje się **tylko** gdy w prompcie pojawi się `/goal` lub `goal mode`.
+`/goal` to trzecia ścieżka implementacji (obok Sequential, Teams). Aktywuje się **tylko** gdy w prompcie pojawi się `/goal` lub `goal mode`.
 
 ### Cel
 
@@ -160,7 +158,7 @@ Phase 7 / 8 / 9 (ręczne, niezmienione)
 | **Path traversal guard** | `--out-dir` musi być pod `$REPO_ROOT` lub `/tmp` |
 | **Secret detection** | Plany z pattern `API_KEY=`, `sk-*`, `ghp_*` itp. odrzucane |
 | **Fragile-zone enforcement** | `git diff` przeciw `migrations/`, `terraform/`, `k8s/`, `auth/`, `.github/workflows/`, `Dockerfile` |
-| **Exclusivity** | `/goal` ⊕ `/ralph` ⊕ `/teams` (jedna strategia na raz) |
+| **Exclusivity** | `/goal` ⊕ `/teams` (jedna strategia na raz) |
 
 ### Co `/goal` NIE robi
 
@@ -240,7 +238,6 @@ dev/audited-feature-workflow/
 - **Claude Code** (CLI lub IDE plugin).
 - **Bash 3.2+** (macOS BSD coreutils + Linux GNU OK).
 - **Git 2.5+** (worktree support).
-- **gh CLI** opcjonalnie (jeśli używasz Phase 5.7 ralph z PR queue).
 - **shasum/sha256sum** — dla /goal TOCTOU protection.
 
 ## Limitacje znane

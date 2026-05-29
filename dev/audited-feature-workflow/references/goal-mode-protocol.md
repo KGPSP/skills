@@ -14,12 +14,12 @@
 **NIE używaj gdy:**
 - AC są subiektywne ("kod jest ładniejszy", "działa szybciej") — bez wymiernego progu.
 - Fragile zone aktywna (`migrations/`, `terraform/`, `k8s/`, `auth/`, `.github/workflows/`, `Dockerfile`).
-- W tym samym promcie jest `/ralph` lub `/teams` — wybierz jedną strategię.
+- W tym samym promcie jest `/teams` — wybierz jedną strategię.
 
 ## 2. Pełna sekwencja Phase 5.8
 
 1. Detekcja triggera (`/goal` lub `goal mode`) w prompcie.
-2. Exclusivity guard: `/ralph`, `/teams`, `--fragile` → hard stop z komunikatem.
+2. Exclusivity guard: `/teams`, `--fragile` → hard stop z komunikatem.
 3. `sh scripts/derive-goal-from-ac.sh --plan "$PLAN_FILE"`.
 4. Skrypt waliduje 10 reguł (patrz §3 poniżej). Brak → exit 1 + lista braków.
 5. Sukces → 2 outputy: `goal-statement.md` + `goal-prompt.txt`.

@@ -222,7 +222,7 @@ ADR commitowane wraz z folderem `evidence/` (artefakty z Phase 7).
 
 ---
 
-## Sekcja 7 — Edge case: ralph-loop
+## Sekcja 7 — Edge case: 6-Goal (autonomous loop)
 
 W autonomous mode każda iteracja generuje własny set artefaktów:
 
@@ -236,7 +236,7 @@ plans/<N>-evidence/
 │   └── ...
 ```
 
-Ralph-loop **NIE może** reużywać artefaktów z poprzedniej iteracji. Każda iteracja = świeży dowód.
+Pętla 6-Goal **NIE może** reużywać artefaktów z poprzedniej iteracji. Każda iteracja = świeży dowód.
 
 ---
 

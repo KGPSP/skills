@@ -121,42 +121,6 @@ i identyfikuje wzorce koordynacji, które się sprawdziły.
 
 ---
 
-## Sekcja `## Ralph-iterations` — TYLKO dla planów wykonanych w 6-Ralph
-
-Gdy Phase 6-Ralph (autonomous self-correcting loop) była użyta, **dodaj** sekcję poniżej.
-Źródłem danych jest state file `.claude/plan-${PLAN_NUM}.state` + `.claude/ralph-loop.local.md`:
-
-```markdown
-## Ralph-iterations (6-Ralph)
-
-**Max iterations (5.7.4 auto-compute):** 22 (tasks=4 × 2 + scopes=7 × 2)
-**Faktyczna liczba iteracji:** 9
-**Completion-promise:** `FEATURE_DONE` (wystawiony w iteracji 9)
-**Completion timestamp:** 2026-05-08T14:32:11Z (z `.claude/plan-${PLAN_NUM}.state`)
-
-**Gdzie loop "stutterował"** (iteracje gdzie nie było progresu = ten sam task w toku):
-- Iteracje 4-6: task 3 (migracja Prisma) — pierwsza próba zawiodła z "schema drift",
-  loop sam wycofał i poprawił `prisma/schema.prisma` przed re-runem `migrate dev`.
-
-**Co loop zrobił dobrze (samo-korekta):**
-- [konkret — np. „lint fail w iteracji 7 → fix → re-run zielony bez interwencji operatora"]
-- [konkret — np. „test E2E timeout w 8 → loop dodał `await page.waitFor` i przeszedł"]
-
-**Gdzie operator interweniował:**
-- [konkret — np. „iteracja 5 wisiała na migracji > 5 min — operator `/cancel-ralph`,
-  potem manualny rollback i restart loop'a od iteracji 4"] **lub** „brak interwencji"
-
-**Lessons learned dla przyszłych planów:**
-- [konkret — np. „dla planów dotykających Prisma migrations max-iterations=15 było ciasne;
-  podbij default do 25 dla L-size z DB schema changes"]
-```
-
-Ta sekcja nie jest opcjonalna dla 6-Ralph — daje przyszłym planom dane do auto-compute'u
-RALPH_MAX_ITER (Phase 5.7.4) oraz identyfikuje wzorce gdzie loop sobie radzi vs gdzie
-trzeba człowieka.
-
----
-
 ## Anty-wzorce
 
 ❌ **ADR jako changelog**: „Dodano endpoint GET /api/shelters" — to nie decyzja, to commit message.

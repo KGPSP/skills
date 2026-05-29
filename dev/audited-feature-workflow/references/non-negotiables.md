@@ -141,7 +141,7 @@ Wklejony **dosłownie** do PR description, bez modyfikacji.
 - Phase 5: approval gate wymaga **explicit** zgody usera, nie auto-proceed.
 - Phase 7: brak skrótu „testy szybkie, pomijam build clean".
 - Phase 8: Five-Axis Review nie pomijany dla małych PR.
-- Każda iteracja ralph-loop: anti-rationalization quick-table przechodzona **explicite**, nie deklaratywnie.
+- Każda iteracja pętli 6-Goal: anti-rationalization quick-table przechodzona **explicite**, nie deklaratywnie.
 
 **Anti-pattern:** „Pominę krok X dla efektywności" — krok X istnieje dlatego, że bez niego są incydenty.
 

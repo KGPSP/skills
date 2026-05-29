@@ -210,7 +210,7 @@ rm -rf "$T"
 
 # ============ [8] check-env-detection.sh (Phase 0) ============
 echo "[8] check-env-detection.sh"
-assert_exit "env-detection complete (6 fields) -> exit 0" "0" \
+assert_exit "env-detection complete (5 fields) -> exit 0" "0" \
   bash "$SCRIPTS/check-env-detection.sh" --file "$FIXTURES/env-detection-complete.md"
 assert_exit "env-detection missing fields -> exit 1" "nonzero" \
   bash "$SCRIPTS/check-env-detection.sh" --file "$FIXTURES/env-detection-missing-fields.md"
