@@ -261,6 +261,48 @@ assert_exit "adr complete (mandatory sections) -> exit 0" "0" \
 assert_exit "adr missing Consequences -> exit 1" "nonzero" \
   bash "$SCRIPTS/check-adr.sh" --file "$FIXTURES/adr-missing-consequences.md"
 
+# ============ [13] check-plan.sh ============
+echo "[13] check-plan.sh"
+assert_exit "plan complete (10 sekcji) -> exit 0" "0" \
+  bash "$SCRIPTS/check-plan.sh" --plan "$FIXTURES/plan-complete-10.md"
+assert_exit "plan missing sections -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-plan.sh" --plan "$FIXTURES/plan-missing-sections.md"
+
+# ============ [14] check-tdd-red.sh ============
+echo "[14] check-tdd-red.sh"
+assert_exit "tdd RED log (FAILED) -> exit 0" "0" \
+  bash "$SCRIPTS/check-tdd-red.sh" --red-log "$FIXTURES/red-log-failed.md"
+assert_exit "tdd log PASSED (brak RED) -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-tdd-red.sh" --red-log "$FIXTURES/red-log-passed.md"
+
+# ============ [15] check-anti-rat.sh ============
+echo "[15] check-anti-rat.sh"
+assert_exit "anti-rat decisions present -> exit 0" "0" \
+  bash "$SCRIPTS/check-anti-rat.sh" --file "$FIXTURES/anti-rat-complete.md"
+assert_exit "anti-rat section empty -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-anti-rat.sh" --file "$FIXTURES/anti-rat-empty.md"
+
+# ============ [16] check-test-scopes.sh ============
+echo "[16] check-test-scopes.sh"
+assert_exit "test scopes M complete -> exit 0" "0" \
+  bash "$SCRIPTS/check-test-scopes.sh" --evidence "$FIXTURES/test-scopes-M-complete.md" --size M
+assert_exit "test scopes M missing integration -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-test-scopes.sh" --evidence "$FIXTURES/test-scopes-M-missing.md" --size M
+
+# ============ [17] check-five-axis.sh ============
+echo "[17] check-five-axis.sh"
+assert_exit "five-axis complete (5 osi + verdict) -> exit 0" "0" \
+  bash "$SCRIPTS/check-five-axis.sh" --file "$FIXTURES/five-axis-complete.md"
+assert_exit "five-axis missing Security -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-five-axis.sh" --file "$FIXTURES/five-axis-missing.md"
+
+# ============ [18] check-chesterton.sh ============
+echo "[18] check-chesterton.sh"
+assert_exit "chesterton deletion + justification -> exit 0" "0" \
+  bash "$SCRIPTS/check-chesterton.sh" --diff "$FIXTURES/chesterton-del.diff" --pr "$FIXTURES/chesterton-pr-good.md"
+assert_exit "chesterton deletion without justification -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-chesterton.sh" --diff "$FIXTURES/chesterton-del.diff" --pr "$FIXTURES/chesterton-pr-bad.md"
+
 # ============ Summary ============
 echo ""
 echo "========================================"

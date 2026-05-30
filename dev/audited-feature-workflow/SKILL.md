@@ -23,7 +23,7 @@ sources:
   - DOC/since_skill.md
   - DOC/goal_mode.md
   - DOC/dynamic_workflows-cc.md
-version: v3.6.1
+version: v3.7.0
 extends: replit-style-workflow
 size-limit: 500-lines-hard
 ---
@@ -59,7 +59,7 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 | 9 | „Test pokrywa happy path" | Beyoncé Rule. Każdy edge case z AC-N → osobny test. |
 | 10 | „DRY-uję testy w helper" | DAMP over DRY. Test czytelny jak spec, bez magicznych helperów. |
 | 11 | „Goal-statement deryw kompletny, można pominąć Gate #1.5" | Gate #1.5 jest nienegocjowalny w /goal. Bez jawnej zgody → brak startu pętli. |
-| 12 | „Skrypt v3 (`check-pr-size`, `api-impact-scan` …) jest deterministyczny, meta-test zbędny" | Odrzucono. **Beyoncé Rule dla samego skilla.** Każdy `scripts/*.sh` ma fixture + `assert_exit` w `tests/run-meta-tests.sh` (runner istnieje — 12/12 skryptów, pełny zestaw case'ów GOOD/BAD (X/X passed)). Bez tego skrypt może milcząco regresować przy refaktorze. Patrz [testing-map.md](references/testing-map.md). |
+| 12 | „Skrypt v3 (`check-pr-size`, `api-impact-scan` …) jest deterministyczny, meta-test zbędny" | Odrzucono. **Beyoncé Rule dla samego skilla.** Każdy `scripts/*.sh` ma fixture + `assert_exit` w `tests/run-meta-tests.sh` (runner istnieje — 18/18 skryptów, pełny zestaw case'ów GOOD/BAD (X/X passed)). Bez tego skrypt może milcząco regresować przy refaktorze. Patrz [testing-map.md](references/testing-map.md). |
 | 13 | „Bug w skrypcie v3 — fix, regresji nie dorabiam" | Odrzucono. **Prove-It Pattern dla skryptu** (analog Phase 6.5 ale dla samego walidatora). `tests/fixtures/regression-<short-desc>.<ext>` + failing `assert_exit` PRZED fixem. Patrz [testing-map.md](references/testing-map.md) §Procedura fix buga. |
 
 ---
@@ -176,6 +176,7 @@ Wymagane sekcje planu w `{baseDir}/plans/<N>-<slug>.md`:
 > Zapisz plan do `{baseDir}/plans/<N>-<slug>.md`. Zanim ruszysz dalej, sprawdź:
 > - [ ] Plik nie jest pusty (`test -s "$PLAN_FILE"`).
 > - [ ] Wszystkie 10 sekcji obecne (`grep -c '^## ' "$PLAN_FILE" >= 10`).
+> - [ ] **Gate Phase 4:** `sh scripts/check-plan.sh --plan "$PLAN_FILE"` → exit 0 (10/10 sekcji, deterministycznie).
 > - [ ] Każdy AC ma `Test ID` + `Komenda` (1:1 mapping).
 > - [ ] DoD ma format dowodu dla każdego AC.
 > - [ ] Jeśli `--fragile`: dosłowna procedura Plan-Validate-Execute załączona.
@@ -252,6 +253,8 @@ Dla każdej slice (Thin Vertical Slices — [incremental-implementation.md](refe
    - 301-1000: ⚠️ wymaga `--justified` + wpis w PR description
    - \>1000: ⛔ hard stop, split (stacking lub vertical slicing)
 7. **Anti-rationalization quick-check** przed `git commit` (przejdź tabelę).
+   - **Gate TDD-RED:** `sh scripts/check-tdd-red.sh --red-log <RED.log>` → exit 0 (failing test przed implementacją).
+   - **Gate Anti-Rat:** `sh scripts/check-anti-rat.sh --file <PR.md>` → exit 0 (sekcja decisions niepusta).
 8. **Safe Defaults** — niedokończone slices za feature flagą.
 9. Przejdź do następnej slice.
 
@@ -316,9 +319,10 @@ Bramki Phase 7:
 - [ ] **Build clean**: `sh {baseDir}/dev/audited-feature-workflow/scripts/verify-build-clean.sh` → exit 0, zero warnings.
 - [ ] **Raw log requirement** — `sh {baseDir}/dev/audited-feature-workflow/scripts/extract-raw-log.sh --cmd "<TEST_CMD>"` wklejony do PR description. **Bez parafraz modelu.**
 - [ ] **AC coverage 1:1**: `sh {baseDir}/dev/audited-feature-workflow/scripts/check-ac-coverage.sh --plan "$PLAN_FILE"` → 100%.
+- [ ] **Test scopes (S/M/L):** `sh scripts/check-test-scopes.sh --evidence <evidence.md> --size <S|M|L>` → exit 0.
 - [ ] **DAMP checklist** per test file (patrz [testing-protocol.md](references/testing-protocol.md) sekcja DAMP).
 - [ ] **Trace runtime** dla ścieżki krytycznej.
-- [ ] **Meta-testy skryptów v3 (Beyoncé Rule dla samego skilla)** — jeśli ta sesja dodała/zmodyfikowała `scripts/*.sh`: fixture w `tests/fixtures/` + `assert_exit` w `tests/run-meta-tests.sh` (utwórz runner jeśli nie istnieje — wzorzec: `dev/agent-teams-builder/tests/`). Fix buga skryptu → `regression-*.<ext>` (analog Phase 6.5 dla walidatora). Mapa + procedura: [testing-map.md](references/testing-map.md). **Stan obecny: 12 / 12 skryptów ma meta-testy** (`tests/run-meta-tests.sh`, pełny zestaw case'ów GOOD/BAD (X/X passed), `X/X passed`).
+- [ ] **Meta-testy skryptów v3 (Beyoncé Rule dla samego skilla)** — jeśli ta sesja dodała/zmodyfikowała `scripts/*.sh`: fixture w `tests/fixtures/` + `assert_exit` w `tests/run-meta-tests.sh` (utwórz runner jeśli nie istnieje — wzorzec: `dev/agent-teams-builder/tests/`). Fix buga skryptu → `regression-*.<ext>` (analog Phase 6.5 dla walidatora). Mapa + procedura: [testing-map.md](references/testing-map.md). **Stan obecny: 18 / 18 skryptów ma meta-testy** (`tests/run-meta-tests.sh`, pełny zestaw case'ów GOOD/BAD (X/X passed), `X/X passed`).
 
 > [!important] Brak któregokolwiek artefaktu = STOP. **„Wydaje się działać" to halucynacja**, nie status.
 
@@ -349,6 +353,8 @@ Severity labels: **Critical** (blokada), **Optional**, **Nit**, **FYI**.
 Dodatkowe bramki Phase 8:
 
 - [ ] **PR Sizing gate**: `sh check-pr-size.sh --base main` → ≤300 linii lub `--justified`.
+- [ ] **Five-Axis gate:** `sh scripts/check-five-axis.sh --file <CR.md>` → exit 0 (5 osi + werdykt).
+- [ ] **Chesterton gate:** `sh scripts/check-chesterton.sh --diff <diff> --pr <PR.md>` → exit 0 (usunięcia uzasadnione).
 - [ ] **Chesterton check** — dla każdej `git rm` / deleted function: sekcja `Why this existed:` w PR description.
 - [ ] **Anti-rationalization final pass** — przejdź tabelę całą.
 - [ ] (Opcjonalnie L-size) **Multi-Model Review** — drugi agent (codex-rescue) review na osiach ryzyka. **ZAKAZ Gemini** (dziedziczone z v2).
@@ -410,6 +416,12 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - `scripts/check-hypotheses.sh` — Gate Phase 2+3 (≥3 hipotezy + Recommendation).
 - `scripts/check-screenshots.sh` — Gate Phase 7.8 (screenshot per AC-F).
 - `scripts/check-adr.sh` — Gate Phase 9 (sekcje ADR obowiązkowe).
+- `scripts/check-plan.sh` — Gate Phase 4/5 (plan: 10 sekcji).
+- `scripts/check-tdd-red.sh` — Gate Phase 6 (dowód RED przed implementacją).
+- `scripts/check-anti-rat.sh` — Gate Phase 6/8 (anti-rationalization decisions niepuste).
+- `scripts/check-test-scopes.sh` — Gate Phase 7 (test scopes per S/M/L).
+- `scripts/check-five-axis.sh` — Gate Phase 8 (5 osi + werdykt).
+- `scripts/check-chesterton.sh` — Gate Phase 8 (usunięcia uzasadnione).
 
 ### Szablon
 

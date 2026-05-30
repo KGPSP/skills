@@ -4,6 +4,25 @@
 > Wariant **senior-grade** Claude Code workflow — koegzystuje z `replit-style-workflow` (wygodny, historycznie `feature-planner-v2`) i `feature-spec-planner` (planning-only).
 > **Rename 2026-05-25:** `feature-planner-v3` → `audited-feature-workflow` (folder + frontmatter `name:`). Trigger keywords zachowane (`/goal`, `senior-grade feature`, `dodaj feature v3`).
 
+## [v3.7.0] — 2026-05-30 — Domknięcie luk prozowych: 6 nowych bramek (Phase 4/6/7/8)
+
+### Added
+- **6 nowych skryptów-bramek** — koniec egzekucji „prozą" dla pozostałych czynności:
+  - `check-plan.sh` — Phase 4/5: plan ma 10 wymaganych sekcji (deterministyczny gate zamiast checklisty HITL).
+  - `check-tdd-red.sh` — Phase 6: wymaga RED-log (Status FAILED) — dowód failing testu przed implementacją.
+  - `check-anti-rat.sh` — Phase 6/8: sekcja „Anti-rationalization decisions" niepusta (jawne przejście tabeli).
+  - `check-test-scopes.sh` — Phase 7: wymagane test scope'y pokryte wg S/M/L (unit … perf/security).
+  - `check-five-axis.sh` — Phase 8: CR report ma 5 osi + werdykt.
+  - `check-chesterton.sh` — Phase 8: usunięcia definicji wymagają sekcji „Why this existed".
+- **13 fixtures GOOD/BAD + 12 meta-test case'ów** → runner `32 → 44 passed`.
+- Bramki wpięte w SKILL.md (Phase 5/6/7/8) + indeks; skryptów `12 → 18`.
+
+### Why
+Audyt + code review wykazały, że TDD-RED, Anti-Rationalization, 5/7 test scopes, Five-Axis, Chesterton i walidacja planu Phase 4 były egzekwowane wyłącznie prozą. Każda ma teraz deterministyczny gate + meta-test (Beyoncé Rule #12).
+
+### Dowód
+- `bash tests/run-meta-tests.sh` → `44/44 passed` (18/18 skryptów ma GOOD+BAD).
+
 ## [v3.6.1] — 2026-05-29 — Code-review fixes (1 Critical + 3 Major, pryncypia DOC)
 
 ### Fixed
