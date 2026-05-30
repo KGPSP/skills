@@ -23,7 +23,7 @@ sources:
   - DOC/since_skill.md
   - DOC/goal_mode.md
   - DOC/dynamic_workflows-cc.md
-version: v3.7.0
+version: v3.7.1
 extends: replit-style-workflow
 size-limit: 500-lines-hard
 ---

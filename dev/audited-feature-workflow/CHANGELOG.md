@@ -4,6 +4,18 @@
 > Wariant **senior-grade** Claude Code workflow — koegzystuje z `replit-style-workflow` (wygodny, historycznie `feature-planner-v2`) i `feature-spec-planner` (planning-only).
 > **Rename 2026-05-25:** `feature-planner-v3` → `audited-feature-workflow` (folder + frontmatter `name:`). Trigger keywords zachowane (`/goal`, `senior-grade feature`, `dodaj feature v3`).
 
+## [v3.7.1] — 2026-05-30 — E2E harness całego workflow (tests/run-e2e.sh)
+
+### Added
+- **`tests/run-e2e.sh`** — test end-to-end CAŁEGO łańcucha faz 0→9 na spójnym przykładzie (feature 070 — health endpoint):
+  - **Positive:** generuje artefakty każdej fazy i przepuszcza przez 19 bramek → wszystkie GREEN.
+  - **Negative:** wstrzykuje 5 defektów (plan, effort-level, Chesterton, test-scope, TDD-RED) → wszystkie ZABLOKOWANE na właściwej fazie (lancuch nie jest pieczatka).
+  - Komplementarny do `run-meta-tests.sh` (bramki w izolacji); tu pełny przebieg workflow.
+
+### Dowód
+- `bash tests/run-e2e.sh` → `PASS — positive 19/19 GREEN, negative 5/5 BLOCKED` (exit 0).
+- `bash tests/run-meta-tests.sh` → `44/44 passed`.
+
 ## [v3.7.0] — 2026-05-30 — Domknięcie luk prozowych: 6 nowych bramek (Phase 4/6/7/8)
 
 ### Added
