@@ -2,6 +2,25 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-05-31] audited-feature-workflow v3.8.0 + reconcyliacja rozjechanej linii lokalnej
+
+### Added
+
+- **`dev/audited-feature-workflow` → v3.8.0** — **Phase 2.5 Independent Hypothesis Evaluation** (niezależny read-only judge między generacją a wyborem hipotezy; Generator-Evaluator na poziomie projektu) + `references/hypothesis-eval-protocol.md`.
+- **`DOC/GEO-SEO.md`** — rozszerzenie treści (+168 linii).
+
+### Fixed
+
+- **`dev/audited-feature-workflow/scripts/check-ac-coverage.sh`** — wyrównanie do dokumentowanej **6-kolumnowej** macierzy AC (`ac-protocol.md` / Phase 4: Test ID=col5, Plik=col6), regex `AC-[FNTC0-9]`, strip `:LINE`. Meta-testy `44/44`.
+
+### Changed
+
+- **`.gitignore`** — `docs/superpowers/` → `docs/` (cały lokalny scratchpad ignorowany).
+
+### Proces
+
+- Rozwiązano rozjazd: lokalny working tree (v3.5.1, baza v3.3.0) vs `origin/main` (v3.7.1). Strategia: **remote jako baza + port wyłącznie czystych, bezkonfliktowych nowości**; pełna linia lokalna zachowana na branchu `backup/local-v3.5.1`. Usunięto artefakty kolizji nazw macOS (`* 2.md` / `* 2.sh`) z `dev/qa-architect`. Naprawiono też uszkodzony remote-tracking ref `origin/main` (loose vs packed divergence) blokujący `git fetch`/lazygit.
+
 ## [2026-05-27] DOC/ — publikacja kanonicznego korpusu pryncypiów + cleanup
 
 ### Changed

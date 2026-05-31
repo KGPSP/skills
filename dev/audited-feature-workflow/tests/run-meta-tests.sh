@@ -104,28 +104,20 @@ assert_exit "build failing (--cmd false) -> exit 1" "nonzero" \
 
 # ============ [3] check-ac-coverage.sh ============
 echo "[3] check-ac-coverage.sh"
-T=$(mk)
-printf 'test("returns 200", () => {})\n' > "$T/sample.test.ts"
-cat > "$T/plan.md" <<'EOF'
-## Acceptance Criteria
-
-| AC-ID | Type | Test ID | Test File | Command |
-|---|---|---|---|---|
-| AC-F1 | F | returns 200 | sample.test.ts | npm test |
-EOF
-assert_exit "ac-coverage complete (test file exists + id grep) -> exit 0" "0" \
-  bash -c "cd '$T' && bash '$SCRIPTS/check-ac-coverage.sh' --plan plan.md"
-rm -rf "$T"
+# Kanoniczna 6-kolumnowa macierz (ac-protocol.md / SKILL.md Phase 4): Test ID=col5, Plik testu=col6.
+# Fixture pokrywa regresję format-drift: regex AC-[FNTC] (AC-F-01/AC-N-02), strip sufiksu :LINE, grep Test ID w pliku.
+assert_exit "ac-coverage 6-col complete (AC-F-01/AC-N-02 + :LINE strip + id grep) -> exit 0" "0" \
+  bash -c "cd '$SKILL_DIR' && bash '$SCRIPTS/check-ac-coverage.sh' --plan '$FIXTURES/ac-coverage-phase4.md'"
 
 T=$(mk)
 cat > "$T/plan.md" <<'EOF'
 ## Acceptance Criteria
 
-| AC-ID | Type | Test ID | Test File | Command |
-|---|---|---|---|---|
-| AC-F1 | F | returns 200 | nonexistent.test.ts | npm test |
+| AC-ID | Typ (F/N/C) | Opis | Test ID | Plik testu | Komenda |
+|---|---|---|---|---|---|
+| AC-F-01 | F | returns 200 | T-1 | nonexistent.test.ts | npm test |
 EOF
-assert_exit "ac-coverage missing test file -> exit 1" "nonzero" \
+assert_exit "ac-coverage 6-col missing test file -> exit 1" "nonzero" \
   bash -c "cd '$T' && bash '$SCRIPTS/check-ac-coverage.sh' --plan plan.md"
 rm -rf "$T"
 

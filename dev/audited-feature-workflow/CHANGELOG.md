@@ -4,6 +4,24 @@
 > Wariant **senior-grade** Claude Code workflow — koegzystuje z `replit-style-workflow` (wygodny, historycznie `feature-planner-v2`) i `feature-spec-planner` (planning-only).
 > **Rename 2026-05-25:** `feature-planner-v3` → `audited-feature-workflow` (folder + frontmatter `name:`). Trigger keywords zachowane (`/goal`, `senior-grade feature`, `dodaj feature v3`).
 
+## [v3.8.0] — 2026-05-31 — Phase 2.5 Independent Hypothesis Eval + fix check-ac-coverage (6-kol)
+
+### Added
+- **Phase 2.5 — Independent Hypothesis Evaluation (read-only, M/L)** + `references/hypothesis-eval-protocol.md`. Rozdziela *generowanie* hipotez (Phase 2) od ich *oceny*: niezależny read-only subagent (`evaluator`/`Explore`, bez Edit/Write) ocenia 3 hipotezy **rubryką binarną** (`passed:true/false`, ZAKAZ skal 1-10), **blind input** (anti-anchoring), **framing adwersarialny** (refute-by-default). Doradczo zasila Phase 3 — przy wyborze ≠ top eval **obowiązkowa nota „Reconciliation"** (human ma ostatnie słowo @ APPROVAL #1, rozbieżności się nie ukrywa). Wpięte w tabelę faz (15→16), Phase 3, bramkę kompletności planu (Phase 5) i indeks referencji.
+
+### Fixed
+- **`scripts/check-ac-coverage.sh` — format-drift względem własnej dokumentacji.** Skrypt parsował `Test ID`=col4 / `Plik`=col5 (stary 5-kol), podczas gdy `ac-protocol.md` i SKILL.md Phase 4 dokumentują **6-kolumnową** macierz (`| AC-ID | Typ | Opis/Priorytet | Test ID | Plik testu | Komenda |` → Test ID=col5, Plik=col6). Poprawiono na `$5`/`$6`, regex AC-ID `AC-[FNC]` → `AC-[FNTC0-9]` (łapie `AC-T-…`, `AC-1`), dodano strip markdown-backtick + sufiksu `:LINE`. Skrypt zgodny z dokumentowanym kontraktem.
+- **SKILL.md** — placeholdery `(X/X passed)` (Anti-Rat #12 + Phase 7) zastąpione realnym `44/44`.
+
+### Tests
+- `tests/run-meta-tests.sh` sekcja [3] zmigowana na kanoniczny 6-kol: positive używa fixture `tests/fixtures/ac-coverage-phase4.md` (+ `ac-coverage-tests/calc.test.js`) pokrywającego `AC-F-01`/`AC-N-02`, strip `:LINE` i grep Test ID; negative inline 6-kol z nieistniejącym plikiem.
+
+### Dowód
+- `bash tests/run-meta-tests.sh` → `44/44 passed`. `bash -n` / `sh -n` → OK. SKILL.md 454 linie (≤500). Zero martwych linków `references/`.
+
+### Pochodzenie
+- Reconcyliacja rozjechanej lokalnej linii v3.5.1 (baza v3.3.0) z `origin/main` v3.7.1 — strategia: **remote baza + port wyłącznie czystych nowości**. Pominięto nakładające się lokalne `orchestration-protocol.md` + Phase 0.2/1.0 (remote ma `dynamic-workflows-standard.md` z v3.6.0). Backup całej linii lokalnej: branch `backup/local-v3.5.1`.
+
 ## [v3.7.1] — 2026-05-30 — E2E harness całego workflow (tests/run-e2e.sh)
 
 ### Added

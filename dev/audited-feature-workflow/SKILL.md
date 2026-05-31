@@ -23,7 +23,7 @@ sources:
   - DOC/since_skill.md
   - DOC/goal_mode.md
   - DOC/dynamic_workflows-cc.md
-version: v3.7.1
+version: v3.8.0
 extends: replit-style-workflow
 size-limit: 500-lines-hard
 ---
@@ -59,12 +59,12 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 | 9 | „Test pokrywa happy path" | Beyoncé Rule. Każdy edge case z AC-N → osobny test. |
 | 10 | „DRY-uję testy w helper" | DAMP over DRY. Test czytelny jak spec, bez magicznych helperów. |
 | 11 | „Goal-statement deryw kompletny, można pominąć Gate #1.5" | Gate #1.5 jest nienegocjowalny w /goal. Bez jawnej zgody → brak startu pętli. |
-| 12 | „Skrypt v3 (`check-pr-size`, `api-impact-scan` …) jest deterministyczny, meta-test zbędny" | Odrzucono. **Beyoncé Rule dla samego skilla.** Każdy `scripts/*.sh` ma fixture + `assert_exit` w `tests/run-meta-tests.sh` (runner istnieje — 18/18 skryptów, pełny zestaw case'ów GOOD/BAD (X/X passed)). Bez tego skrypt może milcząco regresować przy refaktorze. Patrz [testing-map.md](references/testing-map.md). |
+| 12 | „Skrypt v3 (`check-pr-size`, `api-impact-scan` …) jest deterministyczny, meta-test zbędny" | Odrzucono. **Beyoncé Rule dla samego skilla.** Każdy `scripts/*.sh` ma fixture + `assert_exit` w `tests/run-meta-tests.sh` (runner istnieje — 18/18 skryptów, pełny zestaw case'ów GOOD/BAD, 44/44 passed). Bez tego skrypt może milcząco regresować przy refaktorze. Patrz [testing-map.md](references/testing-map.md). |
 | 13 | „Bug w skrypcie v3 — fix, regresji nie dorabiam" | Odrzucono. **Prove-It Pattern dla skryptu** (analog Phase 6.5 ale dla samego walidatora). `tests/fixtures/regression-<short-desc>.<ext>` + failing `assert_exit` PRZED fixem. Patrz [testing-map.md](references/testing-map.md) §Procedura fix buga. |
 
 ---
 
-## Architektura: 15 faz + 6 bramek approval
+## Architektura: 16 faz + 6 bramek approval
 
 | Faza | Cel | Bramka |
 |---|---|---|
@@ -72,7 +72,8 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 | 1 | Deep analysis + Hyrum + Chesterton | — |
 | 1.5 | Dependency Impact Radius + API klasyfikacja | — |
 | 2 | ≥3 hipotezy (Minimal / Idiomatic / Ambitious) | — |
-| 3 | Recommendation + Hyrum Risk | — |
+| 2.5 | Independent Hypothesis Eval (read-only, M/L) | — |
+| 3 | Recommendation + Hyrum Risk + Reconciliation | — |
 | 4 | Plan document + DoD + Thin Slices + AC↔Test mapping | — |
 | 5 | Save plan | **APPROVAL #1** |
 | 5.5 | Worktree decision (S/M/L) | — |
@@ -137,12 +138,26 @@ Generuj minimum 3 alternatywy: **Minimal** (najmniejszy ruch), **Idiomatic** (zg
 
 ---
 
+## Phase 2.5 — Independent Hypothesis Evaluation (read-only)
+
+Aktywne dla **size M/L** (S → pomiń). Rozdziel *generowanie* hipotez od ich *oceny* — odpal **jeden read-only subagent** (`Agent`, typ `evaluator`/`Explore`, bez Edit/Write), który niezależnie ocenia 3 hipotezy z Phase 2. Pełny protokół: [hypothesis-eval-protocol.md](references/hypothesis-eval-protocol.md).
+
+- **Blind input** — 3 hipotezy + `analysis/<plan-id>.md`, **bez** info, którą generator preferuje (anti-anchoring).
+- **Rubryka binarna** (`passed: true/false`, **ZAKAZ skal 1-10**): 5 Non-negotiables · Hyrum/Chesterton · repo-fit · odwracalność · Beyoncé 1:1.
+- **Framing adwersarialny** — najsłabszy punkt każdej hipotezy (refute-by-default), nie aprobata.
+
+> [!warning] Output Phase 2.5 (dowód)
+> `analysis/<plan-id>-hypotheses-eval.md` — ranking + rubryka binarna per hipoteza + słabości. Surowy output subagenta, **bez parafrazy** (Anti-Rat #4). Zasila Phase 3.
+
+---
+
 ## Phase 3 — Recommendation
 
 1. Wybierz **jedną** hipotezę.
-2. Uzasadnij wybór względem 5 Non-negotiables.
-3. **Hyrum Risk section** (jeśli zmiana publiczna) — co się stanie z istniejącymi callerami.
-4. Kluczowe decyzje techniczne (formaty, biblioteki, schematy).
+2. **(M/L) Odnieś się do `hypotheses-eval.md` (Phase 2.5):** wybór = top ranking evaluatora → potwierdź; wybór ≠ top → **obowiązkowa nota „Reconciliation"** (dlaczego mimo niższej oceny evaluatora). Rozbieżność eskaluje do human @ APPROVAL #1 — nie ukrywaj jej.
+3. Uzasadnij wybór względem 5 Non-negotiables.
+4. **Hyrum Risk section** (jeśli zmiana publiczna) — co się stanie z istniejącymi callerami.
+5. Kluczowe decyzje techniczne (formaty, biblioteki, schematy).
 
 > [!warning] Gate Phase 2+3
 > `sh {baseDir}/dev/audited-feature-workflow/scripts/check-hypotheses.sh --file <hipotezy-lub-plan.md>` → exit 0 (≥3 hipotezy Minimal/Idiomatic/Ambitious + Recommendation).
@@ -179,6 +194,7 @@ Wymagane sekcje planu w `{baseDir}/plans/<N>-<slug>.md`:
 > - [ ] **Gate Phase 4:** `sh scripts/check-plan.sh --plan "$PLAN_FILE"` → exit 0 (10/10 sekcji, deterministycznie).
 > - [ ] Każdy AC ma `Test ID` + `Komenda` (1:1 mapping).
 > - [ ] DoD ma format dowodu dla każdego AC.
+> - [ ] (M/L) `analysis/<plan-id>-hypotheses-eval.md` istnieje; jeśli wybór ≠ top eval → nota „Reconciliation" obecna w Phase 3.
 > - [ ] Jeśli `--fragile`: dosłowna procedura Plan-Validate-Execute załączona.
 > - [ ] Target diff size deklarowany.
 >
@@ -322,7 +338,7 @@ Bramki Phase 7:
 - [ ] **Test scopes (S/M/L):** `sh scripts/check-test-scopes.sh --evidence <evidence.md> --size <S|M|L>` → exit 0.
 - [ ] **DAMP checklist** per test file (patrz [testing-protocol.md](references/testing-protocol.md) sekcja DAMP).
 - [ ] **Trace runtime** dla ścieżki krytycznej.
-- [ ] **Meta-testy skryptów v3 (Beyoncé Rule dla samego skilla)** — jeśli ta sesja dodała/zmodyfikowała `scripts/*.sh`: fixture w `tests/fixtures/` + `assert_exit` w `tests/run-meta-tests.sh` (utwórz runner jeśli nie istnieje — wzorzec: `dev/agent-teams-builder/tests/`). Fix buga skryptu → `regression-*.<ext>` (analog Phase 6.5 dla walidatora). Mapa + procedura: [testing-map.md](references/testing-map.md). **Stan obecny: 18 / 18 skryptów ma meta-testy** (`tests/run-meta-tests.sh`, pełny zestaw case'ów GOOD/BAD (X/X passed), `X/X passed`).
+- [ ] **Meta-testy skryptów v3 (Beyoncé Rule dla samego skilla)** — jeśli ta sesja dodała/zmodyfikowała `scripts/*.sh`: fixture w `tests/fixtures/` + `assert_exit` w `tests/run-meta-tests.sh` (utwórz runner jeśli nie istnieje — wzorzec: `dev/agent-teams-builder/tests/`). Fix buga skryptu → `regression-*.<ext>` (analog Phase 6.5 dla walidatora). Mapa + procedura: [testing-map.md](references/testing-map.md). **Stan obecny: 18 / 18 skryptów ma meta-testy** (`tests/run-meta-tests.sh`, pełny zestaw case'ów GOOD/BAD, 44/44 passed).
 
 > [!important] Brak któregokolwiek artefaktu = STOP. **„Wydaje się działać" to halucynacja**, nie status.
 
@@ -388,6 +404,7 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - [anti-rationalization.md](references/anti-rationalization.md) — pełna tabela wymówek.
 - [dod-evidence-protocol.md](references/dod-evidence-protocol.md) — formaty dowodów per typ AC.
 - [analysis-protocol.md](references/analysis-protocol.md) — Phase 1 (+ Hyrum + Chesterton).
+- [hypothesis-eval-protocol.md](references/hypothesis-eval-protocol.md) — Phase 2.5 niezależna read-only ocena ≥3 hipotez (rubryka binarna, blind input, adwersarialnie); zasila Phase 3.
 - [ac-protocol.md](references/ac-protocol.md) — AC + Beyoncé 1:1 mapping.
 - [code-review-protocol.md](references/code-review-protocol.md) — review (+ PR Sizing + Five-Axis redirect).
 - [testing-protocol.md](references/testing-protocol.md) — 7 scopes + DAMP + Prove-It + raw logs (testy aplikacji wytwarzanej przez skill).
