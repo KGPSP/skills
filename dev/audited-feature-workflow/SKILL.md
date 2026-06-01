@@ -124,6 +124,9 @@ Zanim wejdziesz w deep analysis: zdecyduj, czy feature wymaga researchu. **Skip*
 > [!important] Effort & Orchestration standard (v3.10.0, Opus 4.8)
 > **Phase 1 domyślnie max budżet rozumowania:** `/effort max` (kanon) + keyword `ultrathink` jeśli dostępny. Opus 4.8 ma effort default = `high` (Messages_API §10 Aneks) — Phase 1 świadomie podnosi do `xhigh`/`max` (kanon) lub `ultracode` (xhigh + auto-orkiestracja; tryb opcjonalny, **zawsze** z fallbackiem `/effort xhigh|max`, nigdy jako jedyna ścieżka). Dla **M/L lub wieloskładnikowych** orkiestruj analizę przez **Dynamic Workflows** (fan-out per podsystem; reguła DOC §3: >5 ścieżek; szablon `workflows/phase1-fanout-analysis.js`) — standard, nie opcja. Zadeklaruj wybór w polu `orchestration:` (bramka `check-orchestration-decl.sh`). Workflows **nie wspierają mid-run input** → muszą omijać APPROVAL/Gate. Pełny standard + macierz wykluczeń + fallbacki: [dynamic-workflows-standard.md](references/dynamic-workflows-standard.md).
 
+> [!tip] Operator nudge — skill nie zmienia effortu sam
+> Na starcie Phase 1 dla **M/L** (gdy NIE `/goal` ani `--fragile`) **wypisz operatorowi rekomendację**: „Rozważ `/effort ultracode` (xhigh + auto-orkiestracja workflows), lub `/effort xhigh|max`". Przełącznik `/effort` jest po stronie użytkownika/harnessu — skill go technicznie nie ustawi (rekomenduje + bramkuje deklarację przez `check-orchestration-decl.sh`).
+
 Wywołaj [analysis-protocol.md](references/analysis-protocol.md). Wymagane outputy:
 
 1. **PRIMARY TEMPLATE** — najbardziej zbliżona istniejąca feature w repo.

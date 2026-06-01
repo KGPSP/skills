@@ -9,7 +9,7 @@ Trzy warianty pokrywają różne kombinacje **rygoru** (wygodny vs senior-grade)
 | Skill | Wariant | Wersja | Rygor | Zakres | Wielkość |
 |---|---|---|---|---|---|
 | [`replit-style-workflow`](replit-style-workflow/) | **wygodny** (historycznie v2) | `v2.3.0` | wygodny | plan + implementacja | ~2200 linii SKILL.md |
-| [`audited-feature-workflow`](audited-feature-workflow/) | **senior-grade** (historycznie v3) | `v3.3.0` | senior-grade | plan + implementacja | 420 linii SKILL.md + 14 refs + 7 scripts |
+| [`audited-feature-workflow`](audited-feature-workflow/) | **senior-grade** (historycznie v3, Opus 4.8) | `v3.10.0` | senior-grade | plan + implementacja | 480 linii SKILL.md + 17 refs + 21 scripts + 2 workflows |
 | [`feature-spec-planner`](feature-spec-planner/) | **planning-only** (historycznie planner-f) | `v1.1.0` | senior-grade | **tylko plan + analiza + ADR** | 256 linii SKILL.md + 8 refs + 2 scripts |
 
 > **`feature-spec-planner` vs `audited-feature-workflow`:** ten sam rygor analityczno-planistyczny (fazy 0–5 + ADR), ale feature-spec-planner **kończy na zatwierdzonym planie** — nie pisze kodu, nie pisze/uruchamia testów, nie commituje. Reguły wykonawcze (TDD RED, build clean, Five-Axis, Prove-It, PR sizing przy commitach) są **specyfikowane** w planie i przekazywane wykonawcy (handoff do v3 Phase 6+ lub `agent-teams-builder`). Używaj, gdy chcesz oddzielić „co/dlaczego budujemy" od „budujemy".
@@ -101,27 +101,25 @@ START
 ### Struktura plików audited-feature-workflow
 
 ```
-audited-feature-workflow/
-├── SKILL.md (344 linii, ≤500 hard limit)
-├── references/
-│   ├── analysis-protocol.md          # + Hyrum + Chesterton
-│   ├── ac-protocol.md                # + Beyoncé 1:1
-│   ├── code-review-protocol.md       # + PR Sizing + Five-Axis redirect
-│   ├── testing-protocol.md           # + DAMP + raw logs + Prove-It
-│   ├── adr-template.md               # kopia z v2 (bez zmian)
-│   ├── anti-rationalization.md       # NOWY — 15 wpisów + ralph-loop variant
-│   ├── non-negotiables.md            # NOWY — 7 zasad master
-│   ├── dod-evidence-protocol.md      # NOWY — formaty dowodów per AC type
-│   ├── fragile-operations-protocol.md # NOWY — Plan-Validate-Execute
-│   ├── incremental-implementation.md # NOWY — Thin Vertical Slices
-│   ├── five-axis-review.md           # NOWY — 5 osi + severity + Multi-Model
-│   └── gotchas.md                    # NOWY — auto-populating projektowych anomalii
-└── scripts/                          # NOWE — 5 deterministycznych skryptów POSIX
-    ├── check-pr-size.sh              # PR sizing gate (Phase 6, Phase 8)
-    ├── verify-build-clean.sh         # Build clean enforcement (Phase 7)
-    ├── check-ac-coverage.sh          # 1:1 AC ↔ test mapping (Phase 7)
-    ├── extract-raw-log.sh            # DoD evidence helper (Phase 7)
-    └── api-impact-scan.sh            # Hyrum risk scan (Phase 1.5)
+audited-feature-workflow/                  # v3.10.0, Opus 4.8
+├── SKILL.md (480 linii, ≤500 hard limit)  # 17 faz + 6 bramek HITL
+├── references/                            # 17 protokołów (L3 progressive disclosure)
+│   ├── analysis-protocol.md · ac-protocol.md · code-review-protocol.md
+│   ├── testing-protocol.md · dod-evidence-protocol.md · five-axis-review.md
+│   ├── anti-rationalization.md (15 wpisów) · non-negotiables.md · adr-template.md
+│   ├── fragile-operations-protocol.md · incremental-implementation.md · gotchas.md
+│   ├── goal-mode-protocol.md · hypothesis-eval-protocol.md · testing-map.md
+│   ├── deep-research-protocol.md          # Phase 1.0 (context7 obligatoryjny)
+│   └── dynamic-workflows-standard.md      # Phase 1/6/8 orchestration + macierz wykluczeń
+├── scripts/                               # 21 deterministycznych bramek POSIX (pełny indeks: SKILL.md „Skrypty")
+│   ├── check-pr-size · verify-build-clean · check-ac-coverage · extract-raw-log · api-impact-scan
+│   ├── check-{env-detection,analysis-report,research-log,hypotheses,plan,tdd-red,anti-rat,test-scopes}
+│   ├── check-{screenshots,adr,five-axis,chesterton} · derive-goal-from-ac · run-goal-loop
+│   └── check-orchestration-decl · check-workflow-scripts          # v3.10.0
+├── workflows/                             # v3.10.0 — szablony Dynamic Workflow (.js, exemplar)
+│   ├── phase1-fanout-analysis.js          # fan-out analizy per podsystem
+│   └── phase8-five-axis-review.js         # agent per oś + adwersaryjna weryfikacja
+└── tests/                                 # run-meta-tests.sh (66/66) + run-e2e.sh (22/22 + 7/7) + fixtures/
 ```
 
 ---
