@@ -403,6 +403,9 @@ Entry: [plik] → Routing: [plik/dir] → Service: [plik|brak] → Repo: [plik|b
 ## Patterns catalog
 [tabela z 1.7]
 
+## Research used
+[z Phase 1.0 — np. "context7: prisma@5 migrations", "Explore: app/(auth)/ patterns" — lub "none — <powód>"]
+
 ## Open questions
 - [pytanie] — dlaczego to blokuje Phase 2
 ```

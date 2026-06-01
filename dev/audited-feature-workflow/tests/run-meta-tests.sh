@@ -295,6 +295,59 @@ assert_exit "chesterton deletion + justification -> exit 0" "0" \
 assert_exit "chesterton deletion without justification -> exit 1" "nonzero" \
   bash "$SCRIPTS/check-chesterton.sh" --diff "$FIXTURES/chesterton-del.diff" --pr "$FIXTURES/chesterton-pr-bad.md"
 
+# ============ [19] check-research-log.sh (Phase 1.0) ============
+echo "[19] check-research-log.sh"
+assert_exit "research-log complete (context7 entry) -> exit 0" "0" \
+  bash "$SCRIPTS/check-research-log.sh" --file "$FIXTURES/research-used-complete.md"
+assert_exit "research-log skip 'none -- powod' -> exit 0" "0" \
+  bash "$SCRIPTS/check-research-log.sh" --file "$FIXTURES/research-used-none-justified.md"
+assert_exit "research-log missing section -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-research-log.sh" --file "$FIXTURES/research-used-missing.md"
+assert_exit "research-log bare 'none' bez uzasadnienia -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-research-log.sh" --file "$FIXTURES/research-used-none-bare.md"
+assert_exit "research-log bez mechanizmu -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-research-log.sh" --file "$FIXTURES/research-used-no-mechanism.md"
+assert_exit "research-log Explore-only (bez flagi) -> exit 0" "0" \
+  bash "$SCRIPTS/check-research-log.sh" --file "$FIXTURES/research-used-explore-only.md"
+assert_exit "research-log complete + --require-context7 -> exit 0" "0" \
+  bash "$SCRIPTS/check-research-log.sh" --file "$FIXTURES/research-used-complete.md" --require-context7
+assert_exit "research-log Explore-only + --require-context7 -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-research-log.sh" --file "$FIXTURES/research-used-explore-only.md" --require-context7
+
+# ============ [20] check-orchestration-decl.sh (Phase 1) ============
+echo "[20] check-orchestration-decl.sh"
+assert_exit "orchestration M/L declared (ultracode+fallback) -> exit 0" "0" \
+  bash "$SCRIPTS/check-orchestration-decl.sh" --file "$FIXTURES/orchestration-decl-ml-plan.md" --size L
+assert_exit "orchestration workflow/ultracode + --goal -> exit 2 (self-consistency hard-stop)" "2" \
+  bash "$SCRIPTS/check-orchestration-decl.sh" --file "$FIXTURES/orchestration-decl-ml-plan.md" --size L --goal
+assert_exit "orchestration 'none -- powod' (M) -> exit 0" "0" \
+  bash "$SCRIPTS/check-orchestration-decl.sh" --file "$FIXTURES/orchestration-decl-ml-none-justified.md" --size M
+assert_exit "orchestration S absent -> exit 0 (declare-not-prescribe)" "0" \
+  bash "$SCRIPTS/check-orchestration-decl.sh" --file "$FIXTURES/orchestration-decl-s-absent.md" --size S
+assert_exit "orchestration M/L missing field -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-orchestration-decl.sh" --file "$FIXTURES/orchestration-decl-ml-missing.md" --size M
+assert_exit "orchestration bare 'none' bez uzasadnienia -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-orchestration-decl.sh" --file "$FIXTURES/orchestration-decl-none-bare.md" --size L
+assert_exit "orchestration ultracode bez fallbacku /effort -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-orchestration-decl.sh" --file "$FIXTURES/orchestration-decl-ml-ultracode-nofallback.md" --size L
+
+# ============ [21] check-workflow-scripts.sh (Phase 1/6/8) ============
+echo "[21] check-workflow-scripts.sh"
+assert_exit "workflow GOOD template -> exit 0" "0" \
+  bash "$SCRIPTS/check-workflow-scripts.sh" --file "$FIXTURES/workflow-phase1-good.js"
+assert_exit "workflow syntax error -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-workflow-scripts.sh" --file "$FIXTURES/workflow-syntax-bad.js"
+assert_exit "workflow disallowed token (paralel) -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-workflow-scripts.sh" --file "$FIXTURES/workflow-bad-token.js"
+assert_exit "workflow missing DOC-CONSTRAINTS header -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-workflow-scripts.sh" --file "$FIXTURES/workflow-no-header.js"
+assert_exit "workflow gate inside (APPROVAL) -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-workflow-scripts.sh" --file "$FIXTURES/workflow-gate-inside.js"
+assert_exit "workflow lead-IO (process.) -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-workflow-scripts.sh" --file "$FIXTURES/workflow-lead-io.js"
+assert_exit "workflow concurrency > 16 -> exit 1" "nonzero" \
+  bash "$SCRIPTS/check-workflow-scripts.sh" --file "$FIXTURES/workflow-overconc.js"
+
 # ============ Summary ============
 echo ""
 echo "========================================"

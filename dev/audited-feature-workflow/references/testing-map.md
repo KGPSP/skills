@@ -52,6 +52,7 @@ description: Mapa testów (unit / integration / regression) dla każdego skryptu
 | `check-hypotheses.sh` | Gate Phase 2+3: ≥3 hipotezy (Minimal/Idiomatic/Ambitious) + Recommendation | `hypotheses-complete.md`, `hypotheses-missing-ambitious.md` | — | — | ✅ |
 | `check-screenshots.sh` | Gate Phase 7.8: screenshot per AC-F | `screenshots-plan.md` + dir setup w runnerze | — | — | ✅ |
 | `check-adr.sh` | Gate Phase 9: sekcje ADR obowiązkowe (Context/Decision/Anti-rationalization/Consequences) | `adr-complete.md`, `adr-missing-consequences.md` | — | — | ✅ |
+| `check-research-log.sh` | Gate Phase 1.0: `## Research used` obecna/uzasadniona, mechanizm nazwany, `--require-context7` przy zewn. bibliotece | `research-used-complete.md`, `research-used-none-justified.md`, `research-used-missing.md`, `research-used-none-bare.md`, `research-used-no-mechanism.md`, `research-used-explore-only.md` | flaga `--require-context7` scena | — | ✅ |
 
 **Stan ogółem (2026-05-29 snapshot, v3.4.0):**
 - **12 / 12 skryptów ma unit testy** (runner `tests/run-meta-tests.sh` ISTNIEJE — 30 case'ów GOOD/BAD)

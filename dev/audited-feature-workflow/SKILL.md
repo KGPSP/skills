@@ -16,14 +16,15 @@ do-not-trigger-for:
   - "rename variable"
   - jednoliniowe poprawki bez impactu architektonicznego
   - eksploracja repozytorium bez zamiaru implementacji
-model: claude-opus-4-7
-allowed-tools: ['Bash', 'Read', 'Edit', 'Write', 'Grep', 'Glob', 'TodoWrite', 'Agent', 'SendMessage', 'TaskOutput', 'Workflow']
+model: claude-opus-4-8
+allowed-tools: ['Bash', 'Read', 'Edit', 'Write', 'Grep', 'Glob', 'TodoWrite', 'Agent', 'SendMessage', 'TaskOutput', 'Workflow', 'WebSearch', 'WebFetch', 'mcp__plugin_context7_context7__resolve-library-id', 'mcp__plugin_context7_context7__query-docs']
 sources:
   - DOC/material_skill.md
   - DOC/since_skill.md
   - DOC/goal_mode.md
   - DOC/dynamic_workflows-cc.md
-version: v3.8.0
+  - DOC/Messages_API_w_Opus_4.8.md
+version: v3.10.0
 extends: replit-style-workflow
 size-limit: 500-lines-hard
 ---
@@ -59,16 +60,17 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 | 9 | „Test pokrywa happy path" | Beyoncé Rule. Każdy edge case z AC-N → osobny test. |
 | 10 | „DRY-uję testy w helper" | DAMP over DRY. Test czytelny jak spec, bez magicznych helperów. |
 | 11 | „Goal-statement deryw kompletny, można pominąć Gate #1.5" | Gate #1.5 jest nienegocjowalny w /goal. Bez jawnej zgody → brak startu pętli. |
-| 12 | „Skrypt v3 (`check-pr-size`, `api-impact-scan` …) jest deterministyczny, meta-test zbędny" | Odrzucono. **Beyoncé Rule dla samego skilla.** Każdy `scripts/*.sh` ma fixture + `assert_exit` w `tests/run-meta-tests.sh` (runner istnieje — 18/18 skryptów, pełny zestaw case'ów GOOD/BAD, 44/44 passed). Bez tego skrypt może milcząco regresować przy refaktorze. Patrz [testing-map.md](references/testing-map.md). |
+| 12 | „Skrypt v3 (`check-pr-size`, `api-impact-scan` …) jest deterministyczny, meta-test zbędny" | Odrzucono. **Beyoncé Rule dla samego skilla.** Każdy `scripts/*.sh` ma fixture + `assert_exit` w `tests/run-meta-tests.sh` (runner istnieje — 21/21 skryptów, pełny zestaw case'ów GOOD/BAD, 66/66 passed). Bez tego skrypt może milcząco regresować przy refaktorze. Patrz [testing-map.md](references/testing-map.md). |
 | 13 | „Bug w skrypcie v3 — fix, regresji nie dorabiam" | Odrzucono. **Prove-It Pattern dla skryptu** (analog Phase 6.5 ale dla samego walidatora). `tests/fixtures/regression-<short-desc>.<ext>` + failing `assert_exit` PRZED fixem. Patrz [testing-map.md](references/testing-map.md) §Procedura fix buga. |
 
 ---
 
-## Architektura: 16 faz + 6 bramek approval
+## Architektura: 17 faz + 6 bramek approval
 
 | Faza | Cel | Bramka |
 |---|---|---|
 | 0 | Detekcja środowiska + Negative Triggers + Fragile zone | — |
+| 1.0 | Deep Research Probe (context7 obligatoryjny przy zewn. bibliotece) | — |
 | 1 | Deep analysis + Hyrum + Chesterton | — |
 | 1.5 | Dependency Impact Radius + API klasyfikacja | — |
 | 2 | ≥3 hipotezy (Minimal / Idiomatic / Ambitious) | — |
@@ -103,10 +105,24 @@ Przed każdym `git commit` w Phase 6 i przed każdą deklaracją „done" w Phas
 
 ---
 
+## Phase 1.0 — Deep Research Probe (start Phase 1)
+
+Zanim wejdziesz w deep analysis: zdecyduj, czy feature wymaga researchu. **Skip** dozwolony **tylko** gdy ŁĄCZNIE: size **S** AND analog znany w repo AND zero nowych zależności / zewn. API / regulacji. Inaczej research **obowiązkowy** — wyłącznie stock Claude Code + pluginy (**ZERO zewnętrznych LLM**; zakaz `delegate-gemini`). Pełny protokół + tabela mechanizmów: [deep-research-protocol.md](references/deep-research-protocol.md).
+
+- **context7 OBLIGATORYJNY** dla KAŻDEJ zewn. biblioteki / API / migracji wersji — `resolve-library-id → query-docs` PRZED napisaniem kodu (Phase 6). Pamięć ≠ docs (Anti-Rat: training data driftuje).
+- Inne sygnały: nieznany obszar repo → `Agent subagent_type=Explore`; URL/spec → `defuddle` (fallback `WebFetch`); ogólny research → `WebSearch` → top-3 `WebFetch`; legacy >500 linii / auth → `codex:rescue`.
+- **Maks 2 mechanizmy** / Phase 1 (research = paliwo, nie cel). **Każde użycie zaloguj** w sekcji `## Research used` (Analysis Report).
+
+> [!warning] Output Phase 1.0 (dowód) + Gate
+> Sekcja `## Research used` w `analysis/<plan-id>.md` (skip tylko jako `none — <powód>`).
+> **Gate Phase 1.0:** `sh {baseDir}/dev/audited-feature-workflow/scripts/check-research-log.sh --file analysis/<plan-id>.md` → exit 0. Gdy Phase 1.1 wykryła zewn. bibliotekę, dodaj `--require-context7` (wpis `context7:` obowiązkowy).
+
+---
+
 ## Phase 1 — Deep Analysis
 
-> [!important] Effort & Orchestration standard (v3.6.0)
-> **Phase 1 domyślnie max budżet rozumowania:** `/effort max` (kanon) + keyword `ultrathink` jeśli dostępny. Dla zadań **M/L lub wieloskładnikowych** orkiestruj analizę przez **Dynamic Workflows** (fan-out czytelników per podsystem; reguła DOC §3: >5 równoległych ścieżek) — standard, nie opcja; opcjonalnie `/effort ultracode`. Workflows **nie wspierają mid-run input** → muszą omijać bramki APPROVAL/Gate. Pełny standard + mapowanie effort/ultrathink/ultracode i fallbacki: [dynamic-workflows-standard.md](references/dynamic-workflows-standard.md).
+> [!important] Effort & Orchestration standard (v3.10.0, Opus 4.8)
+> **Phase 1 domyślnie max budżet rozumowania:** `/effort max` (kanon) + keyword `ultrathink` jeśli dostępny. Opus 4.8 ma effort default = `high` (Messages_API §10 Aneks) — Phase 1 świadomie podnosi do `xhigh`/`max` (kanon) lub `ultracode` (xhigh + auto-orkiestracja; tryb opcjonalny, **zawsze** z fallbackiem `/effort xhigh|max`, nigdy jako jedyna ścieżka). Dla **M/L lub wieloskładnikowych** orkiestruj analizę przez **Dynamic Workflows** (fan-out per podsystem; reguła DOC §3: >5 ścieżek; szablon `workflows/phase1-fanout-analysis.js`) — standard, nie opcja. Zadeklaruj wybór w polu `orchestration:` (bramka `check-orchestration-decl.sh`). Workflows **nie wspierają mid-run input** → muszą omijać APPROVAL/Gate. Pełny standard + macierz wykluczeń + fallbacki: [dynamic-workflows-standard.md](references/dynamic-workflows-standard.md).
 
 Wywołaj [analysis-protocol.md](references/analysis-protocol.md). Wymagane outputy:
 
@@ -255,6 +271,9 @@ Routing implementacji:
 - **6-Teams** (2-5 agentów) — dla L gdy parallel safe.
 - **6-Goal** — autonomous goal-driven loop (tylko gdy `/goal`, exclusive z Teams).
 
+> [!note] Orkiestracja Phase 6 (standard)
+> Równoległość Phase 6 = **6-Teams** (natywna). **Brak wożonego szablonu Dynamic Workflow dla Phase 6** — per-slice TDD-RED przed GREEN nie może być barierą HITL-free wewnątrz fan-outu (bramki RED/build/PR-size muszą zostać POZA). Tryb (`teams|sequential`) zadeklaruj w polu `orchestration:`; dla równoległości użyj 6-Teams. Patrz [dynamic-workflows-standard.md §5a](references/dynamic-workflows-standard.md).
+
 Pre-flight: `git status` clean. Build baseline check.
 
 Dla każdej slice (Thin Vertical Slices — [incremental-implementation.md](references/incremental-implementation.md)):
@@ -338,7 +357,7 @@ Bramki Phase 7:
 - [ ] **Test scopes (S/M/L):** `sh scripts/check-test-scopes.sh --evidence <evidence.md> --size <S|M|L>` → exit 0.
 - [ ] **DAMP checklist** per test file (patrz [testing-protocol.md](references/testing-protocol.md) sekcja DAMP).
 - [ ] **Trace runtime** dla ścieżki krytycznej.
-- [ ] **Meta-testy skryptów v3 (Beyoncé Rule dla samego skilla)** — jeśli ta sesja dodała/zmodyfikowała `scripts/*.sh`: fixture w `tests/fixtures/` + `assert_exit` w `tests/run-meta-tests.sh` (utwórz runner jeśli nie istnieje — wzorzec: `dev/agent-teams-builder/tests/`). Fix buga skryptu → `regression-*.<ext>` (analog Phase 6.5 dla walidatora). Mapa + procedura: [testing-map.md](references/testing-map.md). **Stan obecny: 18 / 18 skryptów ma meta-testy** (`tests/run-meta-tests.sh`, pełny zestaw case'ów GOOD/BAD, 44/44 passed).
+- [ ] **Meta-testy skryptów v3 (Beyoncé Rule dla samego skilla)** — jeśli ta sesja dodała/zmodyfikowała `scripts/*.sh`: fixture w `tests/fixtures/` + `assert_exit` w `tests/run-meta-tests.sh` (utwórz runner jeśli nie istnieje — wzorzec: `dev/agent-teams-builder/tests/`). Fix buga skryptu → `regression-*.<ext>` (analog Phase 6.5 dla walidatora). Mapa + procedura: [testing-map.md](references/testing-map.md). **Stan obecny: 21 / 21 skryptów ma meta-testy** (`tests/run-meta-tests.sh`, pełny zestaw case'ów GOOD/BAD, 66/66 passed).
 
 > [!important] Brak któregokolwiek artefaktu = STOP. **„Wydaje się działać" to halucynacja**, nie status.
 
@@ -363,6 +382,9 @@ Wywołaj [five-axis-review.md](references/five-axis-review.md). Pięć osi audyt
 3. **Architecture** — duplikacje, cykliczne zależności, naruszenia granic.
 4. **Security** — SQL injection, secrets scan, OWASP Top 10.
 5. **Performance** — N+1, niekontrolowane pętle, brak async I/O.
+
+> [!note] Orkiestracja Phase 8 (standard)
+> Five-Axis na skalę = agent per oś + adwersaryjna weryfikacja per znalezisko (szablon `workflows/phase8-five-axis-review.js`). **Wzajemnie wykluczające z 6-Teams Phase 8** — wybór po liczbie niezależnych osi. APPROVAL #5 zostaje POZA workflowem; adwersaryjna weryfikacja **wzmacnia, nie zastępuje** bramki.
 
 Severity labels: **Critical** (blokada), **Optional**, **Nit**, **FYI**.
 
@@ -404,6 +426,7 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - [anti-rationalization.md](references/anti-rationalization.md) — pełna tabela wymówek.
 - [dod-evidence-protocol.md](references/dod-evidence-protocol.md) — formaty dowodów per typ AC.
 - [analysis-protocol.md](references/analysis-protocol.md) — Phase 1 (+ Hyrum + Chesterton).
+- [deep-research-protocol.md](references/deep-research-protocol.md) — Phase 1.0 Deep Research Probe (context7 obligatoryjny, equipment lock ZERO Gemini, `## Research used`). Ładuj na starcie Phase 1 gdy request dotyka zewn. biblioteki/API/regulacji.
 - [hypothesis-eval-protocol.md](references/hypothesis-eval-protocol.md) — Phase 2.5 niezależna read-only ocena ≥3 hipotez (rubryka binarna, blind input, adwersarialnie); zasila Phase 3.
 - [ac-protocol.md](references/ac-protocol.md) — AC + Beyoncé 1:1 mapping.
 - [code-review-protocol.md](references/code-review-protocol.md) — review (+ PR Sizing + Five-Axis redirect).
@@ -417,7 +440,7 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - [incremental-implementation.md](references/incremental-implementation.md) — Thin Vertical Slices.
 - [five-axis-review.md](references/five-axis-review.md) — 5 osi + severity + Multi-Model.
 - [gotchas.md](references/gotchas.md) — auto-populating projektowych anomalii.
-- [dynamic-workflows-standard.md](references/dynamic-workflows-standard.md) — Dynamic Workflows + ultrathink/effort/ultracode jako standard analizy/orkiestracji (Phase 0/1/8). Ładuj warunkowo (M/L lub trigger workflow|ultracode).
+- [dynamic-workflows-standard.md](references/dynamic-workflows-standard.md) — Dynamic Workflows + ultrathink/effort/ultracode (Opus 4.8) jako standard orkiestracji (Phase 0/1/6/8) + macierz wykluczeń + bramka deklaracji + szablony `.js`. Ładuj warunkowo (M/L lub trigger workflow|ultracode).
 
 ### Skrypty (warstwa B — deterministyczne narzędzia)
 
@@ -430,6 +453,7 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - `scripts/run-goal-loop.sh` — autonomous goal-driven loop driver (caps iter/time maszynowe od v3.4.0).
 - `scripts/check-env-detection.sh` — Gate Phase 0 (env-detection.md kompletny).
 - `scripts/check-analysis-report.sh` — Gate Phase 1 (raport + Open questions rozwiązane).
+- `scripts/check-research-log.sh` — Gate Phase 1.0 (`## Research used` obecna/uzasadniona; `--require-context7` przy zewn. bibliotece).
 - `scripts/check-hypotheses.sh` — Gate Phase 2+3 (≥3 hipotezy + Recommendation).
 - `scripts/check-screenshots.sh` — Gate Phase 7.8 (screenshot per AC-F).
 - `scripts/check-adr.sh` — Gate Phase 9 (sekcje ADR obowiązkowe).
@@ -439,6 +463,8 @@ Wywołaj [adr-template.md](references/adr-template.md). ADR MUSI zawierać:
 - `scripts/check-test-scopes.sh` — Gate Phase 7 (test scopes per S/M/L).
 - `scripts/check-five-axis.sh` — Gate Phase 8 (5 osi + werdykt).
 - `scripts/check-chesterton.sh` — Gate Phase 8 (usunięcia uzasadnione).
+- `scripts/check-orchestration-decl.sh` — Gate Phase 1 (deklaracja `orchestration:` declare-not-prescribe; `--goal` → exit 2 self-consistency).
+- `scripts/check-workflow-scripts.sh` — Gate Phase 1/6/8 (składnia + struktura szablonów `.js`: AsyncFunction-parse, token-lint, gates-outside, lead-IO, concurrency≤16).
 
 ### Szablon
 

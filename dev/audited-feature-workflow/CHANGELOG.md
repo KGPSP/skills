@@ -4,6 +4,46 @@
 > Wariant **senior-grade** Claude Code workflow — koegzystuje z `replit-style-workflow` (wygodny, historycznie `feature-planner-v2`) i `feature-spec-planner` (planning-only).
 > **Rename 2026-05-25:** `feature-planner-v3` → `audited-feature-workflow` (folder + frontmatter `name:`). Trigger keywords zachowane (`/goal`, `senior-grade feature`, `dodaj feature v3`).
 
+## [v3.10.0] — 2026-06-01 — Opus 4.8 + xhigh/dynamic-workflow orchestration jako standard (Phase 1/6/8)
+
+### Added
+- **Model `claude-opus-4-8`** (z `4-7`) + `DOC/Messages_API_w_Opus_4.8.md` w `sources`. `xhigh`/`max` wymagają wspieranego modelu; Opus 4.8 ma effort default `high` (Messages_API §10 Aneks).
+- **Orkiestracja `xhigh` + Dynamic Workflows jako STANDARD** w Phase 1/6/8 (dotąd proza „informacyjna, poza gate 6/6"). `ultracode` = xhigh + auto-orkiestracja, **zawsze z fallbackiem `/effort xhigh|max`** (Anti-Rat — nigdy jedyna ścieżka).
+- **`scripts/check-orchestration-decl.sh` (Phase 1)** — bramka **deklaracji** orkiestracji (declare-not-prescribe, lustro `effort-level`): M/L wymaga pola `orchestration:`; skip `none` z uzasadnieniem; `ultracode`/`ultrathink` z fallbackiem `/effort`; `--goal` + workflow/ultracode → **exit 2** (self-consistency hard-stop). 6 fixtures + sekcja meta [20] (7 case'ów).
+- **`scripts/check-workflow-scripts.sh` (Phase 1/6/8)** — walidator **składni + struktury** szablonów `.js`: parse opakowany w AsyncFunction (jak runtime; `node --check` odrzuca top-level await/return/export), closed-world token-lint, nagłówek `// DOC-CONSTRAINTS:`+`source:`, gates-outside, lead-IO (DOC §9), concurrency≤16. 7 fixtures + sekcja meta [21] (7 case'ów).
+- **2 szablony wykonawcze** `workflows/phase1-fanout-analysis.js` + `workflows/phase8-five-axis-review.js` — **wzorce referencyjne** wożone z pluginem. **Phase 6 świadomie BEZ szablonu** — per-slice TDD-RED przed GREEN nie może być barierą HITL-free w fan-oucie (6-Teams zostaje natywną równoległością).
+- **`references/dynamic-workflows-standard.md`** — Opus 4.8 effort-default (§2), §3a bramka deklaracji, **§5a pełna macierz wykluczeń** (`/goal`×workflows×teams×`--fragile`, bajt-spójna z SKILL.md), §6 acceptEdits/resume, §8 save Local/Global + szablony.
+
+### Changed
+- SKILL.md `version v3.10.0`, model `claude-opus-4-8`, Phase 1 callout (Opus 4.8) + Phase 6/8 `[!note]` + indeksy. Stale-count `18/18 … 44/44` → realne **21/21 skryptów, 66/66 passed**.
+- `dev/.claude-plugin/plugin.json` → **v1.8.0** (+ keywords `opus-4.8`, `orchestration`).
+- `tests/run-e2e.sh` — bramka negatywna zrefaktorowana na **zero-leak** (`NEG_LEAK -eq 0` + dynamiczny `NEG_TOTAL`) zamiast kruchego `-ge 6`.
+
+### Dowód
+- `bash tests/run-meta-tests.sh` → `66/66 passed` (52 → 66, +14: sekcje [20]+[21]).
+- `bash tests/run-e2e.sh` → `PASS — positive 22/22 GREEN, negative 7/7 BLOCKED` (0 leak).
+- `sh -n scripts/check-orchestration-decl.sh scripts/check-workflow-scripts.sh` + `bash -n tests/*.sh` → OK. AsyncFunction-parse na 2 szablonach → OK. `wc -l SKILL.md` = 480 (≤500).
+
+### Uczciwość źródeł
+- Bramka orkiestracji jest **deklaracją + self-consistency**, NIE egzekucją behawioralną (nie zaobserwuje uruchomienia workflow) — równie „mocna" jak `effort-level`. Szablony `.js` to wzorce składniowo-strukturalne, **nie** runtime-verified (Research Preview). `/effort` pozostaje jedynym potwierdzonym kanonem.
+
+## [v3.9.0] — 2026-05-31 — Phase 1.0 Deep Research Probe (context7 obligatoryjny) + gate
+
+### Added
+- **Phase 1.0 — Deep Research Probe** (start Phase 1) + `references/deep-research-protocol.md`. Decyduje, czy feature wymaga researchu i czym — wyłącznie stock Claude Code + pluginy (**ZERO zewn. LLM**, zakaz `delegate-gemini`). **context7 OBLIGATORYJNY** przed implementacją każdej zewn. biblioteki/API/migracji (`resolve-library-id → query-docs`); inne mechanizmy: `Explore` (nieznany obszar repo), `defuddle`/`WebFetch` (URL/spec), `WebSearch` (regulacje/RFC), `codex:rescue` (legacy/auth). Maks 2 mechanizmy/Phase 1; log w sekcji `## Research used`.
+- **`scripts/check-research-log.sh`** — deterministyczna Gate Phase 1.0: `## Research used` obecna+niepusta · skip `none` wymaga uzasadnienia (`none — <powód>`) · zadeklarowany research nazywa mechanizm (context7/Explore/defuddle/WebSearch/WebFetch/codex) · `--require-context7` wymusza wpis `context7:` przy zewn. bibliotece.
+- **6 fixtures** (`tests/fixtures/research-used-*.md`) + **8 case'ów** w `tests/run-meta-tests.sh` (sekcja [19]) — Beyoncé Rule dla skilla.
+- **Frontmatter `allowed-tools`** rozszerzone o `WebSearch`, `WebFetch`, `mcp__plugin_context7_context7__resolve-library-id`, `mcp__plugin_context7_context7__query-docs` (dotąd deep research był tylko dziedziczony nominalnie z `replit-style-workflow` przez `extends`, a restrykcyjne `allowed-tools` v3 fizycznie go blokowały).
+- Tabela faz **16→17**; sekcja `## Research used` w szablonie raportu (`analysis-protocol.md`); wpis w `testing-map.md`; indeks referencji + skryptów w SKILL.md. **`dev-tools` plugin → v1.7.0** (+ keywords `deep-research`, `context7`).
+
+### Fixed
+- **`tests/run-e2e.sh`** — inline fixture `ac-coverage.md` był w starym **5-kolumnowym** formacie (drift od v3.8.0, gdzie `check-ac-coverage.sh` przeszedł na kanoniczną **6-kolumnową** macierz) → Phase 7 szła RED (`positive 18/19`). Wyrównano do 6-kol + dodano Phase 1.0 do łańcucha (positive **20/20**, negative **6/6**).
+
+### Dowód
+- `bash tests/run-meta-tests.sh` → `52/52 passed`.
+- `bash tests/run-e2e.sh` → `PASS — positive 20/20 GREEN, negative 6/6 BLOCKED`.
+- `sh -n scripts/check-research-log.sh` + `bash -n tests/*.sh` → OK.
+
 ## [v3.8.0] — 2026-05-31 — Phase 2.5 Independent Hypothesis Eval + fix check-ac-coverage (6-kol)
 
 ### Added

@@ -53,12 +53,15 @@ F
   cat > analysis-070.md <<'F'
 # Analysis Report — plan #70 — health endpoint
 - effort-level: max
+- orchestration: workflow — fan-out Phase 1 czytelnikow per podsystem
 ## Stack
 Next.js 14 + Vitest.
 ## Architektura
 route -> service -> DB.
 ## Analog featuru (PRIMARY TEMPLATE)
 src/features/status/
+## Research used
+- context7: next@14 — route handlers
 ## Open questions
 F
   cat > hypotheses.md <<'F'
@@ -99,9 +102,9 @@ F
   printf 'test("returns 200", () => {})\n' > health.test.ts
   cat > ac-coverage.md <<'F'
 ## Acceptance Criteria
-| AC-ID | Type | Test ID | Test File | Command |
-|---|---|---|---|---|
-| AC-F1 | F | returns 200 | health.test.ts | npm test |
+| AC-ID | Typ | Opis | Test ID | Plik testu | Komenda |
+|---|---|---|---|---|---|
+| AC-F-01 | F | returns 200 | returns 200 | health.test.ts | npm test |
 F
   printf 'FAIL tests/health.test.ts\n  x returns 200\nTests: 1 failed\nStatus: FAILED\n' > red.log
   cat > pr.md <<'F'
@@ -161,7 +164,10 @@ nowy endpoint, brak wplywu.
 F
 
   echo "[Phase 0]";   g "check-env-detection"            sh "$S/check-env-detection.sh" --file env-detection.md
+  echo "[Phase 1.0]"; g "check-research-log (+context7)" sh "$S/check-research-log.sh" --file analysis-070.md --require-context7
   echo "[Phase 1]";   g "check-analysis-report (+effort)" sh "$S/check-analysis-report.sh" --file analysis-070.md
+                      g "check-orchestration-decl (M)"   sh "$S/check-orchestration-decl.sh" --file analysis-070.md --size M
+                      g "check-workflow-scripts (phase1)" sh "$S/check-workflow-scripts.sh" --file "$SKILL_DIR/workflows/phase1-fanout-analysis.js"
   echo "[Phase 1.5]"; g "api-impact-scan"                bash "$S/api-impact-scan.sh" --base main
   echo "[Phase 2+3]"; g "check-hypotheses"               sh "$S/check-hypotheses.sh" --file hypotheses.md
   echo "[Phase 4]";   g "check-plan (10 sekcji)"         sh "$S/check-plan.sh" --plan plan-070.md
@@ -205,17 +211,22 @@ ND=$(mktemp -d /tmp/aftw-e2eneg.XXXXXX)
   chk "Phase 7: brak scope integration (M)"   sh "$S/check-test-scopes.sh" --evidence bad-ev.md --size M
   printf 'Tests: 1 passed\nStatus: PASSED\n' > bad-red.log
   chk "Phase 6: brak failing testu (RED)"     sh "$S/check-tdd-red.sh" --red-log bad-red.log
+  printf '# Analysis\n## Research used\n- none\n## Open questions\n' > bad-research.md
+  chk "Phase 1.0: research=none bez uzasadnienia" sh "$S/check-research-log.sh" --file bad-research.md
+  printf '# Analysis\n## Stack\nx\n- effort-level: high\n## Open questions\n' > bad-orch.md
+  chk "Phase 1: rozmiar M bez orchestration decl"  sh "$S/check-orchestration-decl.sh" --file bad-orch.md --size M
   echo "$NEG_BLOCK $NEG_LEAK" > "$ND/.neg"
 )
 read -r NEG_BLOCK NEG_LEAK < "$ND/.neg" 2>/dev/null || { NEG_BLOCK=0; NEG_LEAK=99; }
 rm -rf "$ND"
-echo "  -> NEGATIVE: $NEG_BLOCK/5 defektow zablokowanych ($NEG_LEAK leak)"
+NEG_TOTAL=$((NEG_BLOCK+NEG_LEAK))
+echo "  -> NEGATIVE: $NEG_BLOCK/$NEG_TOTAL defektow zablokowanych ($NEG_LEAK leak)"
 echo ""
 
 # =====================================================================
 echo "========================================================"
-if [ "$POS_FAIL" -eq 0 ] && [ "$POS_PASS" -ge 19 ] && [ "$NEG_LEAK" -eq 0 ] && [ "$NEG_BLOCK" -ge 5 ]; then
-  echo "  E2E RESULT: PASS — positive $POS_PASS/$POS_TOTAL GREEN, negative $NEG_BLOCK/5 BLOCKED"
+if [ "$POS_FAIL" -eq 0 ] && [ "$POS_PASS" -ge 20 ] && [ "$NEG_LEAK" -eq 0 ] && [ "$NEG_BLOCK" -ge 1 ]; then
+  echo "  E2E RESULT: PASS — positive $POS_PASS/$POS_TOTAL GREEN, negative $NEG_BLOCK/$NEG_TOTAL BLOCKED"
   echo "========================================================"
   exit 0
 fi

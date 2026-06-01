@@ -2,6 +2,32 @@
 
 Historia zmian na poziomie repozytorium. Per-skill detale → commit history poszczególnych folderów.
 
+## [2026-06-01] audited-feature-workflow v3.10.0 — Opus 4.8 + orchestration standard (Phase 1/6/8)
+
+### Added
+
+- **`dev/audited-feature-workflow` → v3.10.0** — model `claude-opus-4-8` (+ `DOC/Messages_API_w_Opus_4.8.md` w sources); `xhigh` + Dynamic Workflows jako **standard** Phase 1/6/8. Dwie nowe bramki: `check-orchestration-decl.sh` (deklaracja `orchestration:`, declare-not-prescribe, `--goal`→exit 2) i `check-workflow-scripts.sh` (składnia+struktura szablonów `.js`: AsyncFunction-parse, token-lint, gates-outside, lead-IO, concurrency≤16). 2 szablony `workflows/*.js` (Phase 1+8; **Phase 6 świadomie bez** — TDD-RED nie barierą HITL-free w fan-oucie). `references/dynamic-workflows-standard.md` + §5a macierz wykluczeń. **Bramka orkiestracji = deklaracja, nie egzekucja behawioralna** (uczciwość źródeł). 13 nowych fixtures + 14 meta-case'ów (sekcje [20]+[21]).
+- **`dev/.claude-plugin/plugin.json` → v1.8.0** — keywords `opus-4.8`, `orchestration`.
+
+### Dowód
+
+- `bash dev/audited-feature-workflow/tests/run-meta-tests.sh` → `66/66 passed`. `bash …/run-e2e.sh` → `PASS — positive 22/22, negative 7/7, 0 leak`.
+
+## [2026-05-31] audited-feature-workflow v3.9.0 — Phase 1.0 Deep Research Probe (context7 obligatoryjny)
+
+### Added
+
+- **`dev/audited-feature-workflow` → v3.9.0** — **Phase 1.0 Deep Research Probe** + `references/deep-research-protocol.md` + deterministyczna bramka `scripts/check-research-log.sh` (sekcja `## Research used`, uzasadniony skip `none — <powód>`, `--require-context7` przy zewn. bibliotece). `allowed-tools` rozszerzone o `WebSearch`/`WebFetch`/context7 MCP — deep research dotąd był tylko dziedziczony nominalnie z `replit-style-workflow` (restrykcyjne `allowed-tools` v3 go blokowały). **context7 OBLIGATORYJNY** przed implementacją zewn. bibliotek; equipment lock **ZERO Gemini**. 6 fixtures + 8 meta-case'ów (sekcja [19]). Tabela faz 16→17.
+- **`dev/.claude-plugin/plugin.json` → v1.7.0** — keywords `deep-research`, `context7`.
+
+### Fixed
+
+- **`dev/audited-feature-workflow/tests/run-e2e.sh`** — inline fixture `ac-coverage.md` wyrównany do **6-kolumnowej** macierzy AC (drift od v3.8.0 powodujący RED Phase 7 w e2e); dodano Phase 1.0 do łańcucha.
+
+### Dowód
+
+- `bash tests/run-meta-tests.sh` → `52/52 passed`; `bash tests/run-e2e.sh` → `PASS — positive 20/20 GREEN, negative 6/6 BLOCKED`.
+
 ## [2026-05-31] audited-feature-workflow v3.8.0 + reconcyliacja rozjechanej linii lokalnej
 
 ### Added
